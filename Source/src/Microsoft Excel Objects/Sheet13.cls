@@ -57,15 +57,15 @@ Private Sub Worksheet_FollowHyperlink(ByVal Target As Hyperlink)
         Exit Sub
     End If
 
-    strBook = Cells(ActiveCell.row, C_SEARCH_BOOK).Value
+    strBook = Cells(ActiveCell.Row, C_SEARCH_BOOK).Value
     If Len(strBook) = 0 Then
         Exit Sub
     End If
-    strSheet = Cells(ActiveCell.row, C_SEARCH_SHEET).Value
+    strSheet = Cells(ActiveCell.Row, C_SEARCH_SHEET).Value
     If Len(strSheet) = 0 Then
         Exit Sub
     End If
-    strId = Cells(ActiveCell.row, C_SEARCH_ADDRESS).Value
+    strId = Cells(ActiveCell.Row, C_SEARCH_ADDRESS).Value
     If Len(strId) = 0 Then
         Exit Sub
     End If
@@ -87,17 +87,17 @@ Private Sub Worksheet_FollowHyperlink(ByVal Target As Hyperlink)
     On Error Resume Next
     
     If strBuf = "" Then
-        Set WB = Workbooks.Open(FileName:=strBook)
+        Set WB = Workbooks.Open(filename:=strBook)
     Else
         For Each varPass In varPassword
-            err.Clear
-            Set WB = Workbooks.Open(FileName:=strBook, Password:=varPass)
-            If err.Number = 0 Then
+            Err.Clear
+            Set WB = Workbooks.Open(filename:=strBook, Password:=varPass)
+            If Err.Number = 0 Then
                 Exit For
             End If
         Next
     End If
-    If err.Number <> 0 Then
+    If Err.Number <> 0 Then
         MsgBox "ブックを開けませんでした。", vbExclamation, "Grep"
         Exit Sub
     End If
@@ -111,7 +111,7 @@ Private Sub Worksheet_FollowHyperlink(ByVal Target As Hyperlink)
     
     Dim s As Shape
     Set s = getObjFromID(WS, Mid$(strId, InStrRev(strId, ":") + 1))
-    Application.Goto Reference:=setCellPos(s.TopLeftCell), Scroll:=True
+    Application.GoTo Reference:=setCellPos(s.TopLeftCell), Scroll:=True
     s.Select
     
 End Sub
@@ -158,7 +158,7 @@ Private Function setCellPos(ByRef r As Range) As Range
             lngCol = r.Column
     End Select
 
-    Set setCellPos = r.Worksheet.Cells(r.row, lngCol)
+    Set setCellPos = r.Worksheet.Cells(r.Row, lngCol)
 
 End Function
 
@@ -212,20 +212,20 @@ Sub ReplaceStr()
         strBook = Cells(lngRow, C_SEARCH_BOOK).Value
         
         'バックアップする
-        FS.copyfile strBook, strBook & "." & Format$(Now(), "yyyymmddhhnnss")
+        FS.CopyFile strBook, strBook & "." & Format$(Now(), "yyyymmddhhnnss")
         
         If strBuf = "" Then
-            Set WB = Workbooks.Open(FileName:=strBook, local:=True)
+            Set WB = Workbooks.Open(filename:=strBook, local:=True)
         Else
             For Each varPass In varPassword
-                err.Clear
-                Set WB = Workbooks.Open(FileName:=strBook, Password:=varPass, local:=True)
-                If err.Number = 0 Then
+                Err.Clear
+                Set WB = Workbooks.Open(filename:=strBook, Password:=varPass, local:=True)
+                If Err.Number = 0 Then
                     Exit For
                 End If
             Next
         End If
-        If err.Number <> 0 Then
+        If Err.Number <> 0 Then
             MsgBox "ブックが開けません(" & FS.getFileName(strBook) & ")です。" & vbCrLf & "Grep置換をスキップします。", vbOKOnly + vbCritical, C_TITLE
             lngRow = lngRow + 1
             GoTo pass
@@ -281,7 +281,7 @@ pass:
     MsgBox "Grep置換完了しました。", vbOKOnly + vbInformation, C_TITLE
     Exit Sub
 e:
-    If MsgBox("ブック保存時にエラーになりました。(" & err.Description & ")" & vbCrLf & "再試行しますか？", vbYesNo + vbQuestion, C_TITLE) = vbYes Then
+    If MsgBox("ブック保存時にエラーになりました。(" & Err.Description & ")" & vbCrLf & "再試行しますか？", vbYesNo + vbQuestion, C_TITLE) = vbYes Then
         Resume
     Else
         MsgBox "Grep置換を中断しました。", vbOKOnly + vbCritical, C_TITLE

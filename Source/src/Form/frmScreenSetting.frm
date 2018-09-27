@@ -4,7 +4,7 @@ Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmScreenSetting
    ClientHeight    =   2700
    ClientLeft      =   45
    ClientTop       =   390
-   ClientWidth     =   8400
+   ClientWidth     =   8400.001
    OleObjectBlob   =   "frmScreenSetting.frx":0000
    StartUpPosition =   1  'オーナー フォームの中央
 End
@@ -49,7 +49,7 @@ Private Sub chkPageBreakEnable_Change()
     Dim c As control
 
     For Each c In Controls
-        If c.tag = "P" Then
+        If c.Tag = "P" Then
         
             c.enabled = chkPageBreakEnable.Value
         
@@ -63,7 +63,7 @@ Private Sub chkZoomEnable_Change()
     Dim c As control
 
     For Each c In Controls
-        If c.tag = "Z" Then
+        If c.Tag = "Z" Then
         
             c.enabled = chkZoomEnable.Value
         
@@ -79,7 +79,7 @@ Private Sub cmdCancel_Click()
     Unload Me
 End Sub
 
-Private Sub cmdOK_Click()
+Private Sub cmdOk_Click()
 
     Dim blnZoomEnable As Boolean
     Dim lngZoomNum As Long

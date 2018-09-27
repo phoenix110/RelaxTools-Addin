@@ -251,7 +251,7 @@ Private Sub UserForm_Initialize()
 End Sub
 
 
-Private Sub cmdOK_Click()
+Private Sub cmdOk_Click()
 
     Dim srcSheet As Worksheet
     Dim dstSheet As Worksheet
@@ -262,6 +262,11 @@ Private Sub cmdOK_Click()
     End If
     If cboDstSheet.ListIndex = -1 Then
         MsgBox "比較先のシートを入力してください。", vbOKOnly + vbExclamation, C_TITLE
+        Exit Sub
+    End If
+    
+    If cboSrcBook.Text = cboDstBook.Text And cboSrcSheet.Text = cboDstSheet.Text Then
+        MsgBox "比較元と比較先が同じです。", vbOKOnly + vbExclamation, C_TITLE
         Exit Sub
     End If
 
@@ -294,15 +299,15 @@ Private Sub cmdOK_Click()
     
     Dim ResultWS As Worksheet
     ThisWorkbook.Worksheets("比較結果").Copy
-    Set ResultWS = ActiveSheet
+    Set ResultWS = Application.Workbooks(Application.Workbooks.count).Worksheets(1)
     
     ResultWS.Name = "比較結果"
     
     ResultWS.Cells(1, C_COMP_NO).Value = "シートの比較"
     ResultWS.Cells(2, C_COMP_NO).Value = "比較元：" & cboSrcBook.Text & "!" & cboSrcSheet.Text
     ResultWS.Cells(3, C_COMP_NO).Value = "比較先：" & cboDstBook.Text & "!" & cboDstSheet.Text
-    ResultWS.Cells(4, C_COMP_NO).Value = "不一致の比較元の背景色を変更する（黄）：" & chkSrcColor.Value
-    ResultWS.Cells(5, C_COMP_NO).Value = "不一致の比較先の背景色を変更する（赤）：" & chkDstColor.Value
+    ResultWS.Cells(4, C_COMP_NO).Value = "不一致の比較「元」の背景色を変更する（黄）：" & chkSrcColor.Value
+    ResultWS.Cells(5, C_COMP_NO).Value = "不一致の比較「先」の背景色を変更する（赤）：" & chkDstColor.Value
     
     ResultWS.Cells(7, C_COMP_NO).Value = "No."
     ResultWS.Cells(7, C_COMP_RESULT).Value = "結果"

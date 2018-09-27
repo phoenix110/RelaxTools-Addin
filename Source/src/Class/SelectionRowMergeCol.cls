@@ -47,6 +47,7 @@ Attribute SFWork.VB_VarHelpID = -1
 ' メンバ変数宣言部(UOC)
 '------------------------------------------------------------------------------------------------------------------------
 Private mstrSep As String
+Private mr As Range
 
 '------------------------------------------------------------------------------------------------------------------------
 ' SelectionFrameWork 作成
@@ -72,6 +73,10 @@ End Sub
 Private Sub SFWork_SelectionInit(rArea As Areas, Cancel As Boolean, Undo As Boolean)
 
     mstrSep = InputBox("区切り文字が必要であれば入力してください。")
+    If StrPtr(mstrSep) = 0 Then
+        Cancel = True
+        Exit Sub
+    End If
     Undo = True
     
 End Sub
@@ -79,7 +84,7 @@ End Sub
 '------------------------------------------------------------------------------------------------------------------------
 ' 主処理(UOC)
 '------------------------------------------------------------------------------------------------------------------------
-Private Sub SFWork_SelectionMain(r As Range, ByVal row As Long, Cancel As Boolean)
+Private Sub SFWork_SelectionMain(r As Range, ByVal Row As Long, Cancel As Boolean)
         
     Dim rr As Range
     Dim strBuf As String
@@ -96,15 +101,33 @@ Private Sub SFWork_SelectionMain(r As Range, ByVal row As Long, Cancel As Boolea
             Else
                 strBuf = strBuf & mstrSep & rr.Value
             End If
-            rr.Value = Empty
+            If Len(r.PrefixCharacter) > 0 Then
+                rr.Value = r.PrefixCharacter & Empty
+            Else
+                rr.Value = Empty
+            End If
         End If
     Next
 
     r(1) = strBuf
-
+    
+    If mr Is Nothing Then
+        Set mr = r(1)
+    Else
+        Set mr = Union(mr, r(1))
+    End If
+    
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
     Cancel = True
 End Sub
 
+Private Sub SFWork_SelectionTerm()
+
+    If mr Is Nothing Then
+    Else
+        mr.Select
+    End If
+    
+End Sub

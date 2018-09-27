@@ -103,7 +103,7 @@ End Sub
 
 Private Sub cmdSearch_Click()
 
-    Dim s As Style
+    Dim s As style
     
     On Error Resume Next
     
@@ -164,7 +164,7 @@ Private Sub UserForm_Initialize()
     Call cmdSearch_Click
     
     Set MW = basMouseWheel.GetInstance
-    MW.Install
+    MW.Install Me
 End Sub
 Function SearchStyle(ByVal strBuf As String) As Boolean
 
@@ -175,7 +175,7 @@ Function SearchStyle(ByVal strBuf As String) As Boolean
     
     For Each WS In ActiveWorkbook.Worksheets
         For Each r In WS.UsedRange
-            If r.Style = strBuf Then
+            If r.style = strBuf Then
                 SearchStyle = True
                 Exit Function
             End If
@@ -189,14 +189,18 @@ Private Sub UserForm_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, 
 End Sub
 Private Sub MW_WheelDown(obj As Object)
 
+    On Error GoTo e
+
     If obj.ListCount = 0 Then Exit Sub
     obj.TopIndex = obj.TopIndex + 3
-    
+e:
 End Sub
 
 Private Sub MW_WheelUp(obj As Object)
 
     Dim lngPos As Long
+
+    On Error GoTo e
 
     If obj.ListCount = 0 Then Exit Sub
     lngPos = obj.TopIndex - 3
@@ -206,7 +210,7 @@ Private Sub MW_WheelUp(obj As Object)
     End If
 
     obj.TopIndex = lngPos
-
+e:
 End Sub
 Private Sub UserForm_Terminate()
     MW.UnInstall

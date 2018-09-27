@@ -90,7 +90,7 @@ Public Function editStampMitome(ByRef s As StampMitomeDTO, ByVal lngFormat As Lo
         Case C_STAMP_LINE_SINGLE
         
             r.AutoShapeType = msoShapeOval
-            r.Height = r.Width
+            r.Height = r.width
         
         Case C_STAMP_LINE_DOUBLE
         
@@ -99,16 +99,16 @@ Public Function editStampMitome(ByRef s As StampMitomeDTO, ByVal lngFormat As Lo
             
             Select Case s.Rotate
                 Case C_STAMP_ROTATE_HOLIZONTAL
-                    r.Height = r.Width
+                    r.Height = r.width
                 Case C_STAMP_ROTATE_VERTICAL
-                    r.Height = r.Width * 0.8
+                    r.Height = r.width * 0.8
             End Select
             
         Case C_STAMP_LINE_BOLD
         
             r.AutoShapeType = msoShapeRoundedRectangle
             r.Adjustments.Item(1) = CDbl(s.Round)
-            r.Height = r.Width
+            r.Height = r.width
     
     End Select
     
@@ -123,10 +123,10 @@ Public Function editStampMitome(ByRef s As StampMitomeDTO, ByVal lngFormat As Lo
         
         Set b = WS.Shapes("shpBack")
         
-        b.Top = r.Top - ((r.Width - r.Height) / 2)
+        b.Top = r.Top - ((r.width - r.Height) / 2)
         b.Left = r.Left
-        b.Height = r.Width
-        b.Width = r.Width
+        b.Height = r.width
+        b.width = r.width
         
         b.ZOrder msoSendToBack
         
@@ -239,7 +239,7 @@ Sub MitomePaste2(Optional ByVal Index As Variant)
     
     Dim sngSize As Single
     
-    sngSize = CSng(s.Size) * C_RASIO
+    sngSize = CSng(s.size) * C_RASIO
     
     Dim destLeft As Long
     Dim destWidth As Long
@@ -258,20 +258,20 @@ Sub MitomePaste2(Optional ByVal Index As Variant)
             If ss.Address = ss.MergeArea(1, 1).Address Then
 
                 destLeft = ss.MergeArea.Left
-                destWidth = ss.MergeArea.Width
+                destWidth = ss.MergeArea.width
                 destTop = ss.MergeArea.Top
                 destHeight = ss.MergeArea.Height
 
                 ActiveSheet.Paste
                 
-                If Selection.ShapeRange.Height > Selection.ShapeRange.Width Then
+                If Selection.ShapeRange.Height > Selection.ShapeRange.width Then
                     Selection.ShapeRange.Height = sngSize
                 Else
-                    Selection.ShapeRange.Width = sngSize
+                    Selection.ShapeRange.width = sngSize
                 End If
                 
                 Selection.ShapeRange.Top = destTop + (destHeight / 2) - (Selection.ShapeRange.Height / 2)
-                Selection.ShapeRange.Left = destLeft + (destWidth / 2) - (Selection.ShapeRange.Width / 2)
+                Selection.ShapeRange.Left = destLeft + (destWidth / 2) - (Selection.ShapeRange.width / 2)
                 Selection.ShapeRange.Rotation getRect(s.rect)
                 
             End If
@@ -318,7 +318,7 @@ Public Function getPropertyMitome() As Collection
         s.Font = "ＭＳ ゴシック"
         s.Color = "&H0"
         s.Line = C_STAMP_LINE_SINGLE
-        s.Size = "10.5"
+        s.size = "10.5"
         s.FilePath = ""
         s.LineSize = "10"
         s.Round = "0.10"
@@ -337,7 +337,7 @@ Public Function getPropertyMitome() As Collection
         s.Font = "ＭＳ ゴシック"
         s.Color = "&HFF"
         s.Line = C_STAMP_LINE_DOUBLE
-        s.Size = "10.5"
+        s.size = "10.5"
         s.FilePath = ""
         s.LineSize = "10"
         s.Round = "0.10"
@@ -356,7 +356,7 @@ Public Function getPropertyMitome() As Collection
         s.Font = "ＭＳ ゴシック"
         s.Color = "&HFF"
         s.Line = C_STAMP_LINE_BOLD
-        s.Size = "30"
+        s.size = "30"
         s.FilePath = ""
         s.LineSize = "10"
         s.Round = "0.10"
@@ -378,7 +378,7 @@ Public Function getPropertyMitome() As Collection
             s.Font = GetSetting(C_TITLE, "StampMitome", "Font" & Format$(i, "000"), "ＭＳ ゴシック")
             s.Color = GetSetting(C_TITLE, "StampMitome", "Color" & Format$(i, "000"), "&HFF")
             s.Line = GetSetting(C_TITLE, "StampMitome", "Line" & Format$(i, "000"), C_STAMP_LINE_SINGLE)
-            s.Size = GetSetting(C_TITLE, "StampMitome", "Size" & Format$(i, "000"), "15")
+            s.size = GetSetting(C_TITLE, "StampMitome", "Size" & Format$(i, "000"), "15")
             s.FilePath = GetSetting(C_TITLE, "StampMitome", "FilePath" & Format$(i, "000"), "")
             s.LineSize = GetSetting(C_TITLE, "StampMitome", "LIneSize" & Format$(i, "000"), "10")
             s.Round = GetSetting(C_TITLE, "StampMitome", "Round" & Format$(i, "000"), "0.10")
@@ -428,7 +428,7 @@ Public Sub setPropertyMitome(ByRef col As Collection)
         Call SaveSetting(C_TITLE, "StampMitome", "Color" & Format$(i, "000"), s.Color)
         Call SaveSetting(C_TITLE, "StampMitome", "Font" & Format$(i, "000"), s.Font)
         Call SaveSetting(C_TITLE, "StampMitome", "Line" & Format$(i, "000"), s.Line)
-        Call SaveSetting(C_TITLE, "StampMitome", "Size" & Format$(i, "000"), s.Size)
+        Call SaveSetting(C_TITLE, "StampMitome", "Size" & Format$(i, "000"), s.size)
         Call SaveSetting(C_TITLE, "StampMitome", "FilePath" & Format$(i, "000"), s.FilePath)
         Call SaveSetting(C_TITLE, "StampMitome", "LineSize" & Format$(i, "000"), s.LineSize)
         Call SaveSetting(C_TITLE, "StampMitome", "Round" & Format$(i, "000"), s.Round)

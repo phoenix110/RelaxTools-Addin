@@ -1,7 +1,7 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmHotKey 
    Caption         =   "ショートカットキー割り当て"
-   ClientHeight    =   8730
+   ClientHeight    =   8730.001
    ClientLeft      =   45
    ClientTop       =   390
    ClientWidth     =   10065
@@ -13,6 +13,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+
 '-----------------------------------------------------------------------------------------------------
 '
 ' [RelaxTools-Addin] v4
@@ -82,6 +83,10 @@ Private Sub cboCategory_Click()
 End Sub
 
 
+
+Private Sub cboCategory_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
+    Set MW.obj = cboCategory
+End Sub
 
 Private Sub cmbShift_Click()
     Call getGuidence
@@ -204,7 +209,7 @@ Private Sub cmdExport_Click()
     
     Dim vntFileName As Variant
     
-    vntFileName = Application.GetSaveAsFilename(InitialFileName:="export.key", FileFilter:="キー定義(*.key),*.key", Title:="キー定義のエクスポート")
+    vntFileName = Application.GetSaveAsFilename(InitialFileName:="export.key", fileFilter:="キー定義(*.key),*.key", Title:="キー定義のエクスポート")
     
     If vntFileName = False Then
         Exit Sub
@@ -584,9 +589,9 @@ Private Sub txtKinou_KeyDown(ByVal KeyCode As MSForms.ReturnInteger, ByVal Shift
         Call dispCommand
     End If
 End Sub
-Private Sub UserForm_Activate()
-    MW.Activate
-End Sub
+'Private Sub UserForm_Activate()
+'    MW.Activate
+'End Sub
 Private Sub UserForm_Initialize()
     
     Dim WS As Worksheet
@@ -689,7 +694,7 @@ Private Sub UserForm_Initialize()
     End If
     
     Set MW = basMouseWheel.GetInstance
-    MW.Install
+    MW.Install Me
     
 End Sub
 Function getEnable(ByVal strBuf As String) As String
@@ -837,12 +842,16 @@ End Sub
 
 Private Sub MW_WheelDown(obj As Object)
 
+    On Error GoTo e
+
     If obj.ListCount = 0 Then Exit Sub
     obj.TopIndex = obj.TopIndex + 3
-    
+e:
 End Sub
 
 Private Sub MW_WheelUp(obj As Object)
+
+    On Error GoTo e
 
     Dim lngPos As Long
 
@@ -854,6 +863,6 @@ Private Sub MW_WheelUp(obj As Object)
     End If
 
     obj.TopIndex = lngPos
-
+e:
 End Sub
 

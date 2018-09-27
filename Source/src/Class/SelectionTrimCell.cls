@@ -78,7 +78,11 @@ Private Sub SFWork_SelectionMain(r As Range, ByVal NotHoldFormat As Boolean, Can
     On Error GoTo e
         
     If NotHoldFormat Then
-        r.Value = TrimZen(r.Value)
+        If Len(r.PrefixCharacter) > 0 Then
+            r.Value = r.PrefixCharacter & TrimZen(r.Value)
+        Else
+            r.Value = TrimZen(r.Value)
+        End If
     Else
         If VarType(r.Value) = vbString Then
             
@@ -104,13 +108,17 @@ Private Sub SFWork_SelectionMain(r As Range, ByVal NotHoldFormat As Boolean, Can
             r.Characters(i + 1, r.Characters.count - i).Delete
         
         Else
-           r.Value = Trim(r.Value)
+            If Len(r.PrefixCharacter) > 0 Then
+               r.Value = r.PrefixCharacter & Trim(r.Value)
+            Else
+               r.Value = Trim(r.Value)
+            End If
         End If
     End If
     
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
     Cancel = True
 End Sub
 

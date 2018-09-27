@@ -54,9 +54,94 @@ Private mSecTog06 As Boolean
 'Ａ１保存のパブリック変数
 Public pblnA1SaveCheck As Boolean
 
+
 Public mLineEnable As Boolean
+Public mstrCrossBook As String
+
 Public mScrollEnable As Boolean
 Public mScreenEnable As Boolean
+
+'メニュー
+Public mObjMenu As Object
+
+Public mblnSushi As Boolean
+
+
+Private Const IID_IPictureDisp As String = "{7BF80981-BF32-101A-8BBB-00AA00300CAB}"
+Private Const PICTYPE_BITMAP As Long = 1
+    
+#If VBA7 And Win64 Then
+    Private Declare PtrSafe Function GdipCreateBitmapFromFile Lib "gdiplus" (ByVal filename As LongPtr, bitmap As LongPtr) As LongPtr
+    Private Declare PtrSafe Function GdipCreateHBITMAPFromBitmap Lib "gdiplus" (ByVal bitmap As LongPtr, hbmReturn As LongPtr, ByVal background As Long) As LongPtr
+    Private Declare PtrSafe Function GdipDisposeImage Lib "gdiplus" (ByVal image As LongPtr) As LongPtr
+    Private Declare PtrSafe Function GdiplusShutdown Lib "gdiplus" (ByVal token As LongPtr) As LongPtr
+    Private Declare PtrSafe Function GdiplusStartup Lib "gdiplus" (token As LongPtr, inputbuf As GdiplusStartupInput, Optional ByVal outputbuf As LongPtr = 0) As LongPtr
+    Private Declare PtrSafe Function IIDFromString Lib "ole32" (ByVal lpsz As LongPtr, lpiid As Any) As Long
+    Private Declare PtrSafe Function OleCreatePictureIndirect Lib "oleaut32.dll" (PicDesc As PICTDESC, RefIID As Long, ByVal fPictureOwnsHandle As LongPtr, IPic As IPicture) As LongPtr
+    
+    Private Type PICTDESC
+        size As Long
+        Type As Long
+        hPic As LongPtr
+        hPal As LongPtr
+    End Type
+    
+    Private Type GdiplusStartupInput
+        GdiplusVersion As Long
+        DebugEventCallback As LongPtr
+        SuppressBackgroundThread As Long
+        SuppressExternalCodecs As Long
+    End Type
+    
+    Private Declare PtrSafe Function GdipCreateSolidFill Lib "gdiplus" (ByVal pColor As Long, ByRef brush As LongPtr) As Long
+    Private Declare PtrSafe Function GdipGetImageGraphicsContext Lib "gdiplus" (ByVal image As LongPtr, graphics As LongPtr) As Long
+    Private Declare PtrSafe Function GdipFillRectangle Lib "gdiplus" (ByVal graphics As LongPtr, ByVal brush As LongPtr, ByVal X As Single, ByVal Y As Single, ByVal nWidth As Single, ByVal nHeight As Single) As Long
+    Private Declare PtrSafe Function GdipSetSmoothingMode Lib "gdiplus" (ByVal mGraphics As LongPtr, ByVal mSmoothingMode As Long) As Long
+    Private Declare PtrSafe Function GdipDeleteBrush Lib "gdiplus" (ByVal mBrush As LongPtr) As Long
+    Private Declare PtrSafe Function GdipDeleteGraphics Lib "gdiplus" (ByVal graphics As LongPtr) As Long
+    Private Declare PtrSafe Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As LongPtr)
+    
+    Private Declare PtrSafe Function GdipCreatePen1 Lib "gdiplus" (ByVal pColor As Long, ByVal width As Long, ByVal unit As Long, ByRef hPen As LongPtr) As Long
+    Private Declare PtrSafe Function GdipDrawRectangle Lib "gdiplus" (ByVal hGraphics As LongPtr, ByVal hPen As LongPtr, ByVal X As Single, ByVal Y As Single, ByVal nWidth As Single, ByVal nHeight As Single) As Long
+    Private Declare PtrSafe Function GdipDeletePen Lib "gdiplus" (ByVal hPen As LongPtr) As Long
+    
+#Else
+    Private Declare Function GdipCreateBitmapFromFile Lib "gdiplus" (ByVal filename As Long, bitmap As Long) As Long
+    Private Declare Function GdipCreateHBITMAPFromBitmap Lib "gdiplus" (ByVal bitmap As Long, hbmReturn As Long, ByVal background As Long) As Long
+    Private Declare Function GdipDisposeImage Lib "gdiplus" (ByVal image As Long) As Long
+    Private Declare Function GdiplusShutdown Lib "gdiplus" (ByVal token As Long) As Long
+    Private Declare Function GdiplusStartup Lib "gdiplus" (token As Long, inputbuf As GdiplusStartupInput, Optional ByVal outputbuf As Long = 0) As Long
+    Private Declare Function IIDFromString Lib "ole32" (ByVal lpsz As Long, lpiid As Any) As Long
+    Private Declare Function OleCreatePictureIndirect Lib "olepro32.dll" (PicDesc As PICTDESC, RefIID As Long, ByVal fPictureOwnsHandle As Long, IPic As IPicture) As Long
+    
+    Private Type PICTDESC
+      size As Long
+      Type As Long
+      hPic As Long
+      hPal As Long
+    End Type
+
+    Private Type GdiplusStartupInput
+      GdiplusVersion As Long
+      DebugEventCallback As Long
+      SuppressBackgroundThread As Long
+      SuppressExternalCodecs As Long
+    End Type
+
+    Private Declare Function GdipCreateSolidFill Lib "gdiplus" (ByVal pColor As Long, ByRef brush As Long) As Long
+    Private Declare Function GdipGetImageGraphicsContext Lib "gdiplus" (ByVal image As Long, graphics As Long) As Long
+    Private Declare Function GdipFillRectangle Lib "gdiplus" (ByVal graphics As Long, ByVal brush As Long, ByVal X As Single, ByVal Y As Single, ByVal nWidth As Single, ByVal nHeight As Single) As Long
+    Private Declare Function GdipSetSmoothingMode Lib "gdiplus" (ByVal mGraphics As Long, ByVal mSmoothingMode As Long) As Long
+    Private Declare Function GdipDeleteBrush Lib "gdiplus" (ByVal mBrush As Long) As Long
+    Private Declare Function GdipDeleteGraphics Lib "gdiplus" (ByVal graphics As Long) As Long
+    Private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As Long)
+    Private Declare Function GdipCreatePen1 Lib "gdiplus" (ByVal pColor As Long, ByVal width As Long, ByVal unit As Long, ByRef hPen As Long) As Long
+    Private Declare Function GdipDrawRectangle Lib "gdiplus" (ByVal hGraphics As Long, ByVal hPen As Long, ByVal X As Single, ByVal Y As Single, ByVal nWidth As Single, ByVal nHeight As Single) As Long
+    Private Declare Function GdipDeletePen Lib "gdiplus" (ByVal hPen As Long) As Long
+#End If
+
+
+Private Const SmoothingModeAntiAlias    As Long = &H4
 
 '--------------------------------------------------------------------
 ' マクロ名取得
@@ -83,21 +168,57 @@ Private Function getSheetItem(control As IRibbonControl, lngItem As Long) As Str
     Dim lngPos As Long
     Dim strBuf As String
     Dim i As Long
+    Dim m As MenuDTO
+    Dim Key As String
     
     getSheetItem = ""
     
     strBuf = getMacroName(control)
     
-    i = C_START_ROW
+    If mObjMenu Is Nothing Then
     
-    Do Until ThisWorkbook.Worksheets("HELP").Cells(i, C_COL_NO).Value = ""
-        If strBuf = ThisWorkbook.Worksheets("HELP").Cells(i, C_COL_MACRO).Value Then
-            getSheetItem = ThisWorkbook.Worksheets("HELP").Cells(i, lngItem).Value
-            Exit Do
-        End If
-        i = i + 1
-    Loop
-
+        Set mObjMenu = CreateObject("Scripting.Dictionary")
+    
+        i = C_START_ROW
+        
+        Do Until ThisWorkbook.Worksheets("HELP").Cells(i, C_COL_NO).Value = ""
+            
+            Set m = New MenuDTO
+            m.Category = ThisWorkbook.Worksheets("HELP").Cells(i, C_COL_CATEGORY).Value
+            m.Macro = ThisWorkbook.Worksheets("HELP").Cells(i, C_COL_MACRO).Value
+            m.Label = ThisWorkbook.Worksheets("HELP").Cells(i, C_COL_LABEL).Value
+            m.Devision = ThisWorkbook.Worksheets("HELP").Cells(i, C_COL_DIVISION).Value
+            m.Help = ThisWorkbook.Worksheets("HELP").Cells(i, C_COL_HELP).Value
+            m.Description = ThisWorkbook.Worksheets("HELP").Cells(i, C_COL_DESCRIPTION).Value
+            
+            If Not mObjMenu.Exists(m.Macro) Then
+                mObjMenu.Add m.Macro, m
+            Else
+                MsgBox "メニューのマクロ名が重複しています。" & strBuf
+            End If
+            i = i + 1
+        Loop
+        
+    End If
+    
+    If mObjMenu.Exists(strBuf) Then
+        Select Case lngItem
+            Case C_COL_CATEGORY
+                getSheetItem = mObjMenu.Item(strBuf).Category
+            Case C_COL_MACRO
+                getSheetItem = mObjMenu.Item(strBuf).Macro
+            Case C_COL_LABEL
+                getSheetItem = mObjMenu.Item(strBuf).Label
+            Case C_COL_DIVISION
+                getSheetItem = mObjMenu.Item(strBuf).Devision
+            Case C_COL_HELP
+                getSheetItem = mObjMenu.Item(strBuf).Help
+            Case C_COL_DESCRIPTION
+                getSheetItem = mObjMenu.Item(strBuf).Description
+        End Select
+    Else
+        getSheetItem = ""
+    End If
 End Function
 '--------------------------------------------------------------------
 ' リボン表示設定取得
@@ -106,6 +227,14 @@ Sub tabGetVisible(control As IRibbonControl, ByRef visible)
 
     visible = GetSetting(C_TITLE, "Ribbon", Replace(control.id, "Tab", ""), True)
 
+End Sub
+'--------------------------------------------------------------------
+' スシ表示取得
+'--------------------------------------------------------------------
+Sub sushiGetVisible(control As IRibbonControl, ByRef visible)
+
+    visible = mblnSushi
+1
 End Sub
 '--------------------------------------------------------------------
 ' リボン押下状態取得
@@ -158,7 +287,7 @@ Public Sub RibbonOnAction(control As IRibbonControl)
     
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
 End Sub
 '--------------------------------------------------------------------
 'チェックボックス設定取得
@@ -171,7 +300,7 @@ Public Sub CheckGetPressed(control As IRibbonControl, ByRef returnValue)
     
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
 End Sub
 '--------------------------------------------------------------------
 'チェックボックス設定
@@ -186,7 +315,7 @@ Public Sub CheckOnAction(control As IRibbonControl, pressed As Boolean)
         
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
 End Sub
 '--------------------------------------------------------------------
 'チェックボックスEnable/Disable
@@ -206,7 +335,7 @@ Sub CheckSetEnabled(control As IRibbonControl, ByRef enabled)
 
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
 End Sub
 '--------------------------------------------------------------------
 ' ヘルプ内容を表示する。customUIから使用
@@ -221,7 +350,7 @@ Public Sub GetSupertip(control As IRibbonControl, ByRef Screentip)
 
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
 End Sub
 '--------------------------------------------------------------------
 ' メニュー表示内容を表示する。customUIから使用
@@ -234,7 +363,7 @@ Public Sub GetDescription(control As IRibbonControl, ByRef Screentip)
 
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
 End Sub
 '--------------------------------------------------------------------
 ' ラベルを表示する。customUIから使用
@@ -247,7 +376,7 @@ Public Sub GetLabel(control As IRibbonControl, ByRef Screentip)
     
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
 End Sub
 '--------------------------------------------------------------------
 ' 2003互換色　背景色自動
@@ -476,7 +605,7 @@ Sub ribbonLoaded(ByRef IR As IRibbonUI)
     On Error GoTo e
     
     Set mIR = IR
-    Call ThisWorkbook.setIRibbon(IR)
+'    Call ThisWorkbook.setIRibbon(IR)
     
     'リボンハンドルのアドレスをレジストリに保存、実行時エラーの場合に復元する。
     SaveSetting C_TITLE, "Ribbon", "Address", CStr(ObjPtr(IR))
@@ -502,7 +631,7 @@ Sub ribbonLoaded(ByRef IR As IRibbonUI)
     
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
 End Sub
 '--------------------------------------------------------------------
 ' リボンのリフレッシュ
@@ -531,7 +660,7 @@ Public Sub RefreshRibbon(Optional control As IRibbonControl)
     End If
 
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
 End Sub
 '--------------------------------------------------------------------
 '  段落番号トグルボタン
@@ -562,7 +691,7 @@ Sub sectionPressed(control As IRibbonControl, ByRef returnValue)
     
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
 End Sub
 '--------------------------------------------------------------------
 '  現在の段落番号の設定
@@ -610,20 +739,37 @@ Sub sectionOnAction(control As IRibbonControl, pressed As Boolean)
     
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
 End Sub
 '--------------------------------------------------------------------
 '  十字カーソルの押下状態の取得
 '--------------------------------------------------------------------
 Sub linePressed(control As IRibbonControl, ByRef returnValue)
     
-    returnValue = mLineEnable
-    
+'    returnValue = False
+'
+'    If Val(Application.Version) > C_EXCEL_VERSION_2010 Then
+'        If Not ActiveWorkbook Is Nothing Then
+'            If mstrCrossBook = ActiveWorkbook.Name Then
+'                returnValue = mLineEnable
+'            End If
+'        End If
+'    Else
+        returnValue = mLineEnable
+'    End If
+
 End Sub
+
 '--------------------------------------------------------------------
 '  十字カーソルの押下時イベント
 '--------------------------------------------------------------------
 Sub lineOnAction(control As IRibbonControl, pressed As Boolean)
+
+'    If ActiveSheet.ProtectContents Then
+'        MsgBox "保護されているシートでは十字カーソルは実行できません。", vbOKOnly + vbExclamation, C_TITLE
+'        pressed = False
+'        Exit Sub
+'    End If
   
     On Error GoTo e
     
@@ -636,11 +782,13 @@ Sub lineOnAction(control As IRibbonControl, pressed As Boolean)
     Else
         ThisWorkbook.disableCrossLine
     End If
+    AppActivate Application.Caption
 
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
 End Sub
+
 ''--------------------------------------------------------------------
 ''  フック固定の押下状態の取得
 ''--------------------------------------------------------------------
@@ -943,7 +1091,7 @@ Sub scrollOnAction(control As IRibbonControl, pressed As Boolean)
 
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
 End Sub
 '--------------------------------------------------------------------
 '  スクショモードの押下状態取得
@@ -972,20 +1120,20 @@ Sub screenOnAction(control As IRibbonControl, pressed As Boolean)
 
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
 End Sub
 
 '--------------------------------------------------------------------
 '  リボンサイズ取得(未動作)
 '--------------------------------------------------------------------
- Sub GetSize(control As IRibbonControl, ByRef Size)
+ Sub GetSize(control As IRibbonControl, ByRef size)
  
     If Application.UsableWidth / 0.75 < 1420 Then
     
-        Size = RibbonControlSize.RibbonControlSizeRegular
+        size = RibbonControlSize.RibbonControlSizeRegular
     Else
     
-        Size = RibbonControlSize.RibbonControlSizeLarge
+        size = RibbonControlSize.RibbonControlSizeLarge
     End If
  
  End Sub
@@ -1209,7 +1357,7 @@ Sub getScreenShotEnabled(control As IRibbonControl, ByRef enabled)
 
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
 End Sub
 '--------------------------------------------------------------------
 '  十字カーソル設定のEnabled/Disabled
@@ -1222,7 +1370,7 @@ Sub getCrossEnabled(control As IRibbonControl, ByRef enabled)
 
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
 End Sub
 '--------------------------------------------------------------------
 '  ホイール量設定のEnabled/Disabled
@@ -1235,8 +1383,9 @@ Sub getScrollEnabled(control As IRibbonControl, ByRef enabled)
 
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
 End Sub
+
 '--------------------------------------------------------------------
 ' かんたん表の数を取得
 '--------------------------------------------------------------------
@@ -1297,7 +1446,7 @@ Sub errCheckOnAction(control As IRibbonControl, pressed As Boolean)
 
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
 End Sub
 '--------------------------------------------------------------------
 '  エラーチェックのToggle
@@ -1311,7 +1460,7 @@ Sub errCheckToggle()
 
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
 End Sub
 '--------------------------------------------------------------------
 '  A1⇔R1C1の押下状態の取得
@@ -1338,7 +1487,7 @@ Sub a1OnAction(control As IRibbonControl, pressed As Boolean)
 
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
 End Sub
 '--------------------------------------------------------------------
 '  A1⇔R1C1トグル動作
@@ -1356,7 +1505,7 @@ Sub a1Toggle()
 
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
 End Sub
 '--------------------------------------------------------------------
 '  Return時のカーソルの取得
@@ -1383,7 +1532,7 @@ Sub MoveAfterReturnOnAction(control As IRibbonControl, pressed As Boolean)
 
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
 End Sub
 '--------------------------------------------------------------------
 '  Return時のカーソルの押下時イベント
@@ -1402,7 +1551,7 @@ Sub MoveAfterReturnToggle()
 
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
 End Sub
 '--------------------------------------------------------------------
 '  オートコンプリートの取得
@@ -1425,7 +1574,7 @@ Sub AutoCompleteOnAction(control As IRibbonControl, pressed As Boolean)
 
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
 End Sub
 '--------------------------------------------------------------------
 '  オートコンプリート切り替え
@@ -1439,6 +1588,663 @@ Sub AutoCompleteTogggle()
 
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
+End Sub
+'--------------------------------------------------------------------
+'  Pickの押下状態の取得
+'--------------------------------------------------------------------
+Sub pickPressed(control As IRibbonControl, ByRef returnValue)
+    
+    returnValue = CBool(GetSetting(C_TITLE, "Shape", "PickMode", False))
+    
+End Sub
+'--------------------------------------------------------------------
+'  Pickの押下時イベント
+'--------------------------------------------------------------------
+Sub pickOnAction(control As IRibbonControl, pressed As Boolean)
+  
+    On Error GoTo e
+  
+    Call RefreshRibbon
+
+    Call SaveSetting(C_TITLE, "Shape", "PickMode", pressed)
+
+    Exit Sub
+e:
+    Call rlxErrMsg(Err)
+End Sub
+
+Sub getColorImage(control As IRibbonControl, ByRef image) ' 画像の設定
+
+    Dim pictureId As String
+    Dim strColor As String
+    Dim lngColor As Long
+    Dim blnTranspairent As Boolean
+    
+    blnTranspairent = False
+    
+    Select Case control.id
+        Case "execSelectionFormatFontColor"
+            pictureId = "fontColor"
+            strColor = GetSetting(C_TITLE, "Color2003", "font", C_COLOR_OTHER)
+        Case "execSelectionFormatLineColor"
+            pictureId = "lineColor"
+            strColor = GetSetting(C_TITLE, "Color2003", "line", C_COLOR_OTHER)
+        Case "execSelectionFormatBackColor"
+            pictureId = "backColor"
+            strColor = GetSetting(C_TITLE, "Color2003", "back", C_COLOR_OTHER)
+    End Select
+        
+    If strColor = C_COLOR_OTHER Then
+        If control.id = "execSelectionFormatBackColor" Then
+            strColor = "02"
+            blnTranspairent = True
+        Else
+            strColor = "01"
+        End If
+    End If
+    lngColor = ThisWorkbook.Colors(Val(strColor))
+    
+    Dim file As String
+    
+    file = rlxGetAppDataFolder & "images\" & pictureId & ".png"
+    
+    'イメージが見つからなかったら「×」表示する
+    If rlxIsFileExists(file) Then
+        Set image = LoadImageColor(file, lngColor, blnTranspairent)
+    Else
+        image = "CancelRequest"
+    End If
+    
+'    Call RefreshRibbon
+'    DoEvents
+    
+End Sub
+Sub getFusenImage(control As IRibbonControl, ByRef image) ' 画像の設定
+
+    Dim pictureId As String
+    
+    Select Case control.id
+        Case "beforePasteSquare"
+            Select Case Val(GetSetting(C_TITLE, "Fusen", "fsGallery01", "2"))
+                 Case 1
+                     pictureId = "fusen01w"
+                 Case 2
+                     pictureId = "fusen01"
+                 Case 3
+                     pictureId = "fusen01p"
+                 Case 4
+                     pictureId = "fusen01b"
+                 Case 5
+                     pictureId = "fusen01g"
+             End Select
+        Case "beforePasteMemo"
+            Select Case Val(GetSetting(C_TITLE, "Fusen", "fsGallery02", "2"))
+                 Case 1
+                     pictureId = "fusen02w"
+                 Case 2
+                     pictureId = "fusen02"
+                 Case 3
+                     pictureId = "fusen02p"
+                 Case 4
+                     pictureId = "fusen02b"
+                 Case 5
+                     pictureId = "fusen02g"
+             End Select
+        Case "beforePasteCall"
+            Select Case Val(GetSetting(C_TITLE, "Fusen", "fsGallery03", "2"))
+                 Case 1
+                     pictureId = "fusen03w"
+                 Case 2
+                     pictureId = "fusen03"
+                 Case 3
+                     pictureId = "fusen03p"
+                 Case 4
+                     pictureId = "fusen03b"
+                 Case 5
+                     pictureId = "fusen03g"
+             End Select
+        Case "beforePasteLine"
+            Select Case Val(GetSetting(C_TITLE, "Fusen", "fsGallery06", "2"))
+                 Case 1
+                     pictureId = "fusen06w"
+                 Case 2
+                     pictureId = "fusen06"
+                 Case 3
+                     pictureId = "fusen06p"
+                 Case 4
+                     pictureId = "fusen06b"
+                 Case 5
+                     pictureId = "fusen06g"
+             End Select
+        Case "beforePasteCircle"
+            Select Case Val(GetSetting(C_TITLE, "Fusen", "fsGallery04", "2"))
+                 Case 1
+                     pictureId = "fusen04w"
+                 Case 2
+                     pictureId = "fusen04"
+                 Case 3
+                     pictureId = "fusen04p"
+                 Case 4
+                     pictureId = "fusen04b"
+                 Case 5
+                     pictureId = "fusen04g"
+             End Select
+        Case "beforePastePin"
+            Select Case Val(GetSetting(C_TITLE, "Fusen", "fsGallery05", "2"))
+                 Case 1
+                     pictureId = "fusen05w"
+                 Case 2
+                     pictureId = "fusen05"
+                 Case 3
+                     pictureId = "fusen05p"
+                 Case 4
+                     pictureId = "fusen05b"
+                 Case 5
+                     pictureId = "fusen05g"
+             End Select
+    End Select
+    
+    Dim file As String
+    
+    file = rlxGetAppDataFolder & "images\" & pictureId & ".png"
+    
+    'イメージが見つからなかったら「×」表示する
+    If rlxIsFileExists(file) Then
+        Set image = LoadImage(file)
+    Else
+        image = "CancelRequest"
+    End If
+    
+'    Call RefreshRibbon
+'    DoEvents
+    
+End Sub
+
+' 参考
+' 初心者備忘録
+' http://www.ka-net.org/ribbon/ri27.html
+' ボタンのイメージを外部から読み込む(PNG対応版)
+Private Function LoadImage(ByVal strFName As String) As IPicture
+
+    Dim uGdiInput As GdiplusStartupInput
+    
+#If VBA7 And Win64 Then
+    Dim hGdiPlus As LongPtr
+    Dim hGdiImage As LongPtr
+    Dim hBitmap As LongPtr
+#Else
+    Dim hGdiPlus As Long
+    Dim hGdiImage As Long
+    Dim hBitmap As Long
+#End If
+
+    uGdiInput.GdiplusVersion = 1&
+
+    If GdiplusStartup(hGdiPlus, uGdiInput) = 0& Then
+  
+        If GdipCreateBitmapFromFile(StrPtr(strFName), hGdiImage) = 0& Then
+        
+            Call GdipCreateHBITMAPFromBitmap(hGdiImage, hBitmap, 0&)
+          
+            Dim IID(0 To 3) As Long
+            Dim IPic As IPicture
+            Dim uPicInfo As PICTDESC
+            
+            With uPicInfo
+              .size = LenB(uPicInfo)
+              .Type = PICTYPE_BITMAP
+              .hPic = hBitmap
+              .hPal = 0&
+            End With
+                
+            Call IIDFromString(StrPtr(IID_IPictureDisp), IID(0))
+            Call OleCreatePictureIndirect(uPicInfo, IID(0), True, LoadImage)
+          
+            Call GdipDisposeImage(hGdiImage)
+          
+        End If
+        
+        Call GdiplusShutdown(hGdiPlus)
+    
+    End If
+  
+End Function
+' イメージを読み込む（色バーつき）
+Private Function LoadImageColor(ByVal strFName As String, ByVal lngColor As Long, ByVal blnTranspairent As Boolean) As IPicture
+
+    Dim uGdiInput As GdiplusStartupInput
+    
+#If VBA7 And Win64 Then
+    Dim hGdiPlus As LongPtr
+    Dim hGdiImage As LongPtr
+    Dim hBitmap As LongPtr
+#Else
+    Dim hGdiPlus As Long
+    Dim hGdiImage As Long
+    Dim hBitmap As Long
+#End If
+
+    uGdiInput.GdiplusVersion = 1&
+
+    If GdiplusStartup(hGdiPlus, uGdiInput) = 0& Then
+  
+        If GdipCreateBitmapFromFile(StrPtr(strFName), hGdiImage) = 0& Then
+        
+            If blnTranspairent Then
+                Call DrawRectangle(hGdiImage, RGB(150, 150, 150), 100, 0, 12, 15, 3)
+                
+            Else
+                Call FillRectangle(hGdiImage, lngColor, 100, 0, 12, 15, 3)
+            End If
+            
+            Call GdipCreateHBITMAPFromBitmap(hGdiImage, hBitmap, 0&)
+          
+            Dim IID(0 To 3) As Long
+            Dim IPic As IPicture
+            Dim uPicInfo As PICTDESC
+            
+            With uPicInfo
+              .size = LenB(uPicInfo)
+              .Type = PICTYPE_BITMAP
+              .hPic = hBitmap
+              .hPal = 0&
+            End With
+                
+            Call IIDFromString(StrPtr(IID_IPictureDisp), IID(0))
+            Call OleCreatePictureIndirect(uPicInfo, IID(0), True, LoadImageColor)
+          
+            Call GdipDisposeImage(hGdiImage)
+          
+        End If
+        
+        Call GdiplusShutdown(hGdiPlus)
+    
+    End If
+  
+End Function
+
+#If VBA7 And Win64 Then
+Private Function FillRectangle(ByVal hBitmap As LongPtr, ByVal lColor As Long, ByVal Alpha As Long, ByVal X As Long, ByVal Y As Long, ByVal width As Long, ByVal Height As Long) As Boolean
+
+    Dim hGraphics As LongPtr, hBrush As LongPtr
+
+    If GdipGetImageGraphicsContext(hBitmap, hGraphics) = 0 Then
+   
+        If GdipCreateSolidFill(ConvertColor(lColor, Alpha), hBrush) = 0 Then
+    
+            Call GdipSetSmoothingMode(hGraphics, SmoothingModeAntiAlias)
+           
+            FillRectangle = GdipFillRectangle(hGraphics, hBrush, X, Y, width, Height) = 0
+        
+            Call GdipDeleteBrush(hBrush)
+        End If
+        
+        Call GdipDeleteGraphics(hGraphics)
+    End If
+    
+End Function
+Private Function DrawRectangle(ByVal hBitmap As LongPtr, ByVal lColor As Long, ByVal Alpha As Long, ByVal X As Long, ByVal Y As Long, ByVal width As Long, ByVal Height As Long) As Boolean
+
+    Dim hGraphics As LongPtr, hPen As LongPtr
+
+    If GdipGetImageGraphicsContext(hBitmap, hGraphics) = 0 Then
+   
+        If GdipCreatePen1(ConvertColor(lColor, Alpha), 1, 2&, hPen) = 0 Then
+    
+            Call GdipSetSmoothingMode(hGraphics, SmoothingModeAntiAlias)
+           
+            DrawRectangle = GdipDrawRectangle(hGraphics, hPen, X, Y, width, Height) = 0
+        
+            Call GdipDeletePen(hPen)
+        End If
+        
+        Call GdipDeleteGraphics(hGraphics)
+    End If
+    
+End Function
+#Else
+Private Function FillRectangle(ByVal hBitmap As Long, ByVal lColor As Long, ByVal Alpha As Long, ByVal X As Long, ByVal Y As Long, ByVal width As Long, ByVal Height As Long) As Boolean
+
+    Dim hGraphics As Long, hBrush As Long
+
+    If GdipGetImageGraphicsContext(hBitmap, hGraphics) = 0 Then
+   
+        If GdipCreateSolidFill(ConvertColor(lColor, Alpha), hBrush) = 0 Then
+    
+            Call GdipSetSmoothingMode(hGraphics, SmoothingModeAntiAlias)
+           
+            FillRectangle = GdipFillRectangle(hGraphics, hBrush, X, Y, width, Height) = 0
+        
+            Call GdipDeleteBrush(hBrush)
+        End If
+        
+        Call GdipDeleteGraphics(hGraphics)
+    End If
+    
+End Function
+Private Function DrawRectangle(ByVal hBitmap As Long, ByVal lColor As Long, ByVal Alpha As Long, ByVal X As Long, ByVal Y As Long, ByVal width As Long, ByVal Height As Long) As Boolean
+
+    Dim hGraphics As Long, hPen As Long
+
+    If GdipGetImageGraphicsContext(hBitmap, hGraphics) = 0 Then
+   
+        If GdipCreatePen1(ConvertColor(lColor, Alpha), 1, 2&, hPen) = 0 Then
+    
+            Call GdipSetSmoothingMode(hGraphics, SmoothingModeAntiAlias)
+           
+            DrawRectangle = GdipDrawRectangle(hGraphics, hPen, X, Y, width, Height) = 0
+        
+            Call GdipDeletePen(hPen)
+        End If
+        
+        Call GdipDeleteGraphics(hGraphics)
+    End If
+    
+End Function
+#End If
+
+Private Function ConvertColor(Color As Long, Opacity As Long) As Long
+    Dim BGRA(0 To 3) As Byte
+ 
+    BGRA(3) = CByte((Abs(Opacity) / 100) * 255)
+    BGRA(0) = ((Color \ &H10000) And &HFF)
+    BGRA(1) = ((Color \ &H100) And &HFF)
+    BGRA(2) = (Color And &HFF)
+    CopyMemory ConvertColor, BGRA(0), 4&
+End Function
+Public Sub ContextMenus_GetVisible(control As IRibbonControl, ByRef visible)
+
+    Dim strBuf As String
+    
+    '改ページプレビューも一緒に判定
+    strBuf = GetSetting(C_TITLE, "ContextMenu", Replace(control.id, "Layout", ""), "")
+    
+    If Len(strBuf) = 0 Then
+        visible = False
+    Else
+        visible = True
+    End If
+    
+End Sub
+Public Sub ContextMenus_GetContent(control As IRibbonControl, ByRef returnedVal)
+
+    Dim d As Object
+    Dim elmMenu As Object
+    Dim elmButton As Object
+    Dim i As Long
+    Dim j As Long
+    Dim lngCount As Long
+    Dim varRow As Variant
+    Dim varCol As Variant
+    Dim strBuf As String
+    
+    '改ページプレビューも一緒に判定
+    strBuf = GetSetting(C_TITLE, "ContextMenu", Replace(control.id, "Layout", ""), "")
+    
+    If Len(strBuf) <> 0 Then
+    
+        Set d = CreateObject("Msxml2.DOMDocument")
+        
+        Set elmMenu = d.createElement("menu")
+'        elmMenu.setAttribute "xmlns", "http://schemas.microsoft.com/office/2006/01/customui"
+        elmMenu.setAttribute "xmlns", "http://schemas.microsoft.com/office/2009/07/customui"
+  
+        varRow = Split(strBuf, vbCrLf)
+        
+        For j = LBound(varRow) To UBound(varRow) - 1
+        
+            varCol = Split(varRow(j), vbTab)
+            
+            If varCol(2) = "-" Then
+                Set elmButton = d.createElement("menuSeparator")
+                With elmButton
+                  .setAttribute "id", control.id & "Sep" & j
+                End With
+                elmMenu.appendChild elmButton
+                Set elmButton = Nothing
+            Else
+                Set elmButton = d.createElement("button")
+                With elmButton
+                  .setAttribute "id", varCol(2) & ".dyn" & j
+                  .setAttribute "label", varCol(1)
+                  .setAttribute "onAction", "ribbonOnAction"
+                End With
+                elmMenu.appendChild elmButton
+                Set elmButton = Nothing
+            End If
+        Next
+    
+      d.appendChild elmMenu
+    
+      returnedVal = d.XML
+      
+      Set elmMenu = Nothing
+      Set d = Nothing
+      
+    Else
+        returnedVal = ""
+    End If
+
+End Sub
+
+Sub runFastPin01()
+
+    runFastPin "runFastPin01"
+    
+End Sub
+Sub runFastPin02()
+
+    runFastPin "runFastPin02"
+    
+End Sub
+Sub runFastPin03()
+
+    runFastPin "runFastPin03"
+    
+End Sub
+Sub runFastPin04()
+
+    runFastPin "runFastPin04"
+    
+End Sub
+Sub runFastPin05()
+
+    runFastPin "runFastPin05"
+    
+End Sub
+Sub runFastPin06()
+
+    runFastPin "runFastPin06"
+    
+End Sub
+Sub runFastPin07()
+
+    runFastPin "runFastPin07"
+    
+End Sub
+Sub runFastPin08()
+
+    runFastPin "runFastPin08"
+    
+End Sub
+Sub runFastPin09()
+
+    runFastPin "runFastPin09"
+    
+End Sub
+Sub runFastPin10()
+
+    runFastPin "runFastPin10"
+    
+End Sub
+
+'--------------------------------------------------------------------
+'リボンより受け取ったIDをそのままマクロ名として実行するラッパー関数
+'--------------------------------------------------------------------
+Public Sub ribbonOnFastPin(control As IRibbonControl)
+
+    runFastPin control.id
+    
+End Sub
+Private Sub runFastPin(ByVal id As String)
+    On Error GoTo e
+    
+    Dim strBook As String
+    
+    strBook = GetSetting(C_TITLE, "FastPin", id, "")
+    
+    If strBook = "" Then
+        Exit Sub
+    End If
+    
+    
+    Select Case True
+        Case rlxIsExcelFile(strBook)
+            If Not rlxIsFileExists(strBook) Then
+                MsgBox "ブックが存在しません。", vbOKOnly + vbExclamation, C_TITLE
+            Else
+                On Error Resume Next
+                Err.Clear
+                Workbooks.Open filename:=strBook
+                If Err.Number <> 0 Then
+                    MsgBox "ブックを開けませんでした。", vbOKOnly + vbExclamation, C_TITLE
+                End If
+                AppActivate Application.Caption
+            End If
+        
+        Case rlxIsPowerPointFile(strBook)
+            On Error Resume Next
+            Err.Clear
+            With CreateObject("PowerPoint.Application")
+                .visible = True
+                Call .Presentations.Open(filename:=strBook)
+                If Err.Number <> 0 Then
+                    MsgBox "ファイルを開けませんでした。", vbOKOnly + vbExclamation, C_TITLE
+                End If
+                AppActivate .Caption
+            End With
+            
+        Case rlxIsWordFile(strBook)
+            On Error Resume Next
+            Err.Clear
+            With CreateObject("Word.Application")
+                .visible = True
+                .Documents.Open filename:=strBook
+                If Err.Number <> 0 Then
+                    MsgBox "ファイルを開けませんでした。", vbOKOnly + vbExclamation, C_TITLE
+                End If
+                AppActivate .Caption
+            End With
+            
+        Case Else
+            On Error Resume Next
+            Dim WSH As Object
+            Set WSH = CreateObject("WScript.Shell")
+            
+            WSH.Run ("""" & strBook & """")
+             If Err.Number <> 0 Then
+                MsgBox "ファイルを開けませんでした。", vbOKOnly + vbExclamation, C_TITLE
+            End If
+            Set WSH = Nothing
+    End Select
+    
+    Exit Sub
+e:
+    Call rlxErrMsg(Err)
+
+End Sub
+'--------------------------------------------------------------------
+' ヘルプ内容を表示する。customUIから使用
+'--------------------------------------------------------------------
+Public Sub getFastPinSupertip(control As IRibbonControl, ByRef Screentip)
+
+    On Error GoTo e
+
+    Dim strBuf As String
+
+    strBuf = GetSetting(C_TITLE, "FastPin", control.id, "")
+    Screentip = rlxGetFullpathFromPathName(strBuf)
+    Exit Sub
+e:
+    Call rlxErrMsg(Err)
+End Sub
+'--------------------------------------------------------------------
+' メニュー表示内容を表示する。customUIから使用
+'--------------------------------------------------------------------
+Public Sub getFastPinDescription(control As IRibbonControl, ByRef Screentip)
+
+    GetDescription control, Screentip
+
+End Sub
+'--------------------------------------------------------------------
+' ラベルを表示する。customUIから使用
+'--------------------------------------------------------------------
+Public Sub getFastPinLabel(control As IRibbonControl, ByRef Screentip)
+
+    On Error GoTo e
+    
+    Dim strBuf As String
+    
+    strBuf = GetSetting(C_TITLE, "FastPin", control.id, "")
+    
+    If strBuf = "" Then
+        Screentip = "(未登録)"
+    Else
+        Screentip = rlxGetFullpathFromFileName(strBuf)
+    End If
+    Exit Sub
+e:
+    Call rlxErrMsg(Err)
+End Sub
+
+'--------------------------------------------------------------------
+' リボン表示設定取得
+'--------------------------------------------------------------------
+Sub getFastPinVisible(control As IRibbonControl, ByRef visible)
+
+    On Error GoTo e
+    
+    Dim strBuf As String
+    
+    strBuf = GetSetting(C_TITLE, "FastPin", control.id, "")
+    
+    If strBuf = "" Then
+        visible = False
+    Else
+        visible = True
+    End If
+    
+    Exit Sub
+e:
+    Call rlxErrMsg(Err)
+End Sub
+Sub timeLeapPressed(control As IRibbonControl, ByRef returnValue)
+    
+    returnValue = CBool(GetSetting(C_TITLE, "TimeLeap", "Check", False))
+    
+End Sub
+
+'--------------------------------------------------------------------
+'  十字カーソルの押下時イベント
+'--------------------------------------------------------------------
+Sub timeLeapOnAction(control As IRibbonControl, pressed As Boolean)
+
+  
+    On Error GoTo e
+  
+    Call RefreshRibbon
+
+    If pressed Then
+        Call SaveSetting(C_TITLE, "TimeLeap", "Check", True)
+        ThisWorkbook.StartTimeLeap
+    Else
+        Call SaveSetting(C_TITLE, "TimeLeap", "Check", False)
+        ThisWorkbook.StopTimeLeap
+    End If
+
+    Exit Sub
+e:
+    Call rlxErrMsg(Err)
 End Sub
 

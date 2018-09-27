@@ -69,7 +69,7 @@ Private Sub cmdRun_Click()
     
     Dim lngRow As Long
     Dim lngCol As Long
-    Dim FileName As String
+    Dim filename As String
     Dim objFs As Object
     
     If ActiveCell Is Nothing Then
@@ -78,8 +78,8 @@ Private Sub cmdRun_Click()
     End If
     
     'フォルダ名取得
-    FileName = txtFolder.Text
-    If FileName = "" Then
+    filename = txtFolder.Text
+    If filename = "" Then
         MsgBox "ファイル一覧を取得するフォルダを入力してください。", vbExclamation, "ファイル一覧取得"
         txtFolder.SetFocus
         Exit Sub
@@ -103,21 +103,21 @@ Private Sub cmdRun_Click()
     mMm.Disable
     mMm.DispGuidance "ファイルの数をカウントしています..."
     
-    rlxGetFilesCount objFs, FileName, lngFCnt, True, chkFolder.Value, chkSubFolder.Value
+    rlxGetFilesCount objFs, filename, lngFCnt, True, chkFolder.Value, chkSubFolder.Value
     
     mMm.StartGauge lngFCnt
     
-    lngRow = ActiveCell.row
+    lngRow = ActiveCell.Row
     lngCol = ActiveCell.Column
     
     Dim lngCount As Long
     
     On Error Resume Next
     
-    FileDisp objFs, FileName, lngRow, lngCol, lngCount, lngFCnt
+    FileDisp objFs, filename, lngRow, lngCol, lngCount, lngFCnt
     
     Set mMm = Nothing
-    Select Case err.Number
+    Select Case Err.Number
     Case 75, 76
         MsgBox "フォルダが存在しません。", vbExclamation, "ファイル一覧取得"
         txtFolder.SetFocus
@@ -134,13 +134,15 @@ Private Sub FileDisp(objFs, strPath, lngRow, lngCol, lngCount, lngMax)
     Dim objfld As Object
     Dim objfl As Object
     Dim objSub As Object
-    Dim colFiles As Collection
-    Dim colFolders As Collection
+    Dim colFiles As Object
+    Dim colFolders As Object
+    Dim objKey As Variant
     
     Dim lngCol2 As Long
 
     Set objfld = objFs.GetFolder(strPath)
-    Set colFiles = New Collection
+    
+    Set colFiles = CreateObject("Scripting.Dictionary")
     
     'ファイル名取得
     For Each objfl In objfld.files
@@ -148,13 +150,13 @@ Private Sub FileDisp(objFs, strPath, lngRow, lngCol, lngCount, lngMax)
         If mblnCancel Then
             Exit Sub
         End If
-        colFiles.Add objfl, objfl.Name
+        colFiles.Add objfl.Name, objfl
     Next
     
-    'コレクションのソート
-    rlxSortCollection colFiles
+'    'コレクションのソート
+'    rlxSortCollection colFiles
     
-    For Each objfl In colFiles
+    For Each objKey In colFiles.Keys
         DoEvents
         If mblnCancel Then
             Exit Sub
@@ -162,21 +164,21 @@ Private Sub FileDisp(objFs, strPath, lngRow, lngCol, lngCount, lngMax)
         lngCol2 = lngCol
         If chkFile.Value Then
             Cells(lngRow, lngCol2).NumberFormatLocal = "@"
-            Cells(lngRow, lngCol2) = objfl.Name
+            Cells(lngRow, lngCol2) = colFiles.Item(objKey).Name
             lngCol2 = lngCol2 + 1
         End If
         If chkFolder.Value Then
             Cells(lngRow, lngCol2).NumberFormatLocal = "@"
-            Cells(lngRow, lngCol2) = objfl.ParentFolder.Path
+            Cells(lngRow, lngCol2) = colFiles.Item(objKey).ParentFolder.Path
             lngCol2 = lngCol2 + 1
         End If
         If chkFileSize.Value Then
-            Cells(lngRow, lngCol2) = Format(objfl.Size, "#,##0")
+            Cells(lngRow, lngCol2) = Format(colFiles.Item(objKey).size, "#,##0")
             lngCol2 = lngCol2 + 1
         End If
         If chkDate.Value Then
             Cells(lngRow, lngCol2).NumberFormatLocal = "@"
-            Cells(lngRow, lngCol2) = Format(objfl.DateLastModified, "yyyy/mm/dd hh:mm:ss")
+            Cells(lngRow, lngCol2) = Format(colFiles.Item(objKey).DateLastModified, "yyyy/mm/dd hh:mm:ss")
             lngCol2 = lngCol2 + 1
         End If
         lngRow = lngRow + 1
@@ -185,20 +187,20 @@ Private Sub FileDisp(objFs, strPath, lngRow, lngCol, lngCount, lngMax)
     Set colFiles = Nothing
     
     
-    Set colFolders = New Collection
+    Set colFolders = CreateObject("Scripting.Dictionary")
 
     For Each objSub In objfld.SubFolders
         DoEvents
         If mblnCancel Then
             Exit Sub
         End If
-        colFolders.Add objSub, objSub.Name
+        colFolders.Add objSub.Name, objSub
     Next
     
-    'コレクションのソート
-    rlxSortCollection colFolders
+'    'コレクションのソート
+'    rlxSortCollection colFolders
     
-    For Each objSub In colFolders
+    For Each objKey In colFolders.Keys
         DoEvents
         If mblnCancel Then
             Exit Sub
@@ -208,21 +210,21 @@ Private Sub FileDisp(objFs, strPath, lngRow, lngCol, lngCount, lngMax)
             lngCol2 = lngCol
             If chkFile.Value Then
                 Cells(lngRow, lngCol2).NumberFormatLocal = "@"
-                Cells(lngRow, lngCol2) = objSub.Name
+                Cells(lngRow, lngCol2) = colFolders.Item(objKey).Name
                 lngCol2 = lngCol2 + 1
             End If
             If chkFolder.Value Then
                 Cells(lngRow, lngCol2).NumberFormatLocal = "@"
-                Cells(lngRow, lngCol2) = objSub.ParentFolder.Path
+                Cells(lngRow, lngCol2) = colFolders.Item(objKey).ParentFolder.Path
                 lngCol2 = lngCol2 + 1
             End If
             If chkFileSize.Value Then
-                Cells(lngRow, lngCol2) = Format(objSub.Size, "#,##0")
+                Cells(lngRow, lngCol2) = Format(colFolders.Item(objKey).size, "#,##0")
                 lngCol2 = lngCol2 + 1
             End If
             If chkDate.Value Then
                 Cells(lngRow, lngCol2).NumberFormatLocal = "@"
-                Cells(lngRow, lngCol2) = Format(objSub.DateLastModified, "yyyy/mm/dd hh:mm:ss")
+                Cells(lngRow, lngCol2) = Format(colFolders.Item(objKey).DateLastModified, "yyyy/mm/dd hh:mm:ss")
                 lngCol2 = lngCol2 + 1
             End If
             lngRow = lngRow + 1
@@ -230,7 +232,7 @@ Private Sub FileDisp(objFs, strPath, lngRow, lngCol, lngCount, lngMax)
         End If
         'サブフォルダ検索あり
         If chkSubFolder.Value Then
-            FileDisp objFs, objSub.Path, lngRow, lngCol, lngCount, lngMax
+            FileDisp objFs, colFolders.Item(objKey).Path, lngRow, lngCol, lngCount, lngMax
         End If
     Next
     Set colFolders = Nothing

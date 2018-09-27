@@ -89,6 +89,8 @@ Private Const C_FILE_INFO As String = "ファイル情報："
 
 Public mobjCategory As Object
 
+'Private mlngPos As Long
+
 
     
 Private Sub lstCategory_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
@@ -96,6 +98,10 @@ Private Sub lstCategory_MouseMove(ByVal Button As Integer, ByVal Shift As Intege
     Set MW.obj = lstCategory
 
 End Sub
+
+'Private Sub lstFavorite_Enter()
+'    mlngPos = -1
+'End Sub
 
 Private Sub UserForm_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
 
@@ -139,7 +145,7 @@ Public Sub execActiveAdd()
         
         .AddItem ""
         .List(lngCnt, C_FILE_NO) = i + 1
-        .List(lngCnt, C_FILE_NAME) = rlxGetFullpathFromFileName(strBook)
+        .List(lngCnt, C_FILE_NAME) = setFile(strBook)
         .List(lngCnt, C_PATH_NAME) = rlxGetFullpathFromPathName(strBook)
         .List(lngCnt, C_ORIGINAL) = strBook
         .List(lngCnt, C_CATEGORY) = lstCategory.List(lstCategory.ListIndex)
@@ -206,11 +212,11 @@ Private Sub chkDetail_Change()
     Call SaveSetting(C_TITLE, "Favirite", "Detail", chkDetail.Value)
 End Sub
 
-Private Sub lstCategory_BeforeDragOver(ByVal Cancel As MSForms.ReturnBoolean, ByVal Data As MSForms.DataObject, ByVal X As Single, ByVal Y As Single, ByVal DragState As MSForms.fmDragState, ByVal Effect As MSForms.ReturnEffect, ByVal Shift As Integer)
+Private Sub lstCategory_BeforeDragOver(ByVal Cancel As MSForms.ReturnBoolean, ByVal data As MSForms.DataObject, ByVal X As Single, ByVal Y As Single, ByVal DragState As MSForms.fmDragState, ByVal Effect As MSForms.ReturnEffect, ByVal Shift As Integer)
 'Cancel = True
 End Sub
 
-Private Sub lstCategory_BeforeDropOrPaste(ByVal Cancel As MSForms.ReturnBoolean, ByVal Action As MSForms.fmAction, ByVal Data As MSForms.DataObject, ByVal X As Single, ByVal Y As Single, ByVal Effect As MSForms.ReturnEffect, ByVal Shift As Integer)
+Private Sub lstCategory_BeforeDropOrPaste(ByVal Cancel As MSForms.ReturnBoolean, ByVal Action As MSForms.fmAction, ByVal data As MSForms.DataObject, ByVal X As Single, ByVal Y As Single, ByVal Effect As MSForms.ReturnEffect, ByVal Shift As Integer)
         
 '        Set mBarFavDrop = CommandBars.Add(Position:=msoBarPopup, Temporary:=True)
 '        With mBarFavDrop
@@ -241,7 +247,7 @@ Private Sub lstCategory_Change()
     Dim i As Long
     Dim c As Variant
     Dim fav As favoriteDTO
-    Dim KEY As String
+    Dim Key As String
     
     Dim blnFind As Boolean
     
@@ -255,14 +261,14 @@ Private Sub lstCategory_Change()
         
         .lstFavorite.Clear
         
-        KEY = .lstCategory.List(.lstCategory.ListIndex)
+        Key = .lstCategory.List(.lstCategory.ListIndex)
         
-        If Not mobjCategory.Exists(KEY) Then
+        If Not mobjCategory.Exists(Key) Then
             Exit Sub
         End If
         
         Dim cat As Variant
-        Set cat = mobjCategory.Item(KEY)
+        Set cat = mobjCategory.Item(Key)
         
         i = 0
         For Each c In cat
@@ -271,9 +277,9 @@ Private Sub lstCategory_Change()
         
             .lstFavorite.AddItem ""
             .lstFavorite.List(i, C_FILE_NO) = i + 1
-            .lstFavorite.List(i, C_FILE_NAME) = rlxGetFullpathFromFileName(fav.FileName)
-            .lstFavorite.List(i, C_PATH_NAME) = rlxGetFullpathFromPathName(fav.FileName)
-            .lstFavorite.List(i, C_ORIGINAL) = fav.FileName
+            .lstFavorite.List(i, C_FILE_NAME) = setFile(fav.filename)
+            .lstFavorite.List(i, C_PATH_NAME) = rlxGetFullpathFromPathName(fav.filename)
+            .lstFavorite.List(i, C_ORIGINAL) = fav.filename
             .lstFavorite.List(i, C_CATEGORY) = fav.Category
             i = i + 1
         
@@ -360,16 +366,44 @@ Private Sub lstFavorite_KeyDown(ByVal KeyCode As MSForms.ReturnInteger, ByVal Sh
         Case vbKeyV
             If (Shift And 2) Then
                 Call favPaste
+                Exit Sub
+            End If
+        Case vbKeyC
+            If (Shift And 2) Then
+                Call favCopy
+                Exit Sub
+            End If
+        Case vbKeyA
+            If (Shift And 2) Then
+                Call favAllSelect
+                Exit Sub
             End If
         Case vbKeyEscape
             Unload Me
+            Exit Sub
         Case vbKeyReturn
             execOpen False
+            Exit Sub
         Case vbKeyLeft
             lstCategory.SetFocus
+            Exit Sub
         Case vbKeyDelete
             execDel
+            Exit Sub
     End Select
+
+
+'    If lstFavorite.ListIndex >= 0 Then
+'        Dim i As Long
+'        For i = 0 To lstFavorite.ListCount - 1
+'            If i = lstFavorite.ListIndex Then
+'                lstFavorite.Selected(i) = True
+'            Else
+'                lstFavorite.Selected(i) = False
+'            End If
+'        Next
+'    End If
+
 End Sub
 Private Sub UserForm_KeyDown(ByVal KeyCode As MSForms.ReturnInteger, ByVal Shift As Integer)
     Select Case KeyCode
@@ -384,9 +418,9 @@ Private Sub UserForm_KeyDown(ByVal KeyCode As MSForms.ReturnInteger, ByVal Shift
         
     End Select
 End Sub
-Private Sub UserForm_Activate()
-    MW.Activate
-End Sub
+'Private Sub UserForm_Activate()
+'    MW.Activate
+'End Sub
 Private Sub UserForm_Initialize()
 
     Dim strList() As String
@@ -463,12 +497,12 @@ Private Sub UserForm_Initialize()
        
         Select Case True
             Case UBound(strDat) = 0
-                fav.FileName = strDat(0)
+                fav.filename = strDat(0)
                 fav.Category = C_FAV_ALL
 '                fav.Text = rlxGetFullpathFromFileName(strDat(0))
                 
             Case Else
-                fav.FileName = strDat(0)
+                fav.filename = strDat(0)
                 fav.Category = strDat(1)
 '                fav.Text = rlxGetFullpathFromFileName(strDat(0))
                 
@@ -483,15 +517,18 @@ Private Sub UserForm_Initialize()
             mobjCategory.Add fav.Category, objfav
        End If
        
-       If objfav.Exists(fav.FileName) Then
+       If objfav.Exists(fav.filename) Then
        Else
-           objfav.Add fav.FileName, fav
+           objfav.Add fav.filename, fav
         End If
     Next
 
+    If Not mobjCategory.Exists("Fast Pin") Then
+        mobjCategory.Add "Fast Pin", CreateObject("Scripting.Dictionary")
+    End If
     
     Dim cat As Variant
-    For Each cat In mobjCategory.keys
+    For Each cat In mobjCategory.Keys
         lstCategory.AddItem cat
     Next
     
@@ -518,19 +555,19 @@ Private Sub UserForm_Initialize()
 '    cmdDel.Caption = "一覧から" & vbCrLf & "削除"
 '    cmdAdd.Caption = "現在のブックを" & vbCrLf & "追加"
     
-    RW.FormWidth = Me.Width
+    RW.FormWidth = Me.width
     RW.FormHeight = Me.Height
     
 '    mlngButtonLeft = Me.fraButton.Left
-    mlngListWidth = Me.lstFavorite.Width
+    mlngListWidth = Me.lstFavorite.width
     mlngListHeight = Me.lstFavorite.Height
-    mlngLblBookWidth = Me.lblBook.Width
+    mlngLblBookWidth = Me.lblBook.width
     
     mlngDetailTop = Me.txtDetail.Top
-    mlngDetailWidth = Me.txtDetail.Width
+    mlngDetailWidth = Me.txtDetail.width
     
     mlngLblTop = Me.lblMsg.Top
-    mlngLblWidth = Me.lblMsg.Width
+    mlngLblWidth = Me.lblMsg.width
     
 '    Me.Top = GetSetting(C_TITLE, "Favirite", "Top", Application.Top + 20)
 '    Me.Left = GetSetting(C_TITLE, "Favirite", "Left", Application.Left + 20)
@@ -542,7 +579,7 @@ Private Sub UserForm_Initialize()
     chkDetail.Value = GetSetting(C_TITLE, "Favirite", "Detail", False)
     
     Set MW = basMouseWheel.GetInstance
-    MW.Install
+    MW.Install Me
 
 End Sub
 '------------------------------------------------------------------------------------------------------------------------
@@ -685,16 +722,16 @@ End Sub
 
 Sub favCurrentUpdate()
 
-    Dim KEY As String
+    Dim Key As String
     Dim i As Long
     Dim objfav As Variant
     Dim lngMax As Long
     Dim fav As favoriteDTO
     
     
-    KEY = lstCategory.List(lstCategory.ListIndex)
-    If mobjCategory.Exists(KEY) Then
-        mobjCategory.Remove KEY
+    Key = lstCategory.List(lstCategory.ListIndex)
+    If mobjCategory.Exists(Key) Then
+        mobjCategory.remove Key
     End If
     
     Set objfav = CreateObject("Scripting.Dictionary")
@@ -705,15 +742,15 @@ Sub favCurrentUpdate()
        
         Set fav = New favoriteDTO
     
-        fav.FileName = lstFavorite.List(i, C_ORIGINAL)
+        fav.filename = lstFavorite.List(i, C_ORIGINAL)
         fav.Category = lstFavorite.List(i, C_CATEGORY)
 '        fav.Text = lstFavorite.List(i, C_FILE_NAME)
        
-        objfav.Add fav.FileName, fav
+        objfav.Add fav.filename, fav
               
     Next
     
-    mobjCategory.Add KEY, objfav
+    mobjCategory.Add Key, objfav
     
 End Sub
 Private Sub cmdReadOnly_Click()
@@ -745,7 +782,7 @@ Public Sub execOpen(ByVal blnReadOnly As Boolean)
     
     On Error Resume Next
     Me.Hide
-    Application.ScreenUpdating = False
+'    Application.ScreenUpdating = False
     For lngCnt = 0 To lstFavorite.ListCount - 1
     
         If lstFavorite.Selected(lngCnt) Then
@@ -758,9 +795,9 @@ Public Sub execOpen(ByVal blnReadOnly As Boolean)
                         MsgBox "ブックが存在しません。", vbOKOnly + vbExclamation, C_TITLE
                     Else
                         On Error Resume Next
-                        err.Clear
-                        Workbooks.Open FileName:=strBook, ReadOnly:=blnReadOnly
-                        If err.Number <> 0 Then
+                        Err.Clear
+                        Workbooks.Open filename:=strBook, ReadOnly:=blnReadOnly, UpdateLinks:=0, IgnoreReadOnlyRecommended:=True
+                        If Err.Number <> 0 Then
                             MsgBox "ブックを開けませんでした。", vbOKOnly + vbExclamation, C_TITLE
                         End If
                         AppActivate Application.Caption
@@ -768,11 +805,11 @@ Public Sub execOpen(ByVal blnReadOnly As Boolean)
                     
                 Case rlxIsPowerPointFile(strBook)
                     On Error Resume Next
-                    err.Clear
+                    Err.Clear
                     With CreateObject("PowerPoint.Application")
                         .visible = True
-                        Call .Presentations.Open(FileName:=strBook, ReadOnly:=blnReadOnly)
-                        If err.Number <> 0 Then
+                        Call .Presentations.Open(filename:=strBook, ReadOnly:=blnReadOnly)
+                        If Err.Number <> 0 Then
                             MsgBox "ファイルを開けませんでした。", vbOKOnly + vbExclamation, C_TITLE
                         End If
                         AppActivate .Caption
@@ -780,11 +817,11 @@ Public Sub execOpen(ByVal blnReadOnly As Boolean)
                     
                 Case rlxIsWordFile(strBook)
                     On Error Resume Next
-                    err.Clear
+                    Err.Clear
                     With CreateObject("Word.Application")
                         .visible = True
-                        .Documents.Open FileName:=strBook, ReadOnly:=blnReadOnly
-                        If err.Number <> 0 Then
+                        .Documents.Open filename:=strBook, ReadOnly:=blnReadOnly
+                        If Err.Number <> 0 Then
                             MsgBox "ファイルを開けませんでした。", vbOKOnly + vbExclamation, C_TITLE
                         End If
                         AppActivate .Caption
@@ -796,7 +833,7 @@ Public Sub execOpen(ByVal blnReadOnly As Boolean)
                     Set WSH = CreateObject("WScript.Shell")
                     
                     WSH.Run ("""" & strBook & """")
-                     If err.Number <> 0 Then
+                     If Err.Number <> 0 Then
                         MsgBox "ファイルを開けませんでした。", vbOKOnly + vbExclamation, C_TITLE
                     End If
                     Set WSH = Nothing
@@ -806,9 +843,63 @@ Public Sub execOpen(ByVal blnReadOnly As Boolean)
     Next
      
     Unload Me
-    Application.ScreenUpdating = True
+'    Application.ScreenUpdating = True
 End Sub
+Public Sub execOpenRef()
 
+    Dim strBook As String
+    Dim lngCnt As Long
+    
+    Dim varFile As Variant
+    
+    If lstFavorite.ListIndex = -1 Then
+        Exit Sub
+    End If
+    
+    On Error Resume Next
+    Me.Hide
+    For lngCnt = 0 To lstFavorite.ListCount - 1
+    
+        If lstFavorite.Selected(lngCnt) Then
+    
+            strBook = lstFavorite.List(lngCnt, C_ORIGINAL)
+            
+            Select Case True
+                Case rlxIsExcelFile(strBook)
+                
+                    Dim WB As Workbook
+                
+                    If Not rlxIsFileExists(strBook) Then
+                        MsgBox "ブックが存在しません。", vbOKOnly + vbExclamation, C_TITLE
+                    Else
+                        Dim strActBook As String
+                        Dim strTmpBook As String
+                        With CreateObject("Scripting.FileSystemObject")
+                            strActBook = strBook
+                            strTmpBook = rlxGetTempFolder() & C_REF_TEXT & .getFileName(strBook)
+                        
+                            .CopyFile strActBook, strTmpBook
+                        
+                            On Error Resume Next
+                            Err.Clear
+                            Workbooks.Open filename:=strTmpBook, ReadOnly:=True, UpdateLinks:=0, IgnoreReadOnlyRecommended:=True
+                            If Err.Number <> 0 Then
+                                MsgBox "ブックを開けませんでした。", vbOKOnly + vbExclamation, C_TITLE
+                            End If
+                            AppActivate Application.Caption
+                        
+                        End With
+                    End If
+                    
+                Case Else
+                    MsgBox "Ｅｘｃｅｌブック以外は実行できません。", vbOKOnly + vbExclamation, C_TITLE
+            End Select
+        End If
+     
+    Next
+     
+    Unload Me
+End Sub
 '------------------------------------------------------------------------------------------------------------------------
 ' 選択行を上に移動
 '------------------------------------------------------------------------------------------------------------------------
@@ -858,7 +949,7 @@ Public Sub lstFavoriteDispDetail()
     
     If lngCount = 1 Then
     
-        Dim Shell As Object, Folder As Object
+        Dim shell As Object, folder As Object
         
         strBook = lstFavorite.List(lstFavorite.ListIndex, C_ORIGINAL)
         
@@ -870,13 +961,13 @@ Public Sub lstFavoriteDispDetail()
             strMsg = strMsg & "　ファイル名：" & rlxGetFullpathFromFileName(strBook) & vbCrLf           ''ファイル名
             
             If GetSetting(C_TITLE, "Favirite", "Detail", False) Then
-                Set Shell = CreateObject("Shell.Application")
-                Set Folder = Shell.Namespace(rlxGetFullpathFromPathName(strBook))
-                strMsg = strMsg & "　作成者：" & Folder.GetDetailsOf(Folder.ParseName(rlxGetFullpathFromFileName(strBook)), 20) & vbCrLf  ''作成者
-                strMsg = strMsg & "　タイトル：" & Folder.GetDetailsOf(Folder.ParseName(rlxGetFullpathFromFileName(strBook)), 21) & vbCrLf   ''タイトル
-                strMsg = strMsg & "　サブタイトル：" & Folder.GetDetailsOf(Folder.ParseName(rlxGetFullpathFromFileName(strBook)), 22) & vbCrLf   ''サブタイトル
-                Set Folder = Nothing
-                Set Shell = Nothing
+                Set shell = CreateObject("Shell.Application")
+                Set folder = shell.Namespace(rlxGetFullpathFromPathName(strBook))
+                strMsg = strMsg & "　作成者：" & folder.GetDetailsOf(folder.ParseName(rlxGetFullpathFromFileName(strBook)), 20) & vbCrLf  ''作成者
+                strMsg = strMsg & "　タイトル：" & folder.GetDetailsOf(folder.ParseName(rlxGetFullpathFromFileName(strBook)), 21) & vbCrLf   ''タイトル
+                strMsg = strMsg & "　サブタイトル：" & folder.GetDetailsOf(folder.ParseName(rlxGetFullpathFromFileName(strBook)), 22) & vbCrLf   ''サブタイトル
+                Set folder = Nothing
+                Set shell = Nothing
             End If
             
             Select Case True
@@ -945,6 +1036,11 @@ Private Sub lstFavorite_MouseDown(ByVal Button As Integer, ByVal Shift As Intege
                 .FaceId = 456
             End With
             With .Controls.Add
+                .Caption = "同名ブックを参照用に開く(Excelのみ)"
+                .OnAction = "'basFavorite.execOpenRef'"
+                .FaceId = 456
+            End With
+            With .Controls.Add
                 .Caption = "ファイルのあるフォルダを開く"
                 .OnAction = "basFavorite.execOpenFolder"
                 .FaceId = 23
@@ -973,8 +1069,15 @@ Private Sub lstFavorite_MouseDown(ByVal Button As Integer, ByVal Shift As Intege
             End With
             
             With .Controls.Add
-                .Caption = "追加"
+                .Caption = "アクティブブックを追加"
                 .BeginGroup = True
+                .OnAction = "basFavorite.execActiveAdd"
+                .FaceId = 535
+            End With
+            
+            With .Controls.Add
+                .Caption = "追加"
+'                .BeginGroup = True
                 .OnAction = "basFavorite.execAdd"
                 .FaceId = 535
             End With
@@ -985,30 +1088,32 @@ Private Sub lstFavorite_MouseDown(ByVal Button As Integer, ByVal Shift As Intege
                 .FaceId = 534
             End With
             
+
+            With .Controls.Add
+                .BeginGroup = True
+                .Caption = "コピー"
+                .OnAction = "basFavorite.favCopy"
+                .FaceId = 19
+            End With
+            
+            With .Controls.Add
+                .Caption = "貼り付け"
+                .OnAction = "basFavorite.favPaste"
+                .FaceId = 1436
+            End With
+        
             With .Controls.Add
                 .Caption = "削除"
                 .OnAction = "basFavorite.execDel"
                 .FaceId = 536
             End With
             
-            With .Controls.Add
-                .Caption = "アクティブブックを追加"
-                .BeginGroup = True
-                .OnAction = "basFavorite.execActiveAdd"
-                .FaceId = 535
-            End With
-            
-            With .Controls.Add
-                .Caption = "エクスプローラから貼り付け"
-                .OnAction = "basFavorite.favPaste"
-                .FaceId = 1436
-            End With
         
             Dim myCBCtrl2 As Variant
             Set myCBCtrl2 = .Controls.Add(Type:=msoControlPopup)
             With myCBCtrl2
                 .Caption = "カテゴリー移動"
-'                .BeginGroup = True
+                .BeginGroup = True
             End With
         
             If lstCategory.ListCount <= 1 Then
@@ -1029,6 +1134,7 @@ Private Sub lstFavorite_MouseDown(ByVal Button As Integer, ByVal Shift As Intege
                 Next
             End If
         
+        
         End With
         mBarFav.ShowPopup
     
@@ -1043,7 +1149,7 @@ End Sub
 Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
     SaveSetting C_TITLE, "Favirite", "Top", Me.Top
     SaveSetting C_TITLE, "Favirite", "Left", Me.Left
-    SaveSetting C_TITLE, "Favirite", "Width", Me.Width
+    SaveSetting C_TITLE, "Favirite", "Width", Me.width
     SaveSetting C_TITLE, "Favirite", "Height", Me.Height
     
 End Sub
@@ -1088,13 +1194,17 @@ Private Sub UserForm_Terminate()
     Dim strBuf As String
     Dim i As Long
     Dim blnFind As Boolean
+    Dim j As Long
     
     blnFind = False
         
     If lstFavorite.ListIndex <> -1 Then
         SaveSetting C_TITLE, "Favirite", "CurrentBook", lstFavorite.List(lstFavorite.ListIndex, C_ORIGINAL)
     End If
+    On Error Resume Next
+    DeleteSetting C_TITLE, "FastPin"
     
+    j = 0
     strBuf = ""
     For i = 0 To lstCategory.ListCount - 1
     
@@ -1104,7 +1214,7 @@ Private Sub UserForm_Terminate()
         
             Set cat = mobjCategory.Item(key1)
             
-            If cat.count = 0 Then
+            If cat.count = 0 And Not key1 = "Fast Pin" Then
                 blnFind = True
             End If
             
@@ -1113,10 +1223,15 @@ Private Sub UserForm_Terminate()
                 Set fav = cat.Item(key2)
             
                 If Len(strBuf) = 0 Then
-                    strBuf = fav.FileName & vbTab & key1
+                    strBuf = fav.filename & vbTab & key1
                 Else
-                    strBuf = strBuf & vbVerticalTab & fav.FileName & vbTab & key1
+                    strBuf = strBuf & vbVerticalTab & fav.filename & vbTab & key1
                 End If
+                If key1 = "Fast Pin" Then
+                    j = j + 1
+                    SaveSetting C_TITLE, "FastPin", "runFastPin" & Format(j, "00"), fav.filename
+                End If
+                
             Next
         
         End If
@@ -1125,6 +1240,8 @@ Private Sub UserForm_Terminate()
     If lstCategory.ListIndex <> -1 Then
         SaveSetting C_TITLE, "Favirite", "CurrentCategory", lstCategory.List(lstCategory.ListIndex)
     End If
+    
+    Call RefreshRibbon
     
     If blnFind Then
         MsgBox "中身のないカテゴリは削除されます。", vbOKOnly + vbExclamation, C_TITLE
@@ -1267,35 +1384,75 @@ Sub moveCategory(ByVal strCategory As String)
     
         If lstFavorite.Selected(i) Then
         
-            Dim cat As Variant
-            Set cat = mobjCategory.Item(lstFavorite.List(i, C_CATEGORY))
-            cat.Remove lstFavorite.List(i, C_ORIGINAL)
-        
+            Dim cat2 As Variant
             If mobjCategory.Exists(strCategory) Then
-                Set cat = mobjCategory.Item(strCategory)
+                Set cat2 = mobjCategory.Item(strCategory)
             Else
-                Set cat = CreateObject("Scripting.Dictionary")
+                Set cat2 = CreateObject("Scripting.Dictionary")
             End If
             Dim d As favoriteDTO
             
             Set d = New favoriteDTO
-            d.FileName = lstFavorite.List(i, C_ORIGINAL)
+            d.filename = lstFavorite.List(i, C_ORIGINAL)
             d.Category = strCategory
 '            d.Text = lstFavorite.List(i, C_FILE_NAME)
-            
-            cat.Add d.FileName, d
-            If mobjCategory.Exists(strCategory) Then
-                mobjCategory.Remove strCategory
+
+            If cat2.Exists(d.filename) Then
+                Exit Sub
             End If
-            mobjCategory.Add strCategory, cat
+            
+            cat2.Add d.filename, d
+            If mobjCategory.Exists(strCategory) Then
+                mobjCategory.remove strCategory
+            End If
+            mobjCategory.Add strCategory, cat2
+        
+        
+            Dim cat As Variant
+            Set cat = mobjCategory.Item(lstFavorite.List(i, C_CATEGORY))
+            
+            cat.remove lstFavorite.List(i, C_ORIGINAL)
+        
         
         End If
     Next
     
     Call lstCategory_Change
 
-End Sub
 
+End Sub
+Sub favCopy()
+
+    Dim strBuf() As String
+    Dim i As Long
+    Dim lngCnt As Long
+    Dim strBook As String
+    
+    If lstFavorite.ListCount = 0 Then
+        Exit Sub
+    End If
+    
+    On Error Resume Next
+
+    i = 1
+    
+    For lngCnt = 0 To lstFavorite.ListCount - 1
+    
+        If lstFavorite.Selected(lngCnt) Then
+    
+            strBook = lstFavorite.List(lngCnt, C_ORIGINAL)
+            ReDim Preserve strBuf(1 To i)
+            strBuf(i) = strBook
+            
+            i = i + 1
+        End If
+     
+    Next
+
+    Call SetCopyClipText(strBuf)
+    
+
+End Sub
 Sub favPaste()
 
     Dim files As Variant
@@ -1318,7 +1475,7 @@ Sub favPaste()
         strBuf = Replace(strBuf, """", "")
         files = Split(strBuf, vbCrLf)
     Else
-        files = Split(strBuf, vbTab)
+        files = Split(strBuf, vbCrLf)
     End If
     
 
@@ -1350,7 +1507,7 @@ Sub favPaste()
             
             .AddItem ""
             .List(j, C_FILE_NO) = j + 1
-            .List(j, C_FILE_NAME) = rlxGetFullpathFromFileName(files(i))
+            .List(j, C_FILE_NAME) = setFile(files(i))
             .List(j, C_PATH_NAME) = rlxGetFullpathFromPathName(files(i))
             .List(j, C_ORIGINAL) = files(i)
             .List(j, C_CATEGORY) = lstCategory.List(lstCategory.ListIndex)
@@ -1391,16 +1548,16 @@ Sub delCategory()
             Exit Sub
         End If
         
-        Dim KEY As String
+        Dim Key As String
         
         If MsgBox("カテゴリとそれ以下のお気に入りを削除しますがよろしいですか？", vbOKCancel + vbQuestion, C_TITLE) <> vbOK Then
             Exit Sub
         End If
         
-        KEY = lstCategory.List(lstCategory.ListIndex)
+        Key = lstCategory.List(lstCategory.ListIndex)
         
-        If mobjCategory.Exists(KEY) Then
-            mobjCategory.Remove KEY
+        If mobjCategory.Exists(Key) Then
+            mobjCategory.remove Key
         End If
         
         'お気に入りをクリア
@@ -1420,14 +1577,16 @@ Sub execOpenFolder()
     
         If lstFavorite.Selected(lngCnt) Then
     
-            strBook = lstFavorite.List(lngCnt, C_PATH_NAME)
+            strBook = lstFavorite.List(lngCnt, C_ORIGINAL)
             
-            Dim WSH As Object
-            Set WSH = CreateObject("WScript.Shell")
-            
-            WSH.Run ("""" & strBook & """")
-            
-            Set WSH = Nothing
+            SelFileInExplorer strBook
+
+'            Dim WSH As Object
+'            Set WSH = CreateObject("WScript.Shell")
+'
+'            WSH.Run ("""" & strBook & """")
+'
+'            Set WSH = Nothing
 
         End If
      
@@ -1456,7 +1615,7 @@ Sub execEdit()
     
     If frmFavEdit.Start(C_FAVORITE_MOD, strFile) = vbOK Then
     
-        lstFavorite.List(lstFavorite.ListIndex, C_FILE_NAME) = rlxGetFullpathFromFileName(strFile)
+        lstFavorite.List(lstFavorite.ListIndex, C_FILE_NAME) = setFile(strFile)
         lstFavorite.List(lstFavorite.ListIndex, C_PATH_NAME) = rlxGetFullpathFromPathName(strFile)
         lstFavorite.List(lstFavorite.ListIndex, C_ORIGINAL) = strFile
 
@@ -1484,7 +1643,7 @@ Sub execAdd()
         End If
         
         lstFavorite.List(lngCnt, C_FILE_NO) = lstFavorite.ListCount
-        lstFavorite.List(lngCnt, C_FILE_NAME) = rlxGetFullpathFromFileName(strFile)
+        lstFavorite.List(lngCnt, C_FILE_NAME) = setFile(strFile)
         lstFavorite.List(lngCnt, C_PATH_NAME) = rlxGetFullpathFromPathName(strFile)
         lstFavorite.List(lngCnt, C_ORIGINAL) = strFile
         lstFavorite.List(lngCnt, C_CATEGORY) = strCategory
@@ -1501,18 +1660,33 @@ Sub execAdd()
     End If
 
 End Sub
+Function setFile(ByVal strBuf As String) As String
 
+    Dim strLine As String
+    
+    strLine = rlxGetFullpathFromFileName(strBuf)
+
+    If InStr(strLine, ".") = 0 Then
+        setFile = "<" & strLine & ">"
+    Else
+        setFile = strLine
+    End If
+End Function
 
 Private Sub MW_WheelDown(obj As Object)
 
+    On Error GoTo e
+
     If obj.ListCount = 0 Then Exit Sub
     obj.TopIndex = obj.TopIndex + 3
-    
+e:
 End Sub
 
 Private Sub MW_WheelUp(obj As Object)
 
     Dim lngPos As Long
+
+    On Error GoTo e
 
     If obj.ListCount = 0 Then Exit Sub
     lngPos = obj.TopIndex - 3
@@ -1522,5 +1696,13 @@ Private Sub MW_WheelUp(obj As Object)
     End If
 
     obj.TopIndex = lngPos
+e:
+End Sub
+Sub favAllSelect()
+    Dim i As Long
 
+    For i = 0 To lstFavorite.ListCount - 1
+        lstFavorite.Selected(i) = True
+    Next
+    
 End Sub

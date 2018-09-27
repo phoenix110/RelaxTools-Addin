@@ -65,7 +65,7 @@ Sub saveWorkSheets()
     
     On Error GoTo ErrHandle
         
-    vntFileName = Application.GetSaveAsFilename(InitialFileName:="", FileFilter:="Excel ブック(*.xlsx),*.xlsx,Excel マクロ有効ブック(*.xlsm),*.xlsm,Excel 97-2003ブック(*.xls),*.xls", Title:="ブックの保存")
+    vntFileName = Application.GetSaveAsFilename(InitialFileName:="", fileFilter:="Excel ブック(*.xlsx),*.xlsx,Excel マクロ有効ブック(*.xlsm),*.xlsm,Excel 97-2003ブック(*.xls),*.xls", Title:="ブックの保存")
     
     If vntFileName <> False Then
     
@@ -77,21 +77,21 @@ Sub saveWorkSheets()
         Next
         
         If rlxIsFileExists(vntFileName) Then
-            If MsgBox("すでに同名のブックが存在すします。上書きしますか？", vbOKCancel + vbQuestion, C_TITLE) <> vbOK Then
+            If MsgBox("すでに同名のブックが存在します。上書きしますか？", vbOKCancel + vbQuestion, C_TITLE) <> vbOK Then
                 Exit Sub
             End If
         End If
     
         Application.DisplayAlerts = False
         ActiveWorkbook.Windows(1).SelectedSheets.Copy
-        Set b = ActiveWorkbook
+        Set b = Application.Workbooks(Application.Workbooks.count)
         Select Case LCase(Mid$(vntFileName, InStr(vntFileName, ".") + 1))
             Case "xls"
-                b.SaveAs FileName:=vntFileName, FileFormat:=xlExcel8, local:=True
+                b.SaveAs filename:=vntFileName, FileFormat:=xlExcel8, local:=True
             Case "xlsm"
-                b.SaveAs FileName:=vntFileName, FileFormat:=xlOpenXMLWorkbookMacroEnabled, local:=True
+                b.SaveAs filename:=vntFileName, FileFormat:=xlOpenXMLWorkbookMacroEnabled, local:=True
             Case Else
-                b.SaveAs FileName:=vntFileName, local:=True
+                b.SaveAs filename:=vntFileName, local:=True
         End Select
         b.Close
         Set b = Nothing
@@ -109,6 +109,10 @@ End Sub
 '--------------------------------------------------------------
 Sub lineCopy()
 
+    If rlxCheckSelectRange = False Then
+        Exit Sub
+    End If
+
     If ActiveCell Is Nothing Then
         Exit Sub
     End If
@@ -116,7 +120,7 @@ Sub lineCopy()
     Dim f As Long
     Dim t As Long
     
-    f = Selection(1, 1).row
+    f = Selection(1, 1).Row
     t = f + Selection.Rows.count - 1
     
     On Error Resume Next
@@ -145,6 +149,10 @@ End Sub
 '--------------------------------------------------------------
 Sub lineInsert()
     
+    If rlxCheckSelectRange = False Then
+        Exit Sub
+    End If
+    
     If ActiveCell Is Nothing Then
         Exit Sub
     End If
@@ -152,7 +160,7 @@ Sub lineInsert()
     Dim f As Long
     Dim t As Long
     
-    f = Selection(1, 1).row
+    f = Selection(1, 1).Row
     t = f + Selection.Rows.count - 1
     
     On Error Resume Next
@@ -181,6 +189,10 @@ End Sub
 '--------------------------------------------------------------
 Sub lineDel()
 
+    If rlxCheckSelectRange = False Then
+        Exit Sub
+    End If
+    
     If ActiveCell Is Nothing Then
         Exit Sub
     End If
@@ -188,7 +200,7 @@ Sub lineDel()
     Dim f As Long
     Dim t As Long
     
-    f = Selection(1, 1).row
+    f = Selection(1, 1).Row
     t = f + Selection.Rows.count - 1
     
     On Error Resume Next
@@ -196,14 +208,14 @@ Sub lineDel()
     
     ThisWorkbook.Worksheets("Undo").Cells.Clear
     
-    Set mUndo.sourceRange = Range(Cells(f, 1), Cells(t, Columns.count - 1))
+    Set mUndo.sourceRange = Intersect(Range(Cells(f, 1), Cells(t, Columns.count - 1)), ActiveSheet.UsedRange)
     Set mUndo.destRange = ThisWorkbook.Worksheets("Undo").Range(mUndo.sourceRange.Address)
     
     mUndo.sourceRange.Copy mUndo.destRange
     
     Rows(f & ":" & t).Delete xlUp
     
-    Set mUndo.sourceRange = Range(Cells(f, 1), Cells(t, Columns.count - 1))
+    Set mUndo.sourceRange = Intersect(Range(Cells(f, 1), Cells(t, Columns.count - 1)), ActiveSheet.UsedRange)
     
     Application.CutCopyMode = False
     Application.ScreenUpdating = True
@@ -226,6 +238,10 @@ Sub lineNCopy()
     Dim f As Long
     Dim t As Long
     
+    If rlxCheckSelectRange = False Then
+        Exit Sub
+    End If
+    
     If ActiveCell Is Nothing Then
         Exit Sub
     End If
@@ -242,7 +258,7 @@ Sub lineNCopy()
 '    lngDest = ActiveCell.row + Val(strbuf) - 1
     lngDest = lngBuf
 
-    f = Selection(1, 1).row
+    f = Selection(1, 1).Row
     t = f + Selection.Rows.count - 1
 
     On Error Resume Next
@@ -259,8 +275,6 @@ End Sub
 '　Rangeが取得できるかどうかチェックする
 '--------------------------------------------------------------
 Function rlxCheckSelectRange() As Boolean
-Attribute rlxCheckSelectRange.VB_Description = "ワークシート関数として使用できません。"
-Attribute rlxCheckSelectRange.VB_ProcData.VB_Invoke_Func = " \n19"
     
     On Error GoTo ErrHandle
     
@@ -424,6 +438,7 @@ Sub setAllA1()
     Dim WB As Workbook
     Dim blnRatio As Boolean
     Dim lngPercent As Long
+    Dim blnView As Boolean
  
     If ActiveWorkbook Is Nothing Then
         MsgBox "アクティブなブックが見つかりません。", vbCritical, C_TITLE
@@ -431,6 +446,7 @@ Sub setAllA1()
     End If
     
     blnRatio = GetSetting(C_TITLE, "A1Setting", "ratio", False)
+    blnView = GetSetting(C_TITLE, "A1Setting", "ViewEnable", 0)
     lngPercent = Val(GetSetting(C_TITLE, "A1Setting", "percent", "100"))
     If lngPercent = 0 Then
         lngPercent = 100
@@ -453,6 +469,18 @@ Sub setAllA1()
             WS.Range("A1").Activate
             WB.Windows(1).ScrollRow = 1
             WB.Windows(1).ScrollColumn = 1
+            
+            If blnView Then
+                Select Case Val(GetSetting(C_TITLE, "A1Setting", "View", "0"))
+                    Case 0
+                        WB.Windows(1).View = xlNormalView
+                    Case 1
+                        WB.Windows(1).View = xlPageLayoutView
+                    Case 2
+                        WB.Windows(1).View = xlPageBreakPreview
+                End Select
+            End If
+            
             If blnRatio Then
                 WB.Windows(1).Zoom = lngPercent
             End If
@@ -489,11 +517,12 @@ Sub setAllA1save()
         Exit Sub
     End If
 
-    Application.ScreenUpdating = False
+'    Application.ScreenUpdating = False
     
     Call setAllA1
     
-    On Error Resume Next
+'    On Error Resume Next
+    On Error GoTo e
     
     mA1Save = True
     
@@ -502,32 +531,40 @@ Sub setAllA1save()
         GoTo pass
     End If
     
-    If rlxIsFileExists(ActiveWorkbook.FullName) Then
-    Else
+    If InStr(ActiveWorkbook.FullName, ".") = 0 Then
         MsgBox "まだ一度も保存していないファイルです。一度Excelで保存を行ってください。", vbOKOnly + vbExclamation, C_TITLE
         GoTo pass
     End If
     
-    varRet = getAttr(ActiveWorkbook.FullName)
-    If err.Number > 0 Then
-        MsgBox "現在のファイルにアクセスできませんでした。保存できませんでした。", vbOKOnly + vbExclamation, C_TITLE
-        GoTo pass
-    End If
+'    If rlxIsFileExists(ActiveWorkbook.FullName) Then
+'    Else
+'        MsgBox "まだ一度も保存していないファイルです。一度Excelで保存を行ってください。", vbOKOnly + vbExclamation, C_TITLE
+'        GoTo pass
+'    End If
     
-    If (varRet And vbReadOnly) > 0 Then
-        MsgBox "指定されたファイルは読み取り専用です。保存できませんでした。", vbOKOnly + vbExclamation, C_TITLE
-        GoTo pass
-    End If
+'    varRet = getAttr(ActiveWorkbook.FullName)
+'    If Err.Number > 0 Then
+'        MsgBox "現在のファイルにアクセスできませんでした。保存できませんでした。", vbOKOnly + vbExclamation, C_TITLE
+'        GoTo pass
+'    End If
+'
+'    If (varRet And vbReadOnly) > 0 Then
+'        MsgBox "指定されたファイルは読み取り専用です。保存できませんでした。", vbOKOnly + vbExclamation, C_TITLE
+'        GoTo pass
+'    End If
     
     
     ActiveWorkbook.Save
-
     
 pass:
     mA1Save = False
+    Exit Sub
     
-    Application.ScreenUpdating = True
+e:
+    mA1Save = False
 
+    MsgBox "保存できませんでした。", vbOKOnly + vbExclamation, C_TITLE
+    
 End Sub
 '--------------------------------------------------------------
 '　シート名をクリップボードに貼り付け
@@ -641,6 +678,26 @@ End Sub
 '--------------------------------------------------------------
 '　現在のワークブック名（フルパス）をクリップボードに貼り付け
 '--------------------------------------------------------------
+Sub getCurrentBookFullNameDrv()
+    
+    On Error GoTo ErrHandle
+
+    If ActiveWorkbook Is Nothing Then
+        MsgBox "アクティブなブックが見つかりません。", vbCritical, C_TITLE
+        Exit Sub
+    End If
+    
+    'クリップボード貼り付け
+    putClipboard ActiveWorkbook.FullName '& vbCrLf
+    
+    Exit Sub
+ErrHandle:
+    MsgBox "エラーが発生しました。", vbOKOnly, C_TITLE
+    
+End Sub
+'--------------------------------------------------------------
+'　現在のワークブック名（フルパス）をクリップボードに貼り付け
+'--------------------------------------------------------------
 Sub getCurrentBookName()
 
     On Error GoTo ErrHandle
@@ -665,7 +722,7 @@ End Sub
 Sub openDocumentPath()
     
     Dim WSH As Object
-    Dim wExec As Object
+'    Dim wExec As Object
     
     On Error Resume Next
 
@@ -675,12 +732,14 @@ Sub openDocumentPath()
     End If
     
    
-    Set WSH = CreateObject("WScript.Shell")
-    
-    WSH.Run ("""" & rlxGetFullpathFromPathName(rlxDriveToUNC(ActiveWorkbook.FullName)) & """")
-    
-    Set wExec = Nothing
-    Set WSH = Nothing
+'    Set WSH = CreateObject("WScript.Shell")
+'
+'    WSH.Run ("""" & rlxGetFullpathFromPathName(rlxDriveToUNC(ActiveWorkbook.FullName)) & """")
+'
+'    Set wExec = Nothing
+'    Set WSH = Nothing
+
+    SelFileInExplorer rlxDriveToUNC(ActiveWorkbook.FullName)
     
 End Sub
 '--------------------------------------------------------------
@@ -694,8 +753,10 @@ Sub divideWorkBook()
     Dim motoWB As Workbook
     Dim WB As Workbook
     Dim WSH As Object
+    Dim FSO As Object
     
     On Error GoTo ErrHandle
+    Set FSO = CreateObject("Scripting.FileSystemObject")
     
     If ActiveWorkbook Is Nothing Then
         MsgBox "アクティブなブックが見つかりません。", vbCritical, C_TITLE
@@ -726,11 +787,11 @@ Sub divideWorkBook()
             '現在のシートをコピーして新規のワークブックを作成する。
             WS.Copy
             
-            Set WB = ActiveWorkbook
+            Set WB = Application.Workbooks(Application.Workbooks.count)
             
             '新規作成したワークブックを保存する。フォーマットは親と同じ
             Application.DisplayAlerts = False
-            WB.SaveAs FileName:=rlxAddFileSeparator(strWorkPath) & rlxGetFullpathFromExt(motoWB.Name) & "_" & WS.Name, FileFormat:=motoWB.FileFormat, local:=True
+            WB.SaveAs filename:=rlxAddFileSeparator(strWorkPath) & rlxGetFullpathFromExt(motoWB.Name) & "_" & WS.Name & "." & FSO.GetExtensionName(motoWB.Name), FileFormat:=motoWB.FileFormat, local:=True
             Application.DisplayAlerts = True
             WB.Close
     
@@ -747,6 +808,7 @@ Sub divideWorkBook()
     WSH.Run ("""" & rlxGetFullpathFromPathName(rlxDriveToUNC(motoWB.FullName)) & """")
     
     Set WSH = Nothing
+    Set FSO = Nothing
     
     Exit Sub
 ErrHandle:
@@ -781,7 +843,7 @@ Sub mergeWorkBook()
         For Each WS In WB.Worksheets
             If blnFirst Then
                 WS.Copy
-                Set motoWB = ActiveWorkbook
+                Set motoWB = Application.Workbooks(Application.Workbooks.count)
                 blnFirst = False
             Else
                 WS.Copy , motoWB.Worksheets(motoWB.Worksheets.count)
@@ -850,7 +912,7 @@ Sub encryptionFileEx()
     
     Dim lngRead As Long
     
-    Const KEY As Byte = &H44
+    Const Key As Byte = &H44
     Const C_BUFFER_SIZE = 10485760 '10MB
     Const C_TEMP_FILE_EXT As String = ".tmp"
     
@@ -893,7 +955,7 @@ Sub encryptionFileEx()
         
         'なんちゃって暗号化
         For i = 0 To lngRead - 1
-            bytBuf(i) = bytBuf(i) Xor KEY
+            bytBuf(i) = bytBuf(i) Xor Key
         Next
         
         '結果を書き込む
@@ -966,7 +1028,7 @@ Sub pasteCSV()
     Dim lngRow As Long
     Dim r As Range
     
-    lngRow = ActiveCell.row
+    lngRow = ActiveCell.Row
     For i = 0 To lngCount - 1
     
         'カンマ区切りで分割を行う（ダブルコーテーション内カンマ対応）
@@ -1004,8 +1066,6 @@ End Sub
 '　文字列の分割（カンマ）
 '--------------------------------------------------------------
 Public Function rlxCsvPart(ByVal strBuf As String) As Variant
-Attribute rlxCsvPart.VB_Description = "ワークシート関数として使用できません。"
-Attribute rlxCsvPart.VB_ProcData.VB_Invoke_Func = " \n19"
 
     Dim lngLen As Long
     Dim lngCnt As Long
@@ -1199,12 +1259,20 @@ Private Sub SelectionShiftCell(ByVal lngRow As Long, ByVal lngCol As Long)
     
     For Each r In Selection.Areas
     
-        err.Clear
+        Err.Clear
         On Error Resume Next
         If c Is Nothing Then
-            Set c = r.Offset(lngRow, lngCol)
+            If r.Offset(lngRow, lngCol) Is Nothing Then
+                Exit Sub
+            Else
+                Set c = r.Offset(lngRow, lngCol)
+            End If
         Else
-            Set c = Union(c, r.Offset(lngRow, lngCol))
+            If r.Offset(lngRow, lngCol) Is Nothing Then
+                Exit Sub
+            Else
+                Set c = Union(c, r.Offset(lngRow, lngCol))
+            End If
         End If
     
     Next
@@ -1243,28 +1311,32 @@ Public Sub createReferenceBook()
         Exit Sub
     End If
 
+    '2013以降はSDIなのでウィンドウを出さない
     Dim blnResult As Boolean
-    If frmReference.Start(blnResult) = vbCancel Then
-        Exit Sub
+    If Val(Application.Version) >= C_EXCEL_VERSION_2013 Then
+        blnResult = False
+    Else
+        If frmReference.Start(blnResult) = vbCancel Then
+            Exit Sub
+        End If
     End If
-
 
     Set FS = CreateObject("Scripting.FileSystemObject")
 
     strActBook = ActiveWorkbook.FullName
     strTmpBook = rlxGetTempFolder() & C_REF_TEXT & FS.getFileName(ActiveWorkbook.Name)
 
-    FS.copyfile strActBook, strTmpBook
+    FS.CopyFile strActBook, strTmpBook
 
     If blnResult Then
         Set XL = New Excel.Application
         
         XL.visible = True
         
-        Set WB = XL.Workbooks.Open(FileName:=strTmpBook, ReadOnly:=True)
+        Set WB = XL.Workbooks.Open(filename:=strTmpBook, ReadOnly:=True)
         AppActivate XL.Caption
     Else
-        Set WB = Workbooks.Open(FileName:=strTmpBook, ReadOnly:=True)
+        Set WB = Workbooks.Open(filename:=strTmpBook, ReadOnly:=True)
         AppActivate Application.Caption
     
     End If
@@ -1310,11 +1382,11 @@ Public Sub changeReferenceBook()
     strActBook = ActiveWorkbook.FullName
     strTmpBook = rlxGetTempFolder() & C_REF_TEXT & FS.getFileName(ActiveWorkbook.Name)
 
-    FS.copyfile strActBook, strTmpBook
+    FS.CopyFile strActBook, strTmpBook
 
     WB.Close
 
-    Workbooks.Open FileName:=strTmpBook, ReadOnly:=True
+    Workbooks.Open filename:=strTmpBook, ReadOnly:=True
     AppActivate Application.Caption
     
     Set FS = Nothing
@@ -1343,17 +1415,22 @@ Public Sub OpenReferenceBook()
     End If
     
     'ファイルの存在チェック
+    Dim blnResult As Boolean
     If rlxIsFileExists(strFile) Then
+        blnResult = False
     Else
         MsgBox "ファイルが存在しません。", vbExclamation, C_TITLE
         Exit Sub
     End If
 
-    Dim blnResult As Boolean
-    If frmReference.Start(blnResult) = vbCancel Then
-        Exit Sub
+    '2013以降はSDIなのでウィンドウを出さない
+    If Val(Application.Version) >= C_EXCEL_VERSION_2013 Then
+        blnResult = False
+    Else
+        If frmReference.Start(blnResult) = vbCancel Then
+            Exit Sub
+        End If
     End If
-
 
     Dim FS As Object
     Dim WB As Workbook
@@ -1364,17 +1441,17 @@ Public Sub OpenReferenceBook()
     strActBook = strFile
     strTmpBook = rlxGetTempFolder() & C_REF_TEXT & FS.getFileName(strFile)
 
-    FS.copyfile strActBook, strTmpBook
+    FS.CopyFile strActBook, strTmpBook
 
     If blnResult Then
         Set XL = New Excel.Application
         
         XL.visible = True
         
-        Set WB = XL.Workbooks.Open(FileName:=strTmpBook, ReadOnly:=True)
+        Set WB = XL.Workbooks.Open(filename:=strTmpBook, ReadOnly:=True)
         AppActivate XL.Caption
     Else
-        Set WB = Workbooks.Open(FileName:=strTmpBook, ReadOnly:=True)
+        Set WB = Workbooks.Open(filename:=strTmpBook, ReadOnly:=True)
         AppActivate Application.Caption
     End If
     
@@ -1813,7 +1890,7 @@ Sub documentSheet()
     With r.Font
         .Name = "ＭＳ ゴシック"
         .FontStyle = "標準"
-        .Size = 9
+        .size = 9
         .Strikethrough = False
         .Superscript = False
         .Subscript = False
@@ -1842,7 +1919,7 @@ Sub documentSheetMeiryo()
     With r.Font
         .Name = "メイリオ"
         .FontStyle = "標準"
-        .Size = 9
+        .size = 9
         .Strikethrough = False
         .Superscript = False
         .Subscript = False
@@ -1871,7 +1948,7 @@ Sub documentSheetMeiryoUI()
     With r.Font
         .Name = "Meiryo UI"
         .FontStyle = "標準"
-        .Size = 9
+        .size = 9
         .Strikethrough = False
         .Superscript = False
         .Subscript = False
@@ -1914,7 +1991,7 @@ Sub documentSheetHogan2Gothic9()
     With r.Font
         .Name = "ＭＳ ゴシック"
         .FontStyle = "標準"
-        .Size = 9
+        .size = 9
     End With
     
 End Sub
@@ -1935,7 +2012,7 @@ Sub documentSheetHogan2Gothic9Str()
     With r.Font
         .Name = "ＭＳ ゴシック"
         .FontStyle = "標準"
-        .Size = 9
+        .size = 9
     End With
     
 End Sub
@@ -1955,7 +2032,7 @@ Sub documentSheetHogan2Gothic11()
     With r.Font
         .Name = "ＭＳ ゴシック"
         .FontStyle = "標準"
-        .Size = 11
+        .size = 11
     End With
     
 End Sub
@@ -1976,7 +2053,7 @@ Sub documentSheetHogan2Gothic11Str()
     With r.Font
         .Name = "ＭＳ ゴシック"
         .FontStyle = "標準"
-        .Size = 11
+        .size = 11
     End With
     
 End Sub
@@ -2018,7 +2095,7 @@ Sub documentSheetUser()
     With r.Font
         .Name = strFont
         .FontStyle = "標準"
-        .Size = Val(strPoint)
+        .size = Val(strPoint)
         .Strikethrough = False
         .Superscript = False
         .Subscript = False
@@ -2219,21 +2296,21 @@ Sub tagJump()
         Exit Sub
     End If
 
-    strBook = Cells(ActiveCell.row, C_SEARCH_BOOK).Value
+    strBook = Cells(ActiveCell.Row, C_SEARCH_BOOK).Value
     If Len(strBook) = 0 Then
         Exit Sub
     End If
-    strSheet = Cells(ActiveCell.row, C_SEARCH_SHEET).Value
+    strSheet = Cells(ActiveCell.Row, C_SEARCH_SHEET).Value
     If Len(strSheet) = 0 Then
         Exit Sub
     End If
-    strAddress = Cells(ActiveCell.row, C_SEARCH_ADDRESS).Value
+    strAddress = Cells(ActiveCell.Row, C_SEARCH_ADDRESS).Value
     If Len(strAddress) = 0 Then
         Exit Sub
     End If
 
     On Error Resume Next
-    Set WB = Workbooks.Open(FileName:=strBook)
+    Set WB = Workbooks.Open(filename:=strBook)
     AppActivate Application.Caption
 
     Set WS = WB.Worksheets(strSheet)
@@ -2345,9 +2422,9 @@ Sub nextWorksheet()
         Exit Sub
     End If
     
-    For i = ActiveSheet.Index + 1 To ActiveWorkbook.Worksheets.count
-        If ActiveWorkbook.Worksheets(i).visible = xlSheetVisible Then
-            ActiveWorkbook.Worksheets(i).Select
+    For i = ActiveSheet.Index + 1 To ActiveWorkbook.Sheets.count
+        If ActiveWorkbook.Sheets(i).visible = xlSheetVisible Then
+            ActiveWorkbook.Sheets(i).Select
             Exit For
         End If
     Next
@@ -2369,8 +2446,8 @@ Sub prevWorksheet()
         Exit Sub
     End If
     For i = ActiveSheet.Index - 1 To 1 Step -1
-        If ActiveWorkbook.Worksheets(i).visible = xlSheetVisible Then
-            ActiveWorkbook.Worksheets(i).Select
+        If ActiveWorkbook.Sheets(i).visible = xlSheetVisible Then
+            ActiveWorkbook.Sheets(i).Select
             Exit For
         End If
     Next
@@ -2637,7 +2714,7 @@ Sub cellEditExt()
     
     On Error Resume Next
     Call WSH.Run("""" & strEditor & """ " & """" & strFileName & """", 1, True)
-    If err.Number <> 0 Then
+    If Err.Number <> 0 Then
         MsgBox "エディタの起動に失敗しました。設定を確認してください。", vbOKOnly + vbExclamation, C_TITLE
         GoTo e
     End If
@@ -2678,11 +2755,15 @@ Sub cellEditExt()
             End Select
             
             On Error Resume Next
-            err.Clear
+            Err.Clear
             
-            r.Value = Replace(strBuf, vbCrLf, vbLf)
+            If Len(r.PrefixCharacter) > 0 Then
+                r.Value = r.PrefixCharacter & Replace(strBuf, vbCrLf, vbLf)
+            Else
+                r.Value = Replace(strBuf, vbCrLf, vbLf)
+            End If
             
-            If err.Number <> 0 Then
+            If Err.Number <> 0 Then
                 MsgBox "式の設定に失敗しました。式が正しくない可能性があります。", vbOKOnly + vbExclamation, C_TITLE
             End If
         Else
@@ -2733,7 +2814,7 @@ Public Sub saveImage()
         Call CopyClipboardSleep
         ActiveSheet.Paste
         With Selection
-            m_Width = .Width: m_Height = .Height
+            m_Width = .width: m_Height = .Height
             .CopyPicture xlScreen, xlBitmap
             Call CopyClipboardSleep
             .Delete
@@ -2862,6 +2943,9 @@ Sub setShortCutKey()
                 Application.OnKey strKey(2), strKey(5)
             Else
                 Application.OnKey strKey(2), "'execOnKey """ & strKey(5) & """,""" & strKey(4) & """'"
+'                If InStr(strKey(1), "/") > 0 Then
+'                    Application.TransitionMenuKey = ""
+'                End If
             End If
         End If
     Next
@@ -2925,7 +3009,7 @@ Sub removePageBreak()
     Dim p As HPageBreak
     
     For Each p In ActiveWindow.SelectedSheets.HPageBreaks
-        If p.Location.row = ActiveCell.row Then
+        If p.Location.Row = ActiveCell.Row Then
             p.Delete
             Exit For
         End If
@@ -2937,31 +3021,37 @@ End Sub
 '--------------------------------------------------------------
 Sub getFileNameFromClipboard()
 
-    Dim files As Variant
-    Dim strBuf As String
-    
-    On Error GoTo ErrHandle
-  
-    If ActiveCell Is Nothing Then
-        Exit Sub
-    End If
-    
-    strBuf = rlxGetFileNameFromCli()
-    
-    If strBuf = "" Then
-        Exit Sub
-    End If
-    
-    files = Split(strBuf, vbTab)
-    
-    Dim i As Long
-    For i = LBound(files) To UBound(files) Step 1
-        ActiveCell.Offset(i, 0).Value = files(i)
-    Next
-    
-    Exit Sub
-ErrHandle:
-    MsgBox "エラーが発生しました。", vbOKOnly, C_TITLE
+    MsgBox "この機能は「拡張貼り付け（値）」に統合されました。", vbInformation + vbOKOnly, C_TITLE
+
+'    Dim files As Variant
+'    Dim strBuf As String
+'
+'    On Error GoTo ErrHandle
+'
+'    If ActiveCell Is Nothing Then
+'        Exit Sub
+'    End If
+'
+'    Application.ScreenUpdating = False
+'
+'    strBuf = rlxGetFileNameFromCli()
+'
+'    If strBuf = "" Then
+'        Exit Sub
+'    End If
+'
+'    files = Split(strBuf, vbCrLf)
+'
+'    Dim i As Long
+'    For i = LBound(files) To UBound(files) Step 1
+'        ActiveCell.Offset(i, 0).Value = files(i)
+'    Next
+'
+'    Application.ScreenUpdating = True
+'    Exit Sub
+'ErrHandle:
+'    Application.ScreenUpdating = True
+'    MsgBox "エラーが発生しました。", vbOKOnly, C_TITLE
 
 End Sub
 '--------------------------------------------------------------
@@ -2989,7 +3079,7 @@ Sub openFileNameFromClipboard()
         Exit Sub
     End If
     
-    files = Split(strBuf, vbTab)
+    files = Split(strBuf, vbCrLf)
     
     If IsEmpty(files) Then
         Exit Sub
@@ -3001,9 +3091,14 @@ Sub openFileNameFromClipboard()
         End If
     End If
     
+    '2013以降はSDIなのでウィンドウを出さない
     Dim blnResult As Boolean
-    If frmReference.Start(blnResult) = vbCancel Then
-        Exit Sub
+    If Val(Application.Version) >= C_EXCEL_VERSION_2013 Then
+        blnResult = False
+    Else
+        If frmReference.Start(blnResult) = vbCancel Then
+            Exit Sub
+        End If
     End If
         
     If blnResult Then
@@ -3028,9 +3123,9 @@ Sub openFileNameFromClipboard()
             
         strTmpBook = rlxGetTempFolder() & C_REF_TEXT & FS.getFileName(f)
     
-        FS.copyfile f, strTmpBook
+        FS.CopyFile f, strTmpBook
     
-        WB.Open FileName:=strTmpBook, ReadOnly:=True
+        WB.Open filename:=strTmpBook ', ReadOnly:=True, UpdateLinks:=1, IgnoreReadOnlyRecommended:=False
 pass:
     Next
     
@@ -3279,7 +3374,7 @@ Sub RegExport()
     Dim strDat As String
     Const C_FF As Byte = &HFF
     Const C_FE As Byte = &HFE
-    Dim FileName As Variant
+    Dim filename As Variant
     Dim strReg As String
     
     Dim Reg, Locator, Service, SubKey, RegName, RegType
@@ -3289,8 +3384,8 @@ Sub RegExport()
     
     SetMyDocument
     
-    FileName = Application.GetSaveAsFilename(InitialFileName:="RelaxTools-Addin.reg", FileFilter:="登録ファイル,*.reg")
-    If FileName = False Then
+    filename = Application.GetSaveAsFilename(InitialFileName:="RelaxTools-Addin.reg", fileFilter:="登録ファイル,*.reg")
+    If filename = False Then
         Exit Sub
     End If
     
@@ -3305,16 +3400,16 @@ Sub RegExport()
     Const HKEY_CURRENT_USER = &H80000001
     
     Const ROOT = "HKEY_CURRENT_USER\"
-    Const KEY = "SOFTWARE\VB and VBA Program Settings\RelaxTools-Addin"
+    Const Key = "SOFTWARE\VB and VBA Program Settings\RelaxTools-Addin"
     
-    Reg.EnumKey HKEY_CURRENT_USER, KEY, SubKey
+    Reg.EnumKey HKEY_CURRENT_USER, Key, SubKey
     
     fp = FreeFile()
-    Open FileName For Output As fp
+    Open filename For Output As fp
     Close fp
     
     fp = FreeFile()
-    Open FileName For Binary As fp
+    Open filename For Binary As fp
     
     Dim strBuf() As Byte
     
@@ -3324,23 +3419,23 @@ Sub RegExport()
     strBuf = "Windows Registry Editor Version 5.00" & vbCrLf & vbCrLf
     Put fp, , strBuf
     
-    strBuf = "[" & ROOT & KEY & "]" & vbCrLf
+    strBuf = "[" & ROOT & Key & "]" & vbCrLf
     Put fp, , strBuf
     
     For i = 0 To UBound(SubKey)
         
-        Reg.EnumValues HKEY_CURRENT_USER, KEY & "\" & SubKey(i), RegName, RegType
+        Reg.EnumValues HKEY_CURRENT_USER, Key & "\" & SubKey(i), RegName, RegType
             
-        strBuf = vbCrLf & "[" & ROOT & KEY & "\" & SubKey(i) & "]" & vbCrLf
+        strBuf = vbCrLf & "[" & ROOT & Key & "\" & SubKey(i) & "]" & vbCrLf
         Put fp, , strBuf
         
         For j = 0 To UBound(RegName)
         
             Select Case RegType(j)
                 Case 1
-                    Reg.GetStringValue HKEY_CURRENT_USER, KEY & "\" & SubKey(i), RegName(j), RegData
+                    Reg.GetStringValue HKEY_CURRENT_USER, Key & "\" & SubKey(i), RegName(j), RegData
                 Case Else
-                    Reg.GetMultiStringValue HKEY_CURRENT_USER, KEY & "\" & SubKey(i), RegName(j), RegData
+                    Reg.GetMultiStringValue HKEY_CURRENT_USER, Key & "\" & SubKey(i), RegName(j), RegData
                 
             End Select
         
@@ -3367,5 +3462,120 @@ err_Handle:
     MsgBox "登録ファイルの保存に失敗しました。", vbOKOnly + vbInformation, C_TITLE
     
 End Sub
+Sub btnMoveTableLeft()
+    
+    TableMove 0, -1
 
+End Sub
+Sub btnMoveTableRight()
 
+    TableMove 0, 1
+
+End Sub
+Sub btnMoveTableDown()
+
+    TableMove 1, 0
+
+End Sub
+Sub btnMoveTableUp()
+
+    TableMove -1, 0
+
+End Sub
+
+Private Sub TableMove(ByVal offsetRow As Long, ByVal offsetCol As Long)
+
+    Dim r As Range
+    Dim c As Range
+    Dim strAddress As String
+    
+    On Error Resume Next
+    
+    If Selection.Areas.count > 1 Then
+        Exit Sub
+    End If
+    
+    If offsetRow + Selection(1).Row <= 0 Then
+        Exit Sub
+    End If
+    
+    If offsetCol + Selection(1).Column <= 0 Then
+        Exit Sub
+    End If
+    
+    '削除されるセルに文字があったら移動しない
+    Select Case True
+        'Left
+        Case offsetRow = 0 And offsetCol = -1
+            Set r = Range(Cells(Selection(1).Row, Selection(1).Column - 1), Cells(Selection(Selection.count).Row, Selection(1).Column - 1))
+        'Right
+        Case offsetRow = 0 And offsetCol = 1
+            Set r = Range(Cells(Selection(1).Row, Selection(Selection.count).Column + 1), Cells(Selection(Selection.count).Row, Selection(Selection.count).Column + 1))
+        'Up
+        Case offsetRow = -1 And offsetCol = 0
+            Set r = Range(Cells(Selection(1).Row - 1, Selection(1).Column), Cells(Selection(1).Row - 1, Selection(Selection.count).Column))
+        'Down
+        Case offsetRow = 1 And offsetCol = 0
+            Set r = Range(Cells(Selection(Selection.count).Row + 1, Selection(1).Column), Cells(Selection(Selection.count).Row + 1, Selection(Selection.count).Column))
+        Case Else
+            Exit Sub
+    End Select
+    For Each c In r
+        If c.MergeCells Then
+            Exit Sub
+        End If
+        If c.Value <> "" Then
+            Exit Sub
+        End If
+    Next
+    
+    Application.ScreenUpdating = False
+    
+    With ThisWorkbook.Worksheets("Undo")
+    
+        .Cells.Clear
+    
+        strAddress = Selection.Address
+        
+        Selection.Cut Destination:=.Range(strAddress)
+        
+        SelectionShiftCell offsetRow, offsetCol
+        
+        .Range(strAddress).Cut Destination:=Selection
+    
+    End With
+
+    Application.ScreenUpdating = True
+
+End Sub
+
+'初心者忘備録
+'https://www.ka-net.org/blog/?p=9180
+'指定したファイルをエクスプローラーで開いて選択するVBAマクロ
+'
+Sub SelFileInExplorer(ByVal TargetFilePath As String)
+'指定したファイルをエクスプローラーで開いて選択する
+  With CreateObject("Scripting.FileSystemObject")
+    If .FileExists(TargetFilePath) = True Then
+      shell "EXPLORER.EXE /select,""" & TargetFilePath & """", vbNormalFocus
+    End If
+  End With
+End Sub
+
+'Sub a()
+'
+'    Dim varExt As Variant
+'    Dim v As Variant
+'
+'    With CreateObject("WScript.Shell")
+''HKEY_CLASSES_ROOT\Excel.SheetMacroEnabled.12
+'
+'        'ブック名を変更して開く
+'        varExt = Array("Excel.Sheet.8", "Excel.Sheet.12", "Excel.SheetMacroEnabled.12")
+'        For Each v In varExt
+'            .RegDelete "HKEY_CLASSES_ROOT\" & v & "\shell\rlxAliasOpen\command\"
+'            .RegDelete "HKEY_CLASSES_ROOT\" & v & "\shell\rlxAliasOpen\"
+'        Next
+'
+'    End With
+'End Sub

@@ -136,6 +136,10 @@ Public Sub Run()
         End If
     End If
     
+    Dim strRange As String
+    
+    strRange = Selection.Address
+    
     '使われているセルと現在選択セルのAND部分のみ処理する。
     Set a = Intersect(ActiveSheet.UsedRange, Selection)
     
@@ -194,7 +198,7 @@ Public Sub Run()
     For Each r In a
     
         ''フィルタおよび非表示対策。
-        If r.Rows.Hidden Or r.Columns.Hidden Then
+        If r.Rows.Hidden Or r.Columns.Hidden Or r.MergeArea(1).Address <> r.Address Then
             'フィルタまたは非表示の行・列の処理は行わない。
         Else
             
@@ -209,7 +213,7 @@ Public Sub Run()
             On Error GoTo 0
             
             'アドレスが登録されていない場合イベントを起こす
-            If err.Number = 0 And Not (e Is Nothing) Then
+            If Err.Number = 0 And Not (e Is Nothing) Then
             Else
                 '---------------------------
                 'メインイベント
@@ -237,23 +241,22 @@ Public Sub Run()
     
     Set objStatus = Nothing
 
+    Range(strRange).Select
+    
     '---------------------------
     '終了イベント
     '---------------------------
-    Application.ScreenUpdating = False
-    
     RaiseEvent SelectionTerm
-    
-    Application.ScreenUpdating = True
     
     If Undo Then
         'Undo
         Application.OnUndo "Undo", "execUndo"
     End If
     
+    
     Exit Sub
 ErrHandle:
-    Logger.LogFatal TypeName(Me) & ".Run" & "(" & err.Description & ")"
+    Logger.LogFatal TypeName(Me) & ".Run" & "(" & Err.Description & ")"
     
 End Sub
 

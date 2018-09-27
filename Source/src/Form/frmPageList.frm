@@ -1,7 +1,7 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmPageList 
    Caption         =   "ページ数の取得"
-   ClientHeight    =   2760
+   ClientHeight    =   3075
    ClientLeft      =   45
    ClientTop       =   435
    ClientWidth     =   8040
@@ -103,7 +103,7 @@ End Sub
 
 
 
-Private Sub cmdOK_Click()
+Private Sub cmdOk_Click()
 
     Dim XL As Excel.Application
     Dim WB As Workbook
@@ -117,6 +117,7 @@ Private Sub cmdOK_Click()
     Dim lngBookMax As Long
     
     Dim ResultWS As Worksheet
+    Dim ResultWB As Workbook
     
     Dim strPath As String
     Dim strPtn As String
@@ -169,7 +170,7 @@ Private Sub cmdOK_Click()
     mMm.DispGuidance "ファイルの数をカウントしています..."
     
     FileSearch objFs, strPath, strPatterns(), colBook
-    Select Case err.Number
+    Select Case Err.Number
     Case 75, 76
         mMm.Enable
         Set mMm = Nothing
@@ -181,8 +182,15 @@ Private Sub cmdOK_Click()
     
     Set objFs = Nothing
     
+    On Error GoTo e
+    
     ThisWorkbook.Worksheets("ページ数カウント結果").Copy
-    Set ResultWS = ActiveSheet
+    Set ResultWB = Application.Workbooks(Application.Workbooks.count)
+    
+    'Application.ScreenUpdating の代わり
+    ResultWB.Windows(1).visible = False
+    
+    Set ResultWS = ResultWB.Worksheets(1)
     
     ResultWS.Cells(1, C_SEARCH_NO).Value = "No."
     ResultWS.Cells(1, C_SEARCH_BOOK).Value = "ファイル名"
@@ -200,7 +208,7 @@ Private Sub cmdOK_Click()
     End If
     If chkWord.Value Then
         Dim WD As Object
-        Dim DC As Object
+        Dim dc As Object
         Set WD = CreateObject("Word.Application")
     End If
     If chkPoint.Value Then
@@ -208,7 +216,7 @@ Private Sub cmdOK_Click()
         Dim pt As Object
         Set PP = CreateObject("PowerPoint.Application")
     End If
-    
+
     lngBookCount = 0
     lngBookMax = colBook.count
     mMm.StartGauge lngBookMax
@@ -219,9 +227,9 @@ Private Sub cmdOK_Click()
             Exit For
         End If
     
-        err.Clear
+        Err.Clear
         
-        ResultWS.Cells(lngCount, C_SEARCH_NO).Value = lngCount - C_START_ROW + 1
+        ResultWS.Cells(lngCount, C_SEARCH_NO).Value = lngBookCount + 1 'lngCount - C_START_ROW + 1
         ResultWS.Cells(lngCount, C_SEARCH_BOOK).Value = varBook
     
         ResultWS.Hyperlinks.Add _
@@ -233,33 +241,51 @@ Private Sub cmdOK_Click()
         Select Case True
             Case InStr(UCase(varBook), C_EXCEL_FILE) > 0
             
-                Set WB = XL.Workbooks.Open(FileName:=varBook, ReadOnly:=True)
+                Set WB = XL.Workbooks.Open(filename:=varBook, ReadOnly:=True, UpdateLinks:=0, IgnoreReadOnlyRecommended:=True)
                 
+                Dim w As Long
                 lngPage = 0
+                w = lngCount
+                
                 For Each WS In WB.Worksheets
                     If WS.visible = xlSheetVisible Then
-                        lngPage = lngPage + (WS.VPageBreaks.count + 1) * (WS.HPageBreaks.count + 1)
+                    
+                        Dim p As Long
+                        
+                        'p = (WS.VPageBreaks.count + 1) * (WS.HPageBreaks.count + 1)
+                        WB.Windows(1).View = xlPageBreakPreview
+                        p = WS.PageSetup.Pages.count
+                        
+                        If chkExcelSheet.Value Then
+                            lngCount = lngCount + 1
+                            ResultWS.Cells(lngCount, C_SEARCH_PAGE).Value = p
+                            ResultWS.Cells(lngCount, C_SEARCH_BOOK).Value = "  " & WS.Name
+                        End If
+                        
+                        lngPage = lngPage + p
+                        
                     End If
                 Next
+               
                 
-                ResultWS.Cells(lngCount, C_SEARCH_PAGE).Value = lngPage
+                ResultWS.Cells(w, C_SEARCH_PAGE).Value = lngPage
                 WB.Close SaveChanges:=False
                 Set WB = Nothing
         
             Case InStr(UCase(varBook), C_WORD_FILE) > 0
             
-                Set DC = WD.Documents.Open(FileName:=varBook, ReadOnly:=True)
+                Set dc = WD.Documents.Open(filename:=varBook, ReadOnly:=True)
                 
-                DC.Repaginate
+                dc.Repaginate
                 
-                ResultWS.Cells(lngCount, C_SEARCH_PAGE).Value = DC.BuiltinDocumentProperties(14)
+                ResultWS.Cells(lngCount, C_SEARCH_PAGE).Value = dc.BuiltinDocumentProperties(14)
                 
-                DC.Close SaveChanges:=False
-                Set DC = Nothing
+                dc.Close SaveChanges:=False
+                Set dc = Nothing
                 
             Case InStr(UCase(varBook), C_PPT_FILE) > 0
             
-                Set pt = PP.Presentations.Open(FileName:=varBook, ReadOnly:=True, withwindow:=False)
+                Set pt = PP.Presentations.Open(filename:=varBook, ReadOnly:=True, withwindow:=False)
                     
                 ResultWS.Cells(lngCount, C_SEARCH_PAGE).Value = pt.Slides.count
                 
@@ -272,7 +298,7 @@ Private Sub cmdOK_Click()
         lngCount = lngCount + 1
         mMm.DisplayGauge lngBookCount
     Next
-    
+e:
     If chkPoint.Value Then
         PP.Quit
         Set PP = Nothing
@@ -286,14 +312,14 @@ Private Sub cmdOK_Click()
         Set XL = Nothing
     End If
     
+    ResultWB.Windows(1).visible = True
+    DoEvents
+    
     Dim r As Range
     Set r = ResultWS.Cells(C_START_ROW, 1).CurrentRegion
     
     r.VerticalAlignment = xlTop
     r.Select
-    
-
-
     
     Dim strBuf As String
     Dim i As Long
@@ -311,10 +337,8 @@ Private Sub cmdOK_Click()
         End If
     Next
     SaveSetting C_TITLE, "ExcelPages", "FolderStr", strBuf
-    
-
     SaveSetting C_TITLE, "ExcelPages", "chkSubFolder", chkSubFolder.Value
-
+    SaveSetting C_TITLE, "ExcelPages", "chkExcelSheet", chkExcelSheet.Value
     
     Set mMm = Nothing
     
@@ -322,8 +346,10 @@ Private Sub cmdOK_Click()
     
     AppActivate ResultWS.Application.Caption
     execSelectionRowDrawGrid
-    Set ResultWS = Nothing
     
+    Set ResultWS = Nothing
+    Set ResultWB = Nothing
+
 End Sub
 Private Sub FileSearch(objFs As Object, strPath As String, strPatterns() As String, objCol As Collection)
 
@@ -345,7 +371,7 @@ Private Sub FileSearch(objFs As Object, strPath As String, strPatterns() As Stri
         DoEvents
         DoEvents
         For Each f In strPatterns
-            If LCase(objfl.Name) Like LCase(f) Then
+            If LCase(objfl.Name) Like LCase(f) And Left$(objfl.Name, 2) <> "~$" Then
                 blnFind = True
                 Exit For
             End If
@@ -393,6 +419,7 @@ Private Sub UserForm_Initialize()
     chkPoint.Value = True
     
     chkSubFolder.Value = GetSetting(C_TITLE, "ExcelPages", "chkSubFolder", False)
+    chkExcelSheet.Value = GetSetting(C_TITLE, "ExcelPages", "chkExcelSheet", False)
     
 End Sub
 

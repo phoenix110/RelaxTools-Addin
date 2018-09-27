@@ -42,6 +42,7 @@ Option Explicit
 '------------------------------------------------------------------------------------------------------------------------
 Private WithEvents SFWork As SelectionFrameWork
 Attribute SFWork.VB_VarHelpID = -1
+Private blnKake As Boolean
 
 '------------------------------------------------------------------------------------------------------------------------
 ' SelectionFrameWork 作成
@@ -66,6 +67,7 @@ End Sub
 
 Private Sub SFWork_SelectionInit(Cancel As Boolean, Undo As Boolean, Func As Boolean)
     Undo = True
+    blnKake = GetSetting(C_TITLE, "KatakanaConv", "kake", False)
 End Sub
 
 '------------------------------------------------------------------------------------------------------------------------
@@ -75,11 +77,16 @@ Private Sub SFWork_SelectionMain(r As Range, ByVal NotHoldFormat As Boolean, Can
         
     On Error GoTo e
     
-    r.Value = StrConvU(r.Value, vbKatakana)
-
+'    r.Value = StrConvU(r.Value, vbKatakana)
+    If Len(r.PrefixCharacter) > 0 Then
+        r.Value = r.PrefixCharacter & ToKatakana(r.Value, blnKake)
+    Else
+        r.Value = ToKatakana(r.Value, blnKake)
+    End If
+    
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
     Cancel = True
 End Sub
 
@@ -89,12 +96,13 @@ Private Sub SFWork_SelectionMainShape(r As Shape, ByVal NotHoldFormat As Boolean
     On Error GoTo e
     
     If r.TextFrame2.HasText Then
-        r.TextFrame2.TextRange.Characters.Text = StrConvU(r.TextFrame2.TextRange.Characters.Text, vbKatakana)
+'        r.TextFrame2.TextRange.Characters.Text = StrConvU(r.TextFrame2.TextRange.Characters.Text, vbKatakana)
+        r.TextFrame2.TextRange.Characters.Text = ToKatakana(r.TextFrame2.TextRange.Characters.Text, blnKake)
     End If
 
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
     Cancel = True
 
 End Sub

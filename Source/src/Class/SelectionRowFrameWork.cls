@@ -47,7 +47,7 @@ Public Event SelectionInit(ByRef rArea As Excel.Areas, ByRef Cancel As Boolean, 
 '前処理イベント
 Public Event SelectionBegin(ByRef rArea As Range, ByRef Cancel As Boolean)
 'メイン処理イベント
-Public Event SelectionMain(ByRef r As Range, ByVal row As Long, ByRef Cancel As Boolean)
+Public Event SelectionMain(ByRef r As Range, ByVal Row As Long, ByRef Cancel As Boolean)
 '後処理イベント
 Public Event SelectionFinal(ByRef rAarea As Range)
 '終了イベント
@@ -136,6 +136,8 @@ Public Sub Run()
     objStatus.MaxItems = lngMax
 
     Dim rArea As Range
+    
+    Application.ScreenUpdating = False
     For Each rArea In Selection.Areas
 
         '---------------------------
@@ -157,7 +159,7 @@ Public Sub Run()
             
             For i = 1 To lngCols
                 ''フィルタおよび非表示対策。
-                If rArea(lngCur, i).Rows.Hidden Or rArea(lngCur, i).Columns.Hidden Then
+                If rArea(lngCur, i).Rows.Hidden Or rArea(lngCur, i).Columns.Hidden Or rArea(lngCur, i).MergeArea(1).Address <> rArea(lngCur, i).Address Then
                 Else
                     If r Is Nothing Then
                         Set r = rArea(lngCur, i)
@@ -187,6 +189,7 @@ Public Sub Run()
         RaiseEvent SelectionFinal(rArea)
     
     Next
+    Application.ScreenUpdating = True
     
     'Selection進捗バーのDispose
     objStatus.Dispose
@@ -196,11 +199,11 @@ Public Sub Run()
     '---------------------------
     '終了イベント
     '---------------------------
-    Application.ScreenUpdating = False
+'    Application.ScreenUpdating = False
     
     RaiseEvent SelectionTerm
     
-    Application.ScreenUpdating = True
+'    Application.ScreenUpdating = True
     
     If Undo Then
         'Undo
@@ -209,6 +212,7 @@ Public Sub Run()
     
     Exit Sub
 ErrHandle:
+    Application.ScreenUpdating = True
     MsgBox "エラーが発生しました。", vbOKOnly, C_TITLE
 End Sub
 

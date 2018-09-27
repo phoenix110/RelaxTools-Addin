@@ -4,7 +4,7 @@ Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmCombo
    ClientHeight    =   6840
    ClientLeft      =   45
    ClientTop       =   390
-   ClientWidth     =   9090
+   ClientWidth     =   9090.001
    OleObjectBlob   =   "frmCombo.frx":0000
    StartUpPosition =   1  'オーナー フォームの中央
 End
@@ -398,11 +398,11 @@ Private Sub UserForm_Initialize()
     End If
     
     Set MW = basMouseWheel.GetInstance
-    MW.Install
+    MW.Install Me
 End Sub
-Private Sub UserForm_Activate()
-    MW.Activate
-End Sub
+'Private Sub UserForm_Activate()
+'    MW.Activate
+'End Sub
 
 Sub dispCommand()
 
@@ -442,14 +442,19 @@ End Sub
 
 Private Sub MW_WheelDown(obj As Object)
 
+    On Error GoTo e
+
     If obj.ListCount = 0 Then Exit Sub
     obj.TopIndex = obj.TopIndex + 3
     
+e:
 End Sub
 
 Private Sub MW_WheelUp(obj As Object)
 
     Dim lngPos As Long
+
+    On Error GoTo e
 
     If obj.ListCount = 0 Then Exit Sub
     lngPos = obj.TopIndex - 3
@@ -459,7 +464,7 @@ Private Sub MW_WheelUp(obj As Object)
     End If
 
     obj.TopIndex = lngPos
-
+e:
 End Sub
 
 Private Sub UserForm_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)

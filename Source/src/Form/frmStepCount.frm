@@ -1,7 +1,7 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmStepCount 
    Caption         =   "VBAステップカウント"
-   ClientHeight    =   8520
+   ClientHeight    =   8520.001
    ClientLeft      =   45
    ClientTop       =   435
    ClientWidth     =   7620
@@ -83,7 +83,7 @@ Private Sub UserForm_Initialize()
 End Sub
 
 
-Private Sub cmdOK_Click()
+Private Sub cmdOk_Click()
 
     Dim Target As Workbook
     Dim i As Integer
@@ -105,7 +105,7 @@ Private Sub cmdOK_Click()
         Exit Sub
     End If
         
-    Application.ScreenUpdating = False
+'    Application.ScreenUpdating = False
         
     Set Target = Workbooks(cboSrcBook.Text)
     
@@ -185,9 +185,9 @@ Private Sub cmdOK_Click()
     WB.Worksheets(1).Columns("A:G").EntireColumn.AutoFit
     
     WB.Worksheets(1).Sort.SortFields.Clear
-    WB.Worksheets(1).Sort.SortFields.Add KEY:=Range(WB.Worksheets(1).Cells(2, C_SORT), WB.Worksheets(1).Cells(lngCnt, C_SORT)), _
+    WB.Worksheets(1).Sort.SortFields.Add Key:=Range(WB.Worksheets(1).Cells(2, C_SORT), WB.Worksheets(1).Cells(lngCnt, C_SORT)), _
         SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:=xlSortNormal
-    WB.Worksheets(1).Sort.SortFields.Add KEY:=Range(WB.Worksheets(1).Cells(2, C_MODULE), WB.Worksheets(1).Cells(lngCnt, C_MODULE)), _
+    WB.Worksheets(1).Sort.SortFields.Add Key:=Range(WB.Worksheets(1).Cells(2, C_MODULE), WB.Worksheets(1).Cells(lngCnt, C_MODULE)), _
         SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:=xlSortNormal
     With WB.Worksheets(1).Sort
         .SetRange Range(WB.Worksheets(1).Cells(2, C_MODULE), WB.Worksheets(1).Cells(lngCnt, C_SORT))
@@ -210,11 +210,11 @@ Private Sub cmdOK_Click()
     WB.Worksheets(1).Cells(lngCnt, C_ALL).Formula = "=sum(G3:G" & lngCnt - 1 & ")"
     Unload Me
     
-    Application.ScreenUpdating = True
+'    Application.ScreenUpdating = True
     
     Exit Sub
 ErrHandle:
-    Application.ScreenUpdating = True
+'    Application.ScreenUpdating = True
     MsgBox "エラーが発生しました。", vbOKOnly, C_TITLE
 End Sub
 

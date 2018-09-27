@@ -38,15 +38,16 @@ Attribute VB_Exposed = True
 '-----------------------------------------------------------------------------------------------------
 Option Explicit
 Private Const C_File As String = "RELAXTOOLS.XLAM"
+Private Const C_TITLE As String = "RelaxTools-Addin"
 
 Sub reboot()
 
     Dim a As AddIn
 
-    err.Clear
+    Err.Clear
     On Error Resume Next
     
-    If MsgBox("RelaxToolsを再起動しますがよろしいですか？", vbYesNo + vbQuestion, "RelaxTools-Addin") <> vbYes Then
+    If MsgBox("RelaxToolsを再起動しますがよろしいですか？", vbYesNo + vbQuestion, C_TITLE) <> vbYes Then
         Exit Sub
     End If
 
@@ -60,8 +61,10 @@ Sub reboot()
 
     Next
 
-    If err.Number <> 0 Then
-        MsgBox "再起動中にエラーがありました。Excel自体の再起動が必要な場合があります。", vbExclamation + vbOKOnly, "RelaxTools-Addin"
+    If Err.Number <> 0 Then
+        MsgBox "再起動中にエラーがありました。Excel自体の再起動が必要な場合があります。", vbExclamation + vbOKOnly, C_TITLE
+    Else
+        MsgBox "RelaxToolsの再起動が完了しました。", vbInformation + vbOKOnly, C_TITLE
     End If
 
 End Sub
@@ -69,10 +72,10 @@ Sub RelaxInit()
 
     Dim a As AddIn
 
-    err.Clear
+    Err.Clear
     On Error Resume Next
 
-    If MsgBox("RelaxToolsの設定を初期化しますがよろしいですか？", vbYesNo + vbQuestion, "RelaxTools-Addin") <> vbYes Then
+    If MsgBox("RelaxToolsの設定を初期化しますがよろしいですか？", vbYesNo + vbQuestion, C_TITLE) <> vbYes Then
         Exit Sub
     End If
     
@@ -82,7 +85,7 @@ Sub RelaxInit()
         
             a.Installed = False
             
-            DeleteSetting "RelaxTools-Addin"
+            DeleteSetting C_TITLE
             
             a.Installed = True
             Exit For
@@ -90,21 +93,24 @@ Sub RelaxInit()
 
     Next
 
-    If err.Number <> 0 Then
-        MsgBox "初期化中にエラーがありました。Excel自体の再起動が必要な場合があります。", vbExclamation + vbOKOnly, "RelaxTools-Addin"
+    If Err.Number <> 0 Then
+        MsgBox "初期化中にエラーがありました。Excel自体の再起動が必要な場合があります。", vbExclamation + vbOKOnly, C_TITLE
+    Else
+        MsgBox "RelaxToolsの初期化が完了しました。", vbInformation + vbOKOnly, C_TITLE
     End If
 
 End Sub
 Sub RelaxUninstall()
 
     Dim a As AddIn
+    Dim strFolder As String
     
     On Error GoTo e
     
-    If MsgBox("RelaxToolsをアンインストールしますがよろしいですか？", vbYesNo + vbQuestion, "RelaxTools-Addin") <> vbYes Then
+    If MsgBox("RelaxToolsをアンインストールしますがよろしいですか？", vbYesNo + vbQuestion, C_TITLE) <> vbYes Then
         Exit Sub
     End If
-
+    
     For Each a In Application.AddIns
 
         If UCase(a.Name) = C_File Then
@@ -114,11 +120,27 @@ Sub RelaxUninstall()
         End If
 
     Next
+    
+    'ブックの名前を変更して開くのレジストリ削除
+    With CreateObject("WScript.Shell")
+        .Run .SpecialFolders("AppData") & "\" & C_TITLE & "\" & "rlxAliasOpen.vbs ""/uninstall""", 1, True
+    End With
 
-    DeleteSetting "RelaxTools"
-    MsgBox "正常にアンインストールされました。", vbInformation + vbOKOnly, "RelaxTools-Addin"
+    With CreateObject("Scripting.FileSystemObject")
+    
+        strFolder = .BuildPath(CreateObject("Wscript.Shell").SpecialFolders("AppData"), C_TITLE)
+        
+        If .FolderExists(strFolder) Then
+            .DeleteFolder strFolder, True
+        End If
+        
+    End With
+
+    DeleteSetting C_TITLE
+    
+    MsgBox "正常にアンインストールされました。", vbInformation + vbOKOnly, C_TITLE
     Exit Sub
 e:
-    MsgBox "アンインストールが正常に行われませんでした。", vbCritical + vbOKOnly, "RelaxTools-Addin"
+    MsgBox "アンインストールが正常に行われませんでした。", vbCritical + vbOKOnly, C_TITLE
     
 End Sub

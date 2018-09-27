@@ -45,9 +45,30 @@ Attribute VB_Exposed = False
 Option Explicit
 Private WithEvents MW As MouseWheel
 Attribute MW.VB_VarHelpID = -1
+'Private TR As Transparent
 
-Private Sub cmdOK_Click()
+Private Const mstrAns As String = "26262828252725274241" '上上下下左右左右ＢＡ
+Private mstrKey As String
+Private Sub cmdOk_Click()
     Unload Me
+End Sub
+
+
+
+
+
+
+
+Private Sub imgMado_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
+
+    Dim WSH As Object
+    
+    Set WSH = CreateObject("WScript.Shell")
+    
+    Call WSH.Run("http://forest.watch.impress.co.jp/docs/prize/2014/681765.html")
+    
+    Set WSH = Nothing
+
 End Sub
 
 Private Sub lblGitHub_Click()
@@ -67,16 +88,31 @@ Private Sub lblUrl_Click()
 End Sub
 
 
+Private Sub txtDebug_KeyDown(ByVal KeyCode As MSForms.ReturnInteger, ByVal Shift As Integer)
+
+    Debug.Print Hex(KeyCode);
+
+    mstrKey = mstrKey & Hex(KeyCode)
+    If mstrKey = mstrAns Then
+        MsgBox "「すし流し」機能の封印が解かれました。", vbInformation + vbOKOnly, C_TITLE
+        mblnSushi = True
+        Call RefreshRibbon
+    End If
+
+End Sub
+
 Private Sub txtDebug_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
     Set MW.obj = txtDebug
 End Sub
-Private Sub UserForm_Activate()
-    MW.Activate
-End Sub
+'Private Sub UserForm_Activate()
+'    MW.Activate
+'End Sub
 Private Sub UserForm_Initialize()
 
     Dim strVer As String
     Dim strTitle As String
+    
+    mstrKey = ""
 
     strTitle = ThisWorkbook.BuiltinDocumentProperties("Title").Value
     strVer = ThisWorkbook.BuiltinDocumentProperties("Comments").Value
@@ -209,7 +245,11 @@ Private Sub UserForm_Initialize()
 '    SendKeys "^A"
     
     Set MW = basMouseWheel.GetInstance
-    MW.Install
+    MW.Install Me
+    
+'    Set TR = New Transparent
+'    TR.Init Me
+'    TR.setTransparent 220
     
 End Sub
 
@@ -219,6 +259,7 @@ Private Sub MW_WheelDown(obj As Object)
     Dim lngPos As Long
     
     On Error GoTo e
+    
     lngPos = obj.CurLine + 3
     If lngPos >= obj.LineCount Then
         lngPos = obj.LineCount - 1
@@ -232,6 +273,7 @@ Private Sub MW_WheelUp(obj As Object)
     Dim lngPos As Long
     
     On Error GoTo e
+    
     lngPos = obj.CurLine - 3
     If lngPos < 0 Then
         lngPos = 0
@@ -247,4 +289,6 @@ End Sub
 Private Sub UserForm_Terminate()
     MW.UnInstall
     Set MW = Nothing
+'    TR.Term
+'    Set TR = Nothing
 End Sub

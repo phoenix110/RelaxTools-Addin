@@ -37,7 +37,7 @@ Public Const C_RECT_Y  As Single = 12
 
 'その他の構成（４×３マス）
 Public Const C_NORMAL_WIDTH As Long = 7
-Public Const C_NORMAL_HEIGHT As Long = 3
+Public Const C_NORMAL_HEIGHT As Long = 4
 
 '
 ' 線を真っ直ぐにする
@@ -53,7 +53,7 @@ Sub straightLine()
         Dim w As Long
         Dim h As Long
         
-        w = s.Width
+        w = s.width
         h = s.Height
         
         If w > h Then
@@ -65,12 +65,104 @@ Sub straightLine()
             End If
         Else
             If s.HorizontalFlip Then
-                s.Left = s.Left + s.Width
-                s.Width = 0
+                s.Left = s.Left + s.width
+                s.width = 0
             Else
-                s.Width = 0
+                s.width = 0
             End If
         End If
+    Next
+e:
+
+End Sub
+
+
+'選択したシェイプのサイズを合わせる
+'最初に選択したシェイプのサイズにそれ以降に選択したシェイプを合わせる
+Sub sameShapeSize()
+
+    Dim s As Shape
+    Dim blnFirst As Boolean
+    Dim dblWidth As Double
+    Dim dblHeight As Double
+    
+    On Error GoTo e
+    
+    blnFirst = True
+
+    For Each s In Selection.ShapeRange
+    
+        If blnFirst Then
+            blnFirst = False
+            dblWidth = s.width
+            dblHeight = s.Height
+        Else
+            
+            Dim a As Double
+            Dim b As Double
+            
+            a = s.Top + (s.Height / 2)
+            b = s.Left + (s.width / 2)
+            
+            s.Top = a - (dblHeight / 2)
+            s.Left = b - (dblWidth / 2)
+        
+            s.width = dblWidth
+            s.Height = dblHeight
+        
+        End If
+    
+    Next
+e:
+
+End Sub
+
+'選択したシェイプのサイズを合わせる
+'最初に選択したシェイプの上に合わせる
+Sub sameShapeTop()
+
+    Dim s As Shape
+    Dim blnFirst As Boolean
+    Dim dblTop As Double
+    
+    On Error GoTo e
+    
+    blnFirst = True
+
+    For Each s In Selection.ShapeRange
+    
+        If blnFirst Then
+            blnFirst = False
+            dblTop = s.Top
+        Else
+            s.Top = dblTop
+        End If
+    
+    Next
+e:
+
+End Sub
+'選択したシェイプのサイズを合わせる
+'最初に選択したシェイプの左に合わせる
+Sub sameShapeLeft()
+
+    Dim s As Shape
+    Dim blnFirst As Boolean
+    Dim dblLeft As Double
+    
+    On Error GoTo e
+    
+    blnFirst = True
+
+    For Each s In Selection.ShapeRange
+    
+        If blnFirst Then
+            blnFirst = False
+            dblLeft = s.Left
+        Else
+            s.Left = dblLeft
+        End If
+    
     Next
 e:
 
@@ -97,7 +189,7 @@ Sub drawFlowchartStoredData()
     For Each r In Selection
         
         'データ記憶シェイプの作成
-        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeFlowchartStoredData, r.Left + r.Width, r.Top, C_RECT_X * C_NORMAL_WIDTH, C_RECT_Y * C_NORMAL_HEIGHT)
+        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeFlowchartStoredData, r.Left + r.width, r.Top, C_RECT_X * C_NORMAL_WIDTH, C_RECT_Y * C_NORMAL_HEIGHT)
     
         With objDataSet.TextFrame
             .Characters.Text = r.Value
@@ -127,7 +219,7 @@ Sub drawTextbox1()
         lngCnt = InStr(strBuf, vbCrLf) + 3
         
         'データ記憶シェイプの作成
-        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeRectangle, r.Left + r.Width, r.Top, C_RECT_X * 10, C_RECT_Y * lngCnt)
+        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeRectangle, r.Left + r.width, r.Top, C_RECT_X * 10, C_RECT_Y * lngCnt)
     
         With objDataSet.TextFrame
             .Characters.Text = r.Value
@@ -156,7 +248,7 @@ Sub drawTextbox2()
         lngCnt = InStr(strBuf, vbCrLf) + 3
         
         'データ記憶シェイプの作成
-        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeRectangle, r.Left + r.Width, r.Top, C_RECT_X * 10, C_RECT_Y * lngCnt)
+        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeRectangle, r.Left + r.width, r.Top, C_RECT_X * 10, C_RECT_Y * lngCnt)
     
         With objDataSet.TextFrame
             .Characters.Text = r.Value
@@ -187,7 +279,7 @@ Sub drawShapeRectangularCallout()
         lngCnt = InStr(strBuf, vbCrLf) + 3
         
         'データ記憶シェイプの作成
-        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeRectangularCallout, r.Left + r.Width, r.Top, C_RECT_X * 10, C_RECT_Y * lngCnt)
+        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeRectangularCallout, r.Left + r.width, r.Top, C_RECT_X * 10, C_RECT_Y * lngCnt)
     
         With objDataSet.TextFrame
             .Characters.Text = r.Value
@@ -215,7 +307,7 @@ Sub drawShapeRoundedRectangularCallout()
         lngCnt = InStr(strBuf, vbCrLf) + 3
         
         'データ記憶シェイプの作成
-        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeRoundedRectangularCallout, r.Left + r.Width, r.Top, C_RECT_X * 10, C_RECT_Y * lngCnt)
+        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeRoundedRectangularCallout, r.Left + r.width, r.Top, C_RECT_X * 10, C_RECT_Y * lngCnt)
     
         With objDataSet.TextFrame
             .Characters.Text = r.Value
@@ -243,7 +335,7 @@ Sub drawShapeOvalCallout()
         lngCnt = InStr(strBuf, vbCrLf) + 3
         
         'データ記憶シェイプの作成
-        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeOvalCallout, r.Left + r.Width, r.Top, C_RECT_X * 10, C_RECT_Y * lngCnt)
+        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeOvalCallout, r.Left + r.width, r.Top, C_RECT_X * 10, C_RECT_Y * lngCnt)
     
         With objDataSet.TextFrame
             .Characters.Text = r.Value
@@ -271,7 +363,7 @@ Sub drawShapeCloudCallout()
         lngCnt = InStr(strBuf, vbCrLf) + 3
         
         'データ記憶シェイプの作成
-        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeCloudCallout, r.Left + r.Width, r.Top, C_RECT_X * 10, C_RECT_Y * lngCnt)
+        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeCloudCallout, r.Left + r.width, r.Top, C_RECT_X * 10, C_RECT_Y * lngCnt)
     
         With objDataSet.TextFrame
             .Characters.Text = r.Value
@@ -587,64 +679,73 @@ End Sub
 '
 Sub drawEvidenceTextbox()
 
-    Dim objDataSet As Shape
-    Dim z As Single
-    Dim r As Long
-    Dim c As Long
-    Dim a As Boolean
+    Dim obj As ShapeDrawEvidenceTextbox
     
-    If ActiveWorkbook Is Nothing Then
-        MsgBox "アクティブなブックが見つかりません。", vbCritical, C_TITLE
-        Exit Sub
-    End If
+    Set obj = New ShapeDrawEvidenceTextbox
     
-    a = Application.ScreenUpdating
-    Application.ScreenUpdating = False
+    obj.Run
     
-    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
-        z = ActiveWindow.Zoom
-        c = ActiveWindow.ScrollColumn
-        r = ActiveWindow.ScrollRow
-        ActiveWindow.Zoom = 100
-        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeRectangle, Selection.Left + (Selection.Width - C_RECT_X * C_NORMAL_WIDTH * 3) / 2, Selection.Top + (Selection.Height - C_RECT_Y * C_NORMAL_HEIGHT) / 2, C_RECT_X * C_NORMAL_WIDTH * 3, C_RECT_Y * C_NORMAL_HEIGHT)
-    Else
-        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeRectangle, ActiveWindow.ActivePane.VisibleRange.Left + 100, ActiveWindow.ActivePane.VisibleRange.Top + 100, C_RECT_X * C_NORMAL_WIDTH * 2, C_RECT_Y * C_NORMAL_HEIGHT)
-    End If
-    
-    '基本のスタイルをセット
-    objDataSet.ShapeStyle = msoShapeStylePreset1
-    
-    With objDataSet.Fill
-        .Solid
-        .visible = msoTrue
-        .Transparency = 1
-        .ForeColor.RGB = RGB(255, 255, 255)
-    End With
-    With objDataSet.Line
-        .Weight = 2.25
-        .DashStyle = msoLineSingle
-        .Style = msoLineSingle
-        .Transparency = 0#
-        .visible = msoTrue
-        .ForeColor.SchemeColor = 10
-        .BackColor.RGB = RGB(255, 255, 255)
-    End With
-        
-    objDataSet.Select
-    objDataSet.Placement = xlMove
+    Set obj = Nothing
 
-    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
-        ActiveWindow.Zoom = z
-        ActiveWindow.ScrollColumn = c
-        ActiveWindow.ScrollRow = r
-    Else
-        'シェイプをつまむ
-        PickShape objDataSet
-    End If
-    
-    Set objDataSet = Nothing
-    
-    Application.ScreenUpdating = a
+
+'    Dim objDataSet As Shape
+'    Dim z As Single
+'    Dim r As Long
+'    Dim c As Long
+'    Dim a As Boolean
+'
+'    If ActiveWorkbook Is Nothing Then
+'        MsgBox "アクティブなブックが見つかりません。", vbCritical, C_TITLE
+'        Exit Sub
+'    End If
+'
+'    a = Application.ScreenUpdating
+'    Application.ScreenUpdating = False
+'
+'    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
+'        z = ActiveWindow.Zoom
+'        c = ActiveWindow.ScrollColumn
+'        r = ActiveWindow.ScrollRow
+'        ActiveWindow.Zoom = 100
+'        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeRectangle, Selection.Left + (Selection.Width - C_RECT_X * C_NORMAL_WIDTH * 3) / 2, Selection.Top + (Selection.Height - C_RECT_Y * C_NORMAL_HEIGHT) / 2, C_RECT_X * C_NORMAL_WIDTH * 3, C_RECT_Y * C_NORMAL_HEIGHT)
+'    Else
+'        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeRectangle, ActiveWindow.ActivePane.VisibleRange.Left + 100, ActiveWindow.ActivePane.VisibleRange.Top + 100, C_RECT_X * C_NORMAL_WIDTH * 2, C_RECT_Y * C_NORMAL_HEIGHT)
+'    End If
+'
+'    '基本のスタイルをセット
+'    objDataSet.ShapeStyle = msoShapeStylePreset1
+'
+'    With objDataSet.Fill
+'        .Solid
+'        .visible = msoTrue
+'        .Transparency = 1
+'        .ForeColor.RGB = RGB(255, 255, 255)
+'    End With
+'    With objDataSet.Line
+'        .Weight = 2.25
+'        .DashStyle = msoLineSingle
+'        .Style = msoLineSingle
+'        .Transparency = 0#
+'        .visible = msoTrue
+'        .ForeColor.SchemeColor = 10
+'        .BackColor.RGB = RGB(255, 255, 255)
+'    End With
+'
+'    objDataSet.Select
+'    objDataSet.Placement = xlMove
+'
+'    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
+'        ActiveWindow.Zoom = z
+'        ActiveWindow.ScrollColumn = c
+'        ActiveWindow.ScrollRow = r
+'    Else
+'        'シェイプをつまむ
+'        PickShape objDataSet
+'    End If
+'
+'    Set objDataSet = Nothing
+'
+'    Application.ScreenUpdating = a
         
 End Sub
 '
@@ -652,64 +753,73 @@ End Sub
 '
 Sub drawEvidenceOval()
 
-    Dim objDataSet As Shape
-    Dim z As Single
-    Dim r As Long
-    Dim c As Long
-    Dim a As Boolean
+    Dim obj As ShapeDrawEvidenceOval
+    
+    Set obj = New ShapeDrawEvidenceOval
+    
+    obj.Run
+    
+    Set obj = Nothing
 
-    If ActiveWorkbook Is Nothing Then
-        MsgBox "アクティブなブックが見つかりません。", vbCritical, C_TITLE
-        Exit Sub
-    End If
-    
-    a = Application.ScreenUpdating
-    Application.ScreenUpdating = False
-        
-    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
-        z = ActiveWindow.Zoom
-        c = ActiveWindow.ScrollColumn
-        r = ActiveWindow.ScrollRow
-        ActiveWindow.Zoom = 100
-        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeOval, Selection.Left + (Selection.Width - C_RECT_X * C_NORMAL_WIDTH * 1.5) / 2, Selection.Top + (Selection.Height - C_RECT_Y * C_NORMAL_HEIGHT) / 2, C_RECT_X * C_NORMAL_WIDTH * 1.5, C_RECT_Y * C_NORMAL_HEIGHT)
-    Else
-        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeOval, ActiveWindow.ActivePane.VisibleRange.Left + 100, ActiveWindow.ActivePane.VisibleRange.Top + 100, C_RECT_X * C_NORMAL_WIDTH * 1.5, C_RECT_Y * C_NORMAL_HEIGHT)
-    End If
-    
-    '基本のスタイルをセット
-    objDataSet.ShapeStyle = msoShapeStylePreset1
-    
-    With objDataSet.Fill
-        .Solid
-        .visible = msoTrue
-        .Transparency = 1
-        .ForeColor.RGB = RGB(255, 255, 255)
-    End With
-    With objDataSet.Line
-        .Weight = 2.25
-        .DashStyle = msoLineSingle
-        .Style = msoLineSingle
-        .Transparency = 0#
-        .visible = msoTrue
-        .ForeColor.SchemeColor = 10
-        .BackColor.RGB = RGB(255, 255, 255)
-    End With
-        
-    objDataSet.Select
-    objDataSet.Placement = xlMove
-    
-    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
-        ActiveWindow.Zoom = z
-        ActiveWindow.ScrollColumn = c
-        ActiveWindow.ScrollRow = r
-    Else
-        'シェイプをつまむ
-        PickShape objDataSet
-    End If
-    
-    Set objDataSet = Nothing
-    
-    Application.ScreenUpdating = a
+
+'    Dim objDataSet As Shape
+'    Dim z As Single
+'    Dim r As Long
+'    Dim c As Long
+'    Dim a As Boolean
+'
+'    If ActiveWorkbook Is Nothing Then
+'        MsgBox "アクティブなブックが見つかりません。", vbCritical, C_TITLE
+'        Exit Sub
+'    End If
+'
+'    a = Application.ScreenUpdating
+'    Application.ScreenUpdating = False
+'
+'    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
+'        z = ActiveWindow.Zoom
+'        c = ActiveWindow.ScrollColumn
+'        r = ActiveWindow.ScrollRow
+'        ActiveWindow.Zoom = 100
+'        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeOval, Selection.Left + (Selection.Width - C_RECT_X * C_NORMAL_WIDTH * 1.5) / 2, Selection.Top + (Selection.Height - C_RECT_Y * C_NORMAL_HEIGHT) / 2, C_RECT_X * C_NORMAL_WIDTH * 1.5, C_RECT_Y * C_NORMAL_HEIGHT)
+'    Else
+'        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeOval, ActiveWindow.ActivePane.VisibleRange.Left + 100, ActiveWindow.ActivePane.VisibleRange.Top + 100, C_RECT_X * C_NORMAL_WIDTH * 1.5, C_RECT_Y * C_NORMAL_HEIGHT)
+'    End If
+'
+'    '基本のスタイルをセット
+'    objDataSet.ShapeStyle = msoShapeStylePreset1
+'
+'    With objDataSet.Fill
+'        .Solid
+'        .visible = msoTrue
+'        .Transparency = 1
+'        .ForeColor.RGB = RGB(255, 255, 255)
+'    End With
+'    With objDataSet.Line
+'        .Weight = 2.25
+'        .DashStyle = msoLineSingle
+'        .Style = msoLineSingle
+'        .Transparency = 0#
+'        .visible = msoTrue
+'        .ForeColor.SchemeColor = 10
+'        .BackColor.RGB = RGB(255, 255, 255)
+'    End With
+'
+'    objDataSet.Select
+'    objDataSet.Placement = xlMove
+'
+'    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
+'        ActiveWindow.Zoom = z
+'        ActiveWindow.ScrollColumn = c
+'        ActiveWindow.ScrollRow = r
+'    Else
+'        'シェイプをつまむ
+'        PickShape objDataSet
+'    End If
+'
+'    Set objDataSet = Nothing
+'
+'    Application.ScreenUpdating = a
         
 End Sub
 '
@@ -717,70 +827,78 @@ End Sub
 '
 Sub drawEvidenceCallout()
 
-    Dim objDataSet As Shape
-    Dim z As Single
-    Dim r As Long
-    Dim c As Long
-    Dim a As Boolean
+    Dim obj As ShapeDrawEvidenceCallout
+    
+    Set obj = New ShapeDrawEvidenceCallout
+    
+    obj.Run
+    
+    Set obj = Nothing
 
-    If ActiveWorkbook Is Nothing Then
-        MsgBox "アクティブなブックが見つかりません。", vbCritical, C_TITLE
-        Exit Sub
-    End If
-    
-    a = Application.ScreenUpdating
-    Application.ScreenUpdating = False
-        
-    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
-        z = ActiveWindow.Zoom
-        c = ActiveWindow.ScrollColumn
-        r = ActiveWindow.ScrollRow
-        ActiveWindow.Zoom = 100
-        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeRectangularCallout, Selection.Left + (Selection.Width - C_RECT_X * C_NORMAL_WIDTH * 3) / 2, Selection.Top + (Selection.Height - C_RECT_Y * C_NORMAL_HEIGHT) / 2, C_RECT_X * C_NORMAL_WIDTH * 3, C_RECT_Y * C_NORMAL_HEIGHT)
-    Else
-        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeRectangularCallout, ActiveWindow.ActivePane.VisibleRange.Left + 100, ActiveWindow.ActivePane.VisibleRange.Top + 100, C_RECT_X * C_NORMAL_WIDTH * 3, C_RECT_Y * C_NORMAL_HEIGHT)
-    End If
-    
-    '基本のスタイルをセット
-    objDataSet.ShapeStyle = msoShapeStylePreset1
-    
-    With objDataSet.Fill
-        .Solid
-        .Transparency = 0#
-        .visible = msoTrue
-        .ForeColor.RGB = RGB(255, 255, 255)
-    End With
-    With objDataSet.Line
-        .Weight = 2.25
-        .DashStyle = msoLineSingle
-        .Style = msoLineSingle
-        .Transparency = 0#
-        .visible = msoTrue
-        .ForeColor.SchemeColor = 10
-        .BackColor.RGB = RGB(255, 255, 255)
-    End With
-    With objDataSet.TextFrame2.TextRange.Characters.Font
-        .Fill.ForeColor.RGB = RGB(0, 0, 0)
-    End With
-        
-    objDataSet.Select
-    objDataSet.Placement = xlMove
-    
-    'シェイプをつまむ
-    PickShape objDataSet
-    
-    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
-        ActiveWindow.Zoom = z
-        ActiveWindow.ScrollColumn = c
-        ActiveWindow.ScrollRow = r
-    Else
-        'シェイプをつまむ
-        PickShape objDataSet
-    End If
-    
-    Set objDataSet = Nothing
-    
-    Application.ScreenUpdating = a
+'    Dim objDataSet As Shape
+'    Dim z As Single
+'    Dim r As Long
+'    Dim c As Long
+'    Dim a As Boolean
+'
+'    If ActiveWorkbook Is Nothing Then
+'        MsgBox "アクティブなブックが見つかりません。", vbCritical, C_TITLE
+'        Exit Sub
+'    End If
+'
+'    a = Application.ScreenUpdating
+'    Application.ScreenUpdating = False
+'
+'    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
+'        z = ActiveWindow.Zoom
+'        c = ActiveWindow.ScrollColumn
+'        r = ActiveWindow.ScrollRow
+'        ActiveWindow.Zoom = 100
+'        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeRectangularCallout, Selection.Left + (Selection.Width - C_RECT_X * C_NORMAL_WIDTH * 3) / 2, Selection.Top + (Selection.Height - C_RECT_Y * C_NORMAL_HEIGHT) / 2, C_RECT_X * C_NORMAL_WIDTH * 3, C_RECT_Y * C_NORMAL_HEIGHT)
+'    Else
+'        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeRectangularCallout, ActiveWindow.ActivePane.VisibleRange.Left + 100, ActiveWindow.ActivePane.VisibleRange.Top + 100, C_RECT_X * C_NORMAL_WIDTH * 3, C_RECT_Y * C_NORMAL_HEIGHT)
+'    End If
+'
+'    '基本のスタイルをセット
+'    objDataSet.ShapeStyle = msoShapeStylePreset1
+'
+'    With objDataSet.Fill
+'        .Solid
+'        .Transparency = 0#
+'        .visible = msoTrue
+'        .ForeColor.RGB = RGB(255, 255, 255)
+'    End With
+'    With objDataSet.Line
+'        .Weight = 2.25
+'        .DashStyle = msoLineSingle
+'        .Style = msoLineSingle
+'        .Transparency = 0#
+'        .visible = msoTrue
+'        .ForeColor.SchemeColor = 10
+'        .BackColor.RGB = RGB(255, 255, 255)
+'    End With
+'    With objDataSet.TextFrame2.TextRange.Characters.Font
+'        .Fill.ForeColor.RGB = RGB(0, 0, 0)
+'    End With
+'
+'    objDataSet.Select
+'    objDataSet.Placement = xlMove
+'
+'    'シェイプをつまむ
+'    PickShape objDataSet
+'
+'    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
+'        ActiveWindow.Zoom = z
+'        ActiveWindow.ScrollColumn = c
+'        ActiveWindow.ScrollRow = r
+'    Else
+'        'シェイプをつまむ
+'        PickShape objDataSet
+'    End If
+'
+'    Set objDataSet = Nothing
+'
+'    Application.ScreenUpdating = a
 
 End Sub
 '
@@ -788,67 +906,76 @@ End Sub
 '
 Sub drawEvidenceLineCallout()
 
-    Dim objDataSet As Shape
-    Dim z As Single
-    Dim r As Long
-    Dim c As Long
-    Dim a As Boolean
+    Dim obj As ShapeDrawEvidenceLineCallout
+    
+    Set obj = New ShapeDrawEvidenceLineCallout
+    
+    obj.Run
+    
+    Set obj = Nothing
 
-    If ActiveWorkbook Is Nothing Then
-        MsgBox "アクティブなブックが見つかりません。", vbCritical, C_TITLE
-        Exit Sub
-    End If
-    
-    a = Application.ScreenUpdating
-    Application.ScreenUpdating = False
-        
-    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
-        z = ActiveWindow.Zoom
-        c = ActiveWindow.ScrollColumn
-        r = ActiveWindow.ScrollRow
-        ActiveWindow.Zoom = 100
-        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeLineCallout1, Selection.Left + (Selection.Width - C_RECT_X * C_NORMAL_WIDTH * 3) / 2, Selection.Top + (Selection.Height - C_RECT_Y * C_NORMAL_HEIGHT) / 2, C_RECT_X * C_NORMAL_WIDTH * 3, C_RECT_Y * C_NORMAL_HEIGHT)
-    Else
-        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeLineCallout1, ActiveWindow.ActivePane.VisibleRange.Left + 100, ActiveWindow.ActivePane.VisibleRange.Top + 100, C_RECT_X * C_NORMAL_WIDTH * 3, C_RECT_Y * C_NORMAL_HEIGHT)
-    End If
-    
-    '基本のスタイルをセット
-    objDataSet.ShapeStyle = msoShapeStylePreset1
-    
-    With objDataSet.Fill
-        .Solid
-        .Transparency = 0#
-        .visible = msoTrue
-        .ForeColor.RGB = RGB(255, 255, 255)
-    End With
-    With objDataSet.Line
-        .Weight = 2.25
-        .DashStyle = msoLineSingle
-        .Style = msoLineSingle
-        .Transparency = 0#
-        .visible = msoTrue
-        .ForeColor.SchemeColor = 10
-        .BackColor.RGB = RGB(255, 255, 255)
-    End With
-    With objDataSet.TextFrame2.TextRange.Characters.Font
-        .Fill.ForeColor.RGB = RGB(0, 0, 0)
-    End With
-        
-    objDataSet.Select
-    objDataSet.Placement = xlMove
-    
-    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
-        ActiveWindow.Zoom = z
-        ActiveWindow.ScrollColumn = c
-        ActiveWindow.ScrollRow = r
-    Else
-        'シェイプをつまむ
-        PickShape objDataSet
-    End If
-    
-    Set objDataSet = Nothing
-    
-    Application.ScreenUpdating = a
+
+'    Dim objDataSet As Shape
+'    Dim z As Single
+'    Dim r As Long
+'    Dim c As Long
+'    Dim a As Boolean
+'
+'    If ActiveWorkbook Is Nothing Then
+'        MsgBox "アクティブなブックが見つかりません。", vbCritical, C_TITLE
+'        Exit Sub
+'    End If
+'
+'    a = Application.ScreenUpdating
+'    Application.ScreenUpdating = False
+'
+'    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
+'        z = ActiveWindow.Zoom
+'        c = ActiveWindow.ScrollColumn
+'        r = ActiveWindow.ScrollRow
+'        ActiveWindow.Zoom = 100
+'        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeLineCallout1, Selection.Left + (Selection.Width - C_RECT_X * C_NORMAL_WIDTH * 3) / 2, Selection.Top + (Selection.Height - C_RECT_Y * C_NORMAL_HEIGHT) / 2, C_RECT_X * C_NORMAL_WIDTH * 3, C_RECT_Y * C_NORMAL_HEIGHT)
+'    Else
+'        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeLineCallout1, ActiveWindow.ActivePane.VisibleRange.Left + 100, ActiveWindow.ActivePane.VisibleRange.Top + 100, C_RECT_X * C_NORMAL_WIDTH * 3, C_RECT_Y * C_NORMAL_HEIGHT)
+'    End If
+'
+'    '基本のスタイルをセット
+'    objDataSet.ShapeStyle = msoShapeStylePreset1
+'
+'    With objDataSet.Fill
+'        .Solid
+'        .Transparency = 0#
+'        .visible = msoTrue
+'        .ForeColor.RGB = RGB(255, 255, 255)
+'    End With
+'    With objDataSet.Line
+'        .Weight = 2.25
+'        .DashStyle = msoLineSingle
+'        .Style = msoLineSingle
+'        .Transparency = 0#
+'        .visible = msoTrue
+'        .ForeColor.SchemeColor = 10
+'        .BackColor.RGB = RGB(255, 255, 255)
+'    End With
+'    With objDataSet.TextFrame2.TextRange.Characters.Font
+'        .Fill.ForeColor.RGB = RGB(0, 0, 0)
+'    End With
+'
+'    objDataSet.Select
+'    objDataSet.Placement = xlMove
+'
+'    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
+'        ActiveWindow.Zoom = z
+'        ActiveWindow.ScrollColumn = c
+'        ActiveWindow.ScrollRow = r
+'    Else
+'        'シェイプをつまむ
+'        PickShape objDataSet
+'    End If
+'
+'    Set objDataSet = Nothing
+'
+'    Application.ScreenUpdating = a
 
 End Sub
 '
@@ -856,59 +983,67 @@ End Sub
 '
 Sub drawEvidenceArrow()
 
-    Dim objDataSet As Shape
-    Dim z As Single
-    Dim r As Long
-    Dim c As Long
-    Dim a As Boolean
+    Dim obj As ShapeDrawEvidenceArrow
+    
+    Set obj = New ShapeDrawEvidenceArrow
+    
+    obj.Run
+    
+    Set obj = Nothing
 
-    If ActiveWorkbook Is Nothing Then
-        MsgBox "アクティブなブックが見つかりません。", vbCritical, C_TITLE
-        Exit Sub
-    End If
-    
-    a = Application.ScreenUpdating
-    Application.ScreenUpdating = False
-        
-    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
-        z = ActiveWindow.Zoom
-        c = ActiveWindow.ScrollColumn
-        r = ActiveWindow.ScrollRow
-        ActiveWindow.Zoom = 100
-        Set objDataSet = ActiveSheet.Shapes.AddConnector(msoConnectorStraight, Selection.Left + (Selection.Width / 2), Selection.Top + Selection.Height - (C_NORMAL_HEIGHT * 25), Selection.Left + (Selection.Width / 2), Selection.Top + Selection.Height)
-    Else
-        Set objDataSet = ActiveSheet.Shapes.AddConnector(msoConnectorStraight, ActiveWindow.ActivePane.VisibleRange.Left + 100, Selection.Top + Selection.Height - (C_NORMAL_HEIGHT * 25), ActiveWindow.ActivePane.VisibleRange.Left + 100, Selection.Top + Selection.Height)
-    End If
-    
-    With objDataSet.Line
-        .Weight = 2.25
-        .DashStyle = msoLineSingle
-        .Style = msoLineSingle
-        .Transparency = 0#
-        .visible = msoTrue
-        .ForeColor.SchemeColor = 10
-        .BackColor.RGB = RGB(255, 255, 255)
-        .EndArrowheadStyle = msoArrowheadOpen
-        .EndArrowheadLength = msoArrowheadLong
-        .EndArrowheadWidth = msoArrowheadWide
-    End With
-        
-    objDataSet.Select
-    objDataSet.Placement = xlMove
-    
-    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
-        ActiveWindow.Zoom = z
-        ActiveWindow.ScrollColumn = c
-        ActiveWindow.ScrollRow = r
-    Else
-        'シェイプをつまむ
-        PickShape objDataSet
-    End If
-    
-    Set objDataSet = Nothing
-    
-    Application.ScreenUpdating = a
-    
+'    Dim objDataSet As Shape
+'    Dim z As Single
+'    Dim r As Long
+'    Dim c As Long
+'    Dim a As Boolean
+'
+'    If ActiveWorkbook Is Nothing Then
+'        MsgBox "アクティブなブックが見つかりません。", vbCritical, C_TITLE
+'        Exit Sub
+'    End If
+'
+'    a = Application.ScreenUpdating
+'    Application.ScreenUpdating = False
+'
+'    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
+'        z = ActiveWindow.Zoom
+'        c = ActiveWindow.ScrollColumn
+'        r = ActiveWindow.ScrollRow
+'        ActiveWindow.Zoom = 100
+'        Set objDataSet = ActiveSheet.Shapes.AddConnector(msoConnectorStraight, Selection.Left + (Selection.Width / 2), Selection.Top + Selection.Height - (C_NORMAL_HEIGHT * 25), Selection.Left + (Selection.Width / 2), Selection.Top + Selection.Height)
+'    Else
+'        Set objDataSet = ActiveSheet.Shapes.AddConnector(msoConnectorStraight, ActiveWindow.ActivePane.VisibleRange.Left + 100, Selection.Top + Selection.Height - (C_NORMAL_HEIGHT * 25), ActiveWindow.ActivePane.VisibleRange.Left + 100, Selection.Top + Selection.Height)
+'    End If
+'
+'    With objDataSet.Line
+'        .Weight = 2.25
+'        .DashStyle = msoLineSingle
+'        .Style = msoLineSingle
+'        .Transparency = 0#
+'        .visible = msoTrue
+'        .ForeColor.SchemeColor = 10
+'        .BackColor.RGB = RGB(255, 255, 255)
+'        .EndArrowheadStyle = msoArrowheadOpen
+'        .EndArrowheadLength = msoArrowheadLong
+'        .EndArrowheadWidth = msoArrowheadWide
+'    End With
+'
+'    objDataSet.Select
+'    objDataSet.Placement = xlMove
+'
+'    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
+'        ActiveWindow.Zoom = z
+'        ActiveWindow.ScrollColumn = c
+'        ActiveWindow.ScrollRow = r
+'    Else
+'        'シェイプをつまむ
+'        PickShape objDataSet
+'    End If
+'
+'    Set objDataSet = Nothing
+'
+'    Application.ScreenUpdating = a
+'
 
 End Sub
 '
@@ -916,64 +1051,73 @@ End Sub
 '
 Sub drawEvidenceTextbox2()
 
-    Dim objDataSet As Shape
-    Dim z As Single
-    Dim r As Long
-    Dim c As Long
-    Dim a As Boolean
 
-    If ActiveWorkbook Is Nothing Then
-        MsgBox "アクティブなブックが見つかりません。", vbCritical, C_TITLE
-        Exit Sub
-    End If
+    Dim obj As ShapeDrawEvidenceTextbox2
     
-    a = Application.ScreenUpdating
-    Application.ScreenUpdating = False
-        
-    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
-        z = ActiveWindow.Zoom
-        c = ActiveWindow.ScrollColumn
-        r = ActiveWindow.ScrollRow
-        ActiveWindow.Zoom = 100
-        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeRectangle, Selection.Left + (Selection.Width - C_RECT_X * C_NORMAL_WIDTH * 3) / 2, Selection.Top + (Selection.Height - C_RECT_Y * C_NORMAL_HEIGHT) / 2, C_RECT_X * C_NORMAL_WIDTH * 3, C_RECT_Y * C_NORMAL_HEIGHT)
-    Else
-        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeRectangle, ActiveWindow.ActivePane.VisibleRange.Left + 100, ActiveWindow.ActivePane.VisibleRange.Top + 100, C_RECT_X * C_NORMAL_WIDTH * 2, C_RECT_Y * C_NORMAL_HEIGHT)
-    End If
+    Set obj = New ShapeDrawEvidenceTextbox2
     
-    '基本のスタイルをセット
-    objDataSet.ShapeStyle = msoShapeStylePreset1
+    obj.Run
     
-    With objDataSet.Fill
-        .Solid
-        .visible = msoTrue
-        .Transparency = 1
-        .ForeColor.RGB = RGB(255, 255, 255)
-    End With
-    With objDataSet.Line
-        .Weight = 2.25
-        .DashStyle = msoLineDash
-        .Style = msoLineSingle
-        .Transparency = 0#
-        .visible = msoTrue
-        .ForeColor.SchemeColor = 10
-        .BackColor.RGB = RGB(255, 255, 255)
-    End With
-        
-    objDataSet.Select
-    objDataSet.Placement = xlMove
-    
-    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
-        ActiveWindow.Zoom = z
-        ActiveWindow.ScrollColumn = c
-        ActiveWindow.ScrollRow = r
-    Else
-        'シェイプをつまむ
-        PickShape objDataSet
-    End If
-    
-    Set objDataSet = Nothing
-    
-    Application.ScreenUpdating = a
+    Set obj = Nothing
+
+'    Dim objDataSet As Shape
+'    Dim z As Single
+'    Dim r As Long
+'    Dim c As Long
+'    Dim a As Boolean
+'
+'    If ActiveWorkbook Is Nothing Then
+'        MsgBox "アクティブなブックが見つかりません。", vbCritical, C_TITLE
+'        Exit Sub
+'    End If
+'
+'    a = Application.ScreenUpdating
+'    Application.ScreenUpdating = False
+'
+'    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
+'        z = ActiveWindow.Zoom
+'        c = ActiveWindow.ScrollColumn
+'        r = ActiveWindow.ScrollRow
+'        ActiveWindow.Zoom = 100
+'        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeRectangle, Selection.Left + (Selection.Width - C_RECT_X * C_NORMAL_WIDTH * 3) / 2, Selection.Top + (Selection.Height - C_RECT_Y * C_NORMAL_HEIGHT) / 2, C_RECT_X * C_NORMAL_WIDTH * 3, C_RECT_Y * C_NORMAL_HEIGHT)
+'    Else
+'        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeRectangle, ActiveWindow.ActivePane.VisibleRange.Left + 100, ActiveWindow.ActivePane.VisibleRange.Top + 100, C_RECT_X * C_NORMAL_WIDTH * 2, C_RECT_Y * C_NORMAL_HEIGHT)
+'    End If
+'
+'    '基本のスタイルをセット
+'    objDataSet.ShapeStyle = msoShapeStylePreset1
+'
+'    With objDataSet.Fill
+'        .Solid
+'        .visible = msoTrue
+'        .Transparency = 1
+'        .ForeColor.RGB = RGB(255, 255, 255)
+'    End With
+'    With objDataSet.Line
+'        .Weight = 2.25
+'        .DashStyle = msoLineDash
+'        .Style = msoLineSingle
+'        .Transparency = 0#
+'        .visible = msoTrue
+'        .ForeColor.SchemeColor = 10
+'        .BackColor.RGB = RGB(255, 255, 255)
+'    End With
+'
+'    objDataSet.Select
+'    objDataSet.Placement = xlMove
+'
+'    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
+'        ActiveWindow.Zoom = z
+'        ActiveWindow.ScrollColumn = c
+'        ActiveWindow.ScrollRow = r
+'    Else
+'        'シェイプをつまむ
+'        PickShape objDataSet
+'    End If
+'
+'    Set objDataSet = Nothing
+'
+'    Application.ScreenUpdating = a
 
 End Sub
 '
@@ -981,64 +1125,72 @@ End Sub
 '
 Sub drawEvidenceOval2()
 
-    Dim objDataSet As Shape
-    Dim z As Single
-    Dim r As Long
-    Dim c As Long
-    Dim a As Boolean
+    Dim obj As ShapeDrawEvidenceOval2
+    
+    Set obj = New ShapeDrawEvidenceOval2
+    
+    obj.Run
+    
+    Set obj = Nothing
 
-    If ActiveWorkbook Is Nothing Then
-        MsgBox "アクティブなブックが見つかりません。", vbCritical, C_TITLE
-        Exit Sub
-    End If
-    
-    a = Application.ScreenUpdating
-    Application.ScreenUpdating = False
-        
-    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
-        z = ActiveWindow.Zoom
-        c = ActiveWindow.ScrollColumn
-        r = ActiveWindow.ScrollRow
-        ActiveWindow.Zoom = 100
-        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeOval, Selection.Left + (Selection.Width - C_RECT_X * C_NORMAL_WIDTH * 1.5) / 2, Selection.Top + (Selection.Height - C_RECT_Y * C_NORMAL_HEIGHT) / 2, C_RECT_X * C_NORMAL_WIDTH * 1.5, C_RECT_Y * C_NORMAL_HEIGHT)
-    Else
-        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeOval, ActiveWindow.ActivePane.VisibleRange.Left + 100, ActiveWindow.ActivePane.VisibleRange.Top + 100, C_RECT_X * C_NORMAL_WIDTH * 1.5, C_RECT_Y * C_NORMAL_HEIGHT)
-    End If
-    
-    '基本のスタイルをセット
-    objDataSet.ShapeStyle = msoShapeStylePreset1
-    
-    With objDataSet.Fill
-        .Solid
-        .visible = msoTrue
-        .Transparency = 1
-        .ForeColor.RGB = RGB(255, 255, 255)
-    End With
-    With objDataSet.Line
-        .Weight = 2.25
-        .DashStyle = msoLineDash
-        .Style = msoLineSingle
-        .Transparency = 0#
-        .visible = msoTrue
-        .ForeColor.SchemeColor = 10
-        .BackColor.RGB = RGB(255, 255, 255)
-    End With
-        
-    objDataSet.Select
-    objDataSet.Placement = xlMove
-    
-    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
-        ActiveWindow.Zoom = z
-        ActiveWindow.ScrollColumn = c
-        ActiveWindow.ScrollRow = r
-    Else
-        'シェイプをつまむ
-        PickShape objDataSet
-    End If
-    
-    Set objDataSet = Nothing
-    
-    Application.ScreenUpdating = a
+'    Dim objDataSet As Shape
+'    Dim z As Single
+'    Dim r As Long
+'    Dim c As Long
+'    Dim a As Boolean
+'
+'    If ActiveWorkbook Is Nothing Then
+'        MsgBox "アクティブなブックが見つかりません。", vbCritical, C_TITLE
+'        Exit Sub
+'    End If
+'
+'    a = Application.ScreenUpdating
+'    Application.ScreenUpdating = False
+'
+'    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
+'        z = ActiveWindow.Zoom
+'        c = ActiveWindow.ScrollColumn
+'        r = ActiveWindow.ScrollRow
+'        ActiveWindow.Zoom = 100
+'        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeOval, Selection.Left + (Selection.Width - C_RECT_X * C_NORMAL_WIDTH * 1.5) / 2, Selection.Top + (Selection.Height - C_RECT_Y * C_NORMAL_HEIGHT) / 2, C_RECT_X * C_NORMAL_WIDTH * 1.5, C_RECT_Y * C_NORMAL_HEIGHT)
+'    Else
+'        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeOval, ActiveWindow.ActivePane.VisibleRange.Left + 100, ActiveWindow.ActivePane.VisibleRange.Top + 100, C_RECT_X * C_NORMAL_WIDTH * 1.5, C_RECT_Y * C_NORMAL_HEIGHT)
+'    End If
+'
+'    '基本のスタイルをセット
+'    objDataSet.ShapeStyle = msoShapeStylePreset1
+'
+'    With objDataSet.Fill
+'        .Solid
+'        .visible = msoTrue
+'        .Transparency = 1
+'        .ForeColor.RGB = RGB(255, 255, 255)
+'    End With
+'    With objDataSet.Line
+'        .Weight = 2.25
+'        .DashStyle = msoLineDash
+'        .Style = msoLineSingle
+'        .Transparency = 0#
+'        .visible = msoTrue
+'        .ForeColor.SchemeColor = 10
+'        .BackColor.RGB = RGB(255, 255, 255)
+'    End With
+'
+'    objDataSet.Select
+'    objDataSet.Placement = xlMove
+'
+'    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
+'        ActiveWindow.Zoom = z
+'        ActiveWindow.ScrollColumn = c
+'        ActiveWindow.ScrollRow = r
+'    Else
+'        'シェイプをつまむ
+'        PickShape objDataSet
+'    End If
+'
+'    Set objDataSet = Nothing
+'
+'    Application.ScreenUpdating = a
 
 End Sub
 '
@@ -1046,68 +1198,76 @@ End Sub
 '
 Sub drawEvidenceCallout2()
 
-    Dim objDataSet As Shape
-    Dim z As Single
-    Dim r As Long
-    Dim c As Long
-    Dim a As Boolean
-
-    If ActiveWorkbook Is Nothing Then
-        MsgBox "アクティブなブックが見つかりません。", vbCritical, C_TITLE
-        Exit Sub
-    End If
+    Dim obj As ShapeDrawEvidenceCallout2
     
-    a = Application.ScreenUpdating
-    Application.ScreenUpdating = False
-        
-    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
-        z = ActiveWindow.Zoom
-        c = ActiveWindow.ScrollColumn
-        r = ActiveWindow.ScrollRow
-        ActiveWindow.Zoom = 100
-        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeRectangularCallout, Selection.Left + (Selection.Width - C_RECT_X * C_NORMAL_WIDTH * 3) / 2, Selection.Top + (Selection.Height - C_RECT_Y * C_NORMAL_HEIGHT) / 2, C_RECT_X * C_NORMAL_WIDTH * 3, C_RECT_Y * C_NORMAL_HEIGHT)
-    Else
-        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeRectangularCallout, ActiveWindow.ActivePane.VisibleRange.Left + 100, ActiveWindow.ActivePane.VisibleRange.Top + 100, C_RECT_X * C_NORMAL_WIDTH * 3, C_RECT_Y * C_NORMAL_HEIGHT)
-    End If
+    Set obj = New ShapeDrawEvidenceCallout2
     
-    '基本のスタイルをセット
-    objDataSet.ShapeStyle = msoShapeStylePreset1
+    obj.Run
     
-    With objDataSet.Fill
-        .Solid
-        .Transparency = 0#
-        .visible = msoTrue
-        .ForeColor.RGB = RGB(255, 255, 255)
-    End With
-    With objDataSet.Line
-        .Weight = 2.25
-        .DashStyle = msoLineDash
-        .Style = msoLineSingle
-        .Transparency = 0#
-        .visible = msoTrue
-        .ForeColor.SchemeColor = 10
-        .BackColor.RGB = RGB(255, 255, 255)
-    End With
+    Set obj = Nothing
     
-    With objDataSet.TextFrame2.TextRange.Characters.Font
-        .Fill.ForeColor.RGB = RGB(0, 0, 0)
-    End With
-        
-    objDataSet.Select
-    objDataSet.Placement = xlMove
-    
-    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
-        ActiveWindow.Zoom = z
-        ActiveWindow.ScrollColumn = c
-        ActiveWindow.ScrollRow = r
-    Else
-        'シェイプをつまむ
-        PickShape objDataSet
-    End If
-    
-    Set objDataSet = Nothing
-    
-    Application.ScreenUpdating = a
+'    Dim objDataSet As Shape
+'    Dim z As Single
+'    Dim r As Long
+'    Dim c As Long
+'    Dim a As Boolean
+'
+'    If ActiveWorkbook Is Nothing Then
+'        MsgBox "アクティブなブックが見つかりません。", vbCritical, C_TITLE
+'        Exit Sub
+'    End If
+'
+'    a = Application.ScreenUpdating
+'    Application.ScreenUpdating = False
+'
+'    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
+'        z = ActiveWindow.Zoom
+'        c = ActiveWindow.ScrollColumn
+'        r = ActiveWindow.ScrollRow
+'        ActiveWindow.Zoom = 100
+'        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeRectangularCallout, Selection.Left + (Selection.Width - C_RECT_X * C_NORMAL_WIDTH * 3) / 2, Selection.Top + (Selection.Height - C_RECT_Y * C_NORMAL_HEIGHT) / 2, C_RECT_X * C_NORMAL_WIDTH * 3, C_RECT_Y * C_NORMAL_HEIGHT)
+'    Else
+'        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeRectangularCallout, ActiveWindow.ActivePane.VisibleRange.Left + 100, ActiveWindow.ActivePane.VisibleRange.Top + 100, C_RECT_X * C_NORMAL_WIDTH * 3, C_RECT_Y * C_NORMAL_HEIGHT)
+'    End If
+'
+'    '基本のスタイルをセット
+'    objDataSet.ShapeStyle = msoShapeStylePreset1
+'
+'    With objDataSet.Fill
+'        .Solid
+'        .Transparency = 0#
+'        .visible = msoTrue
+'        .ForeColor.RGB = RGB(255, 255, 255)
+'    End With
+'    With objDataSet.Line
+'        .Weight = 2.25
+'        .DashStyle = msoLineDash
+'        .Style = msoLineSingle
+'        .Transparency = 0#
+'        .visible = msoTrue
+'        .ForeColor.SchemeColor = 10
+'        .BackColor.RGB = RGB(255, 255, 255)
+'    End With
+'
+'    With objDataSet.TextFrame2.TextRange.Characters.Font
+'        .Fill.ForeColor.RGB = RGB(0, 0, 0)
+'    End With
+'
+'    objDataSet.Select
+'    objDataSet.Placement = xlMove
+'
+'    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
+'        ActiveWindow.Zoom = z
+'        ActiveWindow.ScrollColumn = c
+'        ActiveWindow.ScrollRow = r
+'    Else
+'        'シェイプをつまむ
+'        PickShape objDataSet
+'    End If
+'
+'    Set objDataSet = Nothing
+'
+'    Application.ScreenUpdating = a
 
 End Sub
 '
@@ -1115,68 +1275,76 @@ End Sub
 '
 Sub drawEvidenceLineCallout2()
 
-    Dim objDataSet As Shape
-    Dim z As Single
-    Dim r As Long
-    Dim c As Long
-    Dim a As Boolean
-
-    If ActiveWorkbook Is Nothing Then
-        MsgBox "アクティブなブックが見つかりません。", vbCritical, C_TITLE
-        Exit Sub
-    End If
+    Dim obj As ShapeDrawEvidenceLineCallout2
     
-    a = Application.ScreenUpdating
-    Application.ScreenUpdating = False
-        
-    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
-        z = ActiveWindow.Zoom
-        c = ActiveWindow.ScrollColumn
-        r = ActiveWindow.ScrollRow
-        ActiveWindow.Zoom = 100
-        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeLineCallout1, Selection.Left + (Selection.Width - C_RECT_X * C_NORMAL_WIDTH * 3) / 2, Selection.Top + (Selection.Height - C_RECT_Y * C_NORMAL_HEIGHT) / 2, C_RECT_X * C_NORMAL_WIDTH * 3, C_RECT_Y * C_NORMAL_HEIGHT)
-    Else
-        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeLineCallout1, ActiveWindow.ActivePane.VisibleRange.Left + 100, ActiveWindow.ActivePane.VisibleRange.Top + 100, C_RECT_X * C_NORMAL_WIDTH * 3, C_RECT_Y * C_NORMAL_HEIGHT)
-    End If
+    Set obj = New ShapeDrawEvidenceLineCallout2
     
-    '基本のスタイルをセット
-    objDataSet.ShapeStyle = msoShapeStylePreset1
+    obj.Run
     
-    With objDataSet.Fill
-        .Solid
-        .Transparency = 0#
-        .visible = msoTrue
-        .ForeColor.RGB = RGB(255, 255, 255)
-    End With
-    With objDataSet.Line
-        .Weight = 2.25
-        .DashStyle = msoLineDash
-        .Style = msoLineSingle
-        .Transparency = 0#
-        .visible = msoTrue
-        .ForeColor.SchemeColor = 10
-        .BackColor.RGB = RGB(255, 255, 255)
-    End With
-    
-    With objDataSet.TextFrame2.TextRange.Characters.Font
-        .Fill.ForeColor.RGB = RGB(0, 0, 0)
-    End With
-        
-    objDataSet.Select
-    objDataSet.Placement = xlMove
-    
-    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
-        ActiveWindow.Zoom = z
-        ActiveWindow.ScrollColumn = c
-        ActiveWindow.ScrollRow = r
-    Else
-        'シェイプをつまむ
-        PickShape objDataSet
-    End If
-    
-    Set objDataSet = Nothing
-    
-    Application.ScreenUpdating = a
+    Set obj = Nothing
+'
+'    Dim objDataSet As Shape
+'    Dim z As Single
+'    Dim r As Long
+'    Dim c As Long
+'    Dim a As Boolean
+'
+'    If ActiveWorkbook Is Nothing Then
+'        MsgBox "アクティブなブックが見つかりません。", vbCritical, C_TITLE
+'        Exit Sub
+'    End If
+'
+'    a = Application.ScreenUpdating
+'    Application.ScreenUpdating = False
+'
+'    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
+'        z = ActiveWindow.Zoom
+'        c = ActiveWindow.ScrollColumn
+'        r = ActiveWindow.ScrollRow
+'        ActiveWindow.Zoom = 100
+'        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeLineCallout1, Selection.Left + (Selection.Width - C_RECT_X * C_NORMAL_WIDTH * 3) / 2, Selection.Top + (Selection.Height - C_RECT_Y * C_NORMAL_HEIGHT) / 2, C_RECT_X * C_NORMAL_WIDTH * 3, C_RECT_Y * C_NORMAL_HEIGHT)
+'    Else
+'        Set objDataSet = ActiveSheet.Shapes.AddShape(msoShapeLineCallout1, ActiveWindow.ActivePane.VisibleRange.Left + 100, ActiveWindow.ActivePane.VisibleRange.Top + 100, C_RECT_X * C_NORMAL_WIDTH * 3, C_RECT_Y * C_NORMAL_HEIGHT)
+'    End If
+'
+'    '基本のスタイルをセット
+'    objDataSet.ShapeStyle = msoShapeStylePreset1
+'
+'    With objDataSet.Fill
+'        .Solid
+'        .Transparency = 0#
+'        .visible = msoTrue
+'        .ForeColor.RGB = RGB(255, 255, 255)
+'    End With
+'    With objDataSet.Line
+'        .Weight = 2.25
+'        .DashStyle = msoLineDash
+'        .Style = msoLineSingle
+'        .Transparency = 0#
+'        .visible = msoTrue
+'        .ForeColor.SchemeColor = 10
+'        .BackColor.RGB = RGB(255, 255, 255)
+'    End With
+'
+'    With objDataSet.TextFrame2.TextRange.Characters.Font
+'        .Fill.ForeColor.RGB = RGB(0, 0, 0)
+'    End With
+'
+'    objDataSet.Select
+'    objDataSet.Placement = xlMove
+'
+'    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
+'        ActiveWindow.Zoom = z
+'        ActiveWindow.ScrollColumn = c
+'        ActiveWindow.ScrollRow = r
+'    Else
+'        'シェイプをつまむ
+'        PickShape objDataSet
+'    End If
+'
+'    Set objDataSet = Nothing
+'
+'    Application.ScreenUpdating = a
 
 End Sub
 '
@@ -1184,58 +1352,67 @@ End Sub
 '
 Sub drawEvidenceArrow2()
 
-    Dim objDataSet As Shape
-    Dim z As Single
-    Dim r As Long
-    Dim c As Long
-    Dim a As Boolean
+    Dim obj As ShapeDrawEvidenceArrow2
+    
+    Set obj = New ShapeDrawEvidenceArrow2
+    
+    obj.Run
+    
+    Set obj = Nothing
 
-    If ActiveWorkbook Is Nothing Then
-        MsgBox "アクティブなブックが見つかりません。", vbCritical, C_TITLE
-        Exit Sub
-    End If
-    
-    a = Application.ScreenUpdating
-    Application.ScreenUpdating = False
-        
-    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
-        z = ActiveWindow.Zoom
-        c = ActiveWindow.ScrollColumn
-        r = ActiveWindow.ScrollRow
-        ActiveWindow.Zoom = 100
-        Set objDataSet = ActiveSheet.Shapes.AddConnector(msoConnectorStraight, Selection.Left + (Selection.Width / 2), Selection.Top + Selection.Height - (C_NORMAL_HEIGHT * 25), Selection.Left + (Selection.Width / 2), Selection.Top + Selection.Height)
-    Else
-        Set objDataSet = ActiveSheet.Shapes.AddConnector(msoConnectorStraight, ActiveWindow.ActivePane.VisibleRange.Left + 100, Selection.Top + Selection.Height - (C_NORMAL_HEIGHT * 25), ActiveWindow.ActivePane.VisibleRange.Left + 100, Selection.Top + Selection.Height)
-    End If
-    
-    With objDataSet.Line
-        .Weight = 2.25
-        .DashStyle = msoLineDash
-        .Style = msoLineSingle
-        .Transparency = 0#
-        .visible = msoTrue
-        .ForeColor.SchemeColor = 10
-        .BackColor.RGB = RGB(255, 255, 255)
-        .EndArrowheadStyle = msoArrowheadOpen
-        .EndArrowheadLength = msoArrowheadLong
-        .EndArrowheadWidth = msoArrowheadWide
-    End With
-        
-    objDataSet.Select
-    objDataSet.Placement = xlMove
-    
-    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
-        ActiveWindow.Zoom = z
-        ActiveWindow.ScrollColumn = c
-        ActiveWindow.ScrollRow = r
-    Else
-        'シェイプをつまむ
-        PickShape objDataSet
-    End If
-    
-    Set objDataSet = Nothing
-    
-    Application.ScreenUpdating = a
+'
+'    Dim objDataSet As Shape
+'    Dim z As Single
+'    Dim r As Long
+'    Dim c As Long
+'    Dim a As Boolean
+'
+'    If ActiveWorkbook Is Nothing Then
+'        MsgBox "アクティブなブックが見つかりません。", vbCritical, C_TITLE
+'        Exit Sub
+'    End If
+'
+'    a = Application.ScreenUpdating
+'    Application.ScreenUpdating = False
+'
+'    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
+'        z = ActiveWindow.Zoom
+'        c = ActiveWindow.ScrollColumn
+'        r = ActiveWindow.ScrollRow
+'        ActiveWindow.Zoom = 100
+'        Set objDataSet = ActiveSheet.Shapes.AddConnector(msoConnectorStraight, Selection.Left + (Selection.Width / 2), Selection.Top + Selection.Height - (C_NORMAL_HEIGHT * 25), Selection.Left + (Selection.Width / 2), Selection.Top + Selection.Height)
+'    Else
+'        Set objDataSet = ActiveSheet.Shapes.AddConnector(msoConnectorStraight, ActiveWindow.ActivePane.VisibleRange.Left + 100, Selection.Top + Selection.Height - (C_NORMAL_HEIGHT * 25), ActiveWindow.ActivePane.VisibleRange.Left + 100, Selection.Top + Selection.Height)
+'    End If
+'
+'    With objDataSet.Line
+'        .Weight = 2.25
+'        .DashStyle = msoLineDash
+'        .Style = msoLineSingle
+'        .Transparency = 0#
+'        .visible = msoTrue
+'        .ForeColor.SchemeColor = 10
+'        .BackColor.RGB = RGB(255, 255, 255)
+'        .EndArrowheadStyle = msoArrowheadOpen
+'        .EndArrowheadLength = msoArrowheadLong
+'        .EndArrowheadWidth = msoArrowheadWide
+'    End With
+'
+'    objDataSet.Select
+'    objDataSet.Placement = xlMove
+'
+'    If CBool(GetSetting(C_TITLE, "Shape", "PickMode", False)) = False Then
+'        ActiveWindow.Zoom = z
+'        ActiveWindow.ScrollColumn = c
+'        ActiveWindow.ScrollRow = r
+'    Else
+'        'シェイプをつまむ
+'        PickShape objDataSet
+'    End If
+'
+'    Set objDataSet = Nothing
+'
+'    Application.ScreenUpdating = a
 
 End Sub
 

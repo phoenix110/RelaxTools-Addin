@@ -89,7 +89,7 @@ Private Sub SFWork_SelectionInit(rAreas As Excel.Areas, Cancel As Boolean, Undo 
 
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
 End Sub
 '------------------------------------------------------------------------------------------------------------------------
 ' 主処理(UOC)
@@ -127,13 +127,13 @@ Private Sub SFWork_SelectionMain(r As Range, ByVal lngRow As Long, Cancel As Boo
     Next
     
     Set last = r.Columns(r.Columns.count)
-    Set out = r.Worksheet.Cells(last.row, last.Column + 1)
+    Set out = r.Worksheet.Cells(last.Row, last.Column + 1)
 
     out.Value = mInsert & strSQL & ");"""
 
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
     Cancel = True
 End Sub
 '------------------------------------------------------------------------------------------------------------------------

@@ -35,27 +35,27 @@ Public Const C_FAVORITE_ADD As Long = 1
 Public Const C_FAVORITE_MOD As Long = 2
 'Windows API宣言
 #If VBA7 And Win64 Then
-    Private Declare PtrSafe Function GetWindowLong Lib "user32" Alias "GetWindowLongPtrA" (ByVal hWnd As LongPtr, ByVal nIndex As Long) As LongPtr
-    Private Declare PtrSafe Function SetWindowLong Lib "user32" Alias "SetWindowLongPtrA" (ByVal hWnd As LongPtr, ByVal nIndex As Long, ByVal dwNewLong As LongPtr) As LongPtr
+    Private Declare PtrSafe Function GetWindowLong Lib "user32" Alias "GetWindowLongPtrA" (ByVal hwnd As LongPtr, ByVal nIndex As Long) As LongPtr
+    Private Declare PtrSafe Function SetWindowLong Lib "user32" Alias "SetWindowLongPtrA" (ByVal hwnd As LongPtr, ByVal nIndex As Long, ByVal dwNewLong As LongPtr) As LongPtr
     Private Declare PtrSafe Function GetActiveWindow Lib "user32" () As LongPtr
-    Private Declare PtrSafe Function DrawMenuBar Lib "user32" (ByVal hWnd As LongPtr) As LongPtr
+    Private Declare PtrSafe Function DrawMenuBar Lib "user32" (ByVal hwnd As LongPtr) As LongPtr
     Private Declare PtrSafe Function SetWindowPos Lib "user32" _
-                                          (ByVal hWnd As LongPtr, _
+                                          (ByVal hwnd As LongPtr, _
                                            ByVal hWndInsertAfter As LongPtr, _
                                            ByVal X As Long, ByVal Y As Long, _
                                            ByVal cx As Long, ByVal cy As Long, _
                                            ByVal wFlags As Long) As Long
 #Else
     Private Declare Function SetWindowPos Lib "user32" _
-                                      (ByVal hWnd As Long, _
+                                      (ByVal hwnd As Long, _
                                        ByVal hWndInsertAfter As Long, _
                                        ByVal X As Long, ByVal Y As Long, _
                                        ByVal cx As Long, ByVal cy As Long, _
                                        ByVal wFlags As Long) As Long
-    Private Declare Function GetWindowLong Lib "user32" Alias "GetWindowLongA" (ByVal hWnd As Long, ByVal nIndex As Long) As Long
-    Private Declare Function SetWindowLong Lib "user32" Alias "SetWindowLongA" (ByVal hWnd As Long, ByVal nIndex As Long, ByVal dwNewLong As Long) As Long
+    Private Declare Function GetWindowLong Lib "user32" Alias "GetWindowLongA" (ByVal hwnd As Long, ByVal nIndex As Long) As Long
+    Private Declare Function SetWindowLong Lib "user32" Alias "SetWindowLongA" (ByVal hwnd As Long, ByVal nIndex As Long, ByVal dwNewLong As Long) As Long
     Private Declare Function GetActiveWindow Lib "user32" () As Long
-    Private Declare Function DrawMenuBar Lib "user32" (ByVal hWnd As Long) As Long
+    Private Declare Function DrawMenuBar Lib "user32" (ByVal hwnd As Long) As Long
 #End If
 
 Private Const HWND_TOPMOST As Long = -1
@@ -74,21 +74,21 @@ Public Sub AllwaysOnTop()
 
 #If VBA7 And Win64 Then
     Dim Result As LongPtr
-    Dim hWnd As LongPtr
+    Dim hwnd As LongPtr
     Dim Wnd_STYLE As LongPtr
 #Else
     Dim Result As Long
-    Dim hWnd As Long
+    Dim hwnd As Long
     Dim Wnd_STYLE As Long
 #End If
  
-    hWnd = GetActiveWindow()
+    hwnd = GetActiveWindow()
 '    Wnd_STYLE = GetWindowLong(hWnd, GWL_STYLE)
 '    Wnd_STYLE = (Wnd_STYLE Or WS_THICKFRAME Or &H30000) - WS_MINIMIZEBOX
 '
 '    result = SetWindowLong(hWnd, GWL_STYLE, Wnd_STYLE)
 '    result = DrawMenuBar(hWnd)
-    Call SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE Or SWP_NOSIZE)
+    Call SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE Or SWP_NOSIZE)
     
 End Sub
 '------------------------------------------------------------------------------------------------------------------------
@@ -146,6 +146,12 @@ Sub execOpen(ByVal blnFlg As Boolean)
     Call frmFavorite.execOpen(blnFlg)
 End Sub
 '------------------------------------------------------------------------------------------------------------------------
+' 同名ブックを参照用に開く
+'------------------------------------------------------------------------------------------------------------------------
+Sub execOpenRef()
+    Call frmFavorite.execOpenRef
+End Sub
+'------------------------------------------------------------------------------------------------------------------------
 ' お気に入りのファイルのあるフォルダを開く
 '------------------------------------------------------------------------------------------------------------------------
 Sub execOpenFolder()
@@ -181,9 +187,80 @@ End Sub
 Sub favPaste()
     Call frmFavorite.favPaste
 End Sub
+Sub favCopy()
+    Call frmFavorite.favCopy
+End Sub
 '------------------------------------------------------------------------------------------------------------------------
 ' お気に入りの詳細表示
 '------------------------------------------------------------------------------------------------------------------------
 Sub lstFavoriteDispDetail()
     Call frmFavorite.lstFavoriteDispDetail
 End Sub
+
+'Sub a(ByVal no As Long)
+'
+'
+'
+'    Dim strList() As String
+'    Dim strResult As String
+'    Dim i As Long
+'    Dim lngMax As Long
+'    Dim fav As favoriteDTO
+'    Dim strDat() As String
+'    Dim strCategory As String
+'    Dim objfav As Variant
+'    Dim c As Variant
+'
+'    Dim mobjCategory As Object
+'
+'    Set mobjCategory = CreateObject("Scripting.Dictionary")
+'
+'    strResult = GetSetting(C_TITLE, "Favirite", "FileList", "")
+'    strList = Split(strResult, vbVerticalTab)
+'
+'    lngMax = UBound(strList)
+'
+'
+'    strCategory = ""
+'    For i = 0 To lngMax
+'
+'       Set fav = New favoriteDTO
+'
+'       strDat = Split(strList(i), vbTab)
+'
+'        Select Case True
+'            Case UBound(strDat) = 0
+'            Case Else
+'                fav.filename = strDat(0)
+'                fav.Category = strDat(1)
+'
+'        End Select
+'
+'        If Not mobjCategory.Exists(fav.Category) Then
+'            Set objfav = CreateObject("Scripting.Dictionary")
+'            mobjCategory.Add fav.Category, objfav
+'       End If
+'
+'       If objfav.Exists(fav.filename) Then
+'       Else
+'           objfav.Add fav.filename, fav
+'        End If
+'    Next
+'
+'    Dim cat As Variant
+'    Set cat = mobjCategory.Item("ShortCut")
+'
+'    i = 0
+'    For Each c In cat
+'
+'        Set fav = cat.Item(c)
+'        i = i + 1
+'        If i = no Then
+'            fav.filename
+'            Exit Sub
+'        End If
+'
+'    Next
+'
+'
+'End Sub

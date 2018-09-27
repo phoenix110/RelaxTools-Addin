@@ -75,11 +75,15 @@ Private Sub SFWork_SelectionMain(r As Range, ByVal NotHoldFormat As Boolean, Can
         
     On Error GoTo e
     
-    r.Value = StrConvU(r.Value, vbNarrow)
+    If Len(r.PrefixCharacter) > 0 Then
+        r.Value = r.PrefixCharacter & StrConvU(r.Value, vbNarrow)
+    Else
+        r.Value = StrConvU(r.Value, vbNarrow)
+    End If
     
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
     Cancel = True
 End Sub
 Private Sub SFWork_SelectionMainShape(r As Shape, ByVal NotHoldFormat As Boolean, Cancel As Boolean)
@@ -92,6 +96,6 @@ Private Sub SFWork_SelectionMainShape(r As Shape, ByVal NotHoldFormat As Boolean
     
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
     Cancel = True
 End Sub

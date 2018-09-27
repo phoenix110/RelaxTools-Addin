@@ -57,6 +57,7 @@ Public Sub createAllSectionObject()
     mColAllSection.Add New SecNum1E
     mColAllSection.Add New SecNum1K
     mColAllSection.Add New SecNum1
+    mColAllSection.Add New SecNum1Zen
     mColAllSection.Add New SecNumA
     mColAllSection.Add New SecNumA2
     mColAllSection.Add New SecNumK
@@ -195,7 +196,11 @@ Sub setSectionNo(ByRef r As Range, ByVal strNewNo As String)
     If VarType(r.Value) = vbString Then
         r.Characters(0, 0).Insert strNewNo
     Else
-        r.Value = strNewNo & r.Value
+        If Len(r.PrefixCharacter) > 0 Then
+            r.Value = r.PrefixCharacter & strNewNo & r.Value
+        Else
+            r.Value = strNewNo & r.Value
+        End If
     End If
     
 
@@ -204,7 +209,7 @@ Sub setSectionNo(ByRef r As Range, ByVal strNewNo As String)
     'フォント有効の場合
     If obj.useFormat Then
         r.Font.Name = obj.fontName
-        r.Font.Size = obj.fontSize
+        r.Font.size = obj.fontSize
         r.Font.Bold = obj.fontBold
         r.Font.Italic = obj.fontItalic
         r.Font.Underline = obj.fontUnderLine
@@ -228,7 +233,11 @@ Sub delSectionNo(ByRef r As Range)
         End If
     Else
         If Len(strSecNo) > 0 Then
-            r.Value = Mid$(r.Value, Len(strSecNo) + 1)
+            If Len(r.PrefixCharacter) > 0 Then
+                r.Value = r.PrefixCharacter & Mid$(r.Value, Len(strSecNo) + 1)
+            Else
+                r.Value = Mid$(r.Value, Len(strSecNo) + 1)
+            End If
         End If
     End If
 
@@ -237,7 +246,7 @@ Sub delSectionNo(ByRef r As Range)
     'フォント有効の場合
     If obj.useFormat2 Then
         r.Font.Name = obj.fontName2
-        r.Font.Size = obj.fontSize2
+        r.Font.size = obj.fontSize2
         r.Font.Bold = obj.fontBold2
         r.Font.Italic = obj.fontItalic2
         r.Font.Underline = obj.fontUnderLine2
@@ -252,7 +261,7 @@ Attribute rlxGetSectionObject.VB_Description = "ワークシート関数とし�
 Attribute rlxGetSectionObject.VB_ProcData.VB_Invoke_Func = " \n19"
 
     Dim o As Object
-    Dim KEY As String
+    Dim Key As String
     
     On Error Resume Next
     
@@ -260,9 +269,9 @@ Attribute rlxGetSectionObject.VB_ProcData.VB_Invoke_Func = " \n19"
         Set mColSection = rlxInitSectionSetting()
     End If
     
-    KEY = Format$((lngLevel Mod mColSection.count) + 1, "00")
+    Key = Format$((lngLevel Mod mColSection.count) + 1, "00")
     
-    Set rlxGetSectionObject = mColSection(KEY)
+    Set rlxGetSectionObject = mColSection(Key)
 
 End Function
 Function rlxInitSectionSetting() As Collection
@@ -382,10 +391,10 @@ Sub setSectionSetting(ByVal strNo As String, ByRef col As Collection)
     Dim i As Long
     On Error Resume Next
     For i = 1 To 99
-        err.Clear
+        Err.Clear
         Call DeleteSetting(C_TITLE, "Section", "Section" & strNo & Format$(i, "00") & "class")
-        If err.Number <> 0 Then
-            err.Clear
+        If Err.Number <> 0 Then
+            Err.Clear
             On Error GoTo 0
             Exit For
         End If
@@ -456,7 +465,7 @@ Private Function getDefault(ByVal strBuf As String, ByVal lngCol As Long) As Var
     getDefault = strRet
 
 End Function
-Function rlxCreateSectionObject(ByVal className As String) As Object
+Function rlxCreateSectionObject(ByVal classname As String) As Object
 Attribute rlxCreateSectionObject.VB_Description = "ワークシート関数として使用できません。"
 Attribute rlxCreateSectionObject.VB_ProcData.VB_Invoke_Func = " \n19"
 
@@ -470,7 +479,7 @@ Attribute rlxCreateSectionObject.VB_ProcData.VB_Invoke_Func = " \n19"
     
     For Each obj In mColAllSection
     
-        If className = obj.Class Then
+        If classname = obj.Class Then
             Set ret = obj
             Exit For
         End If

@@ -86,7 +86,7 @@ Private Sub SFWork_SelectionInit(Cancel As Boolean, Undo As Boolean, Func As Boo
 
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
 End Sub
 
 '------------------------------------------------------------------------------------------------------------------------
@@ -109,11 +109,15 @@ Private Sub SFWork_SelectionMain(r As Range, ByVal NotHoldFormat As Boolean, Can
             lngPos = 0
         End If
     
-        r.Value = Left(r.Value, lngPos)
+        If Len(r.PrefixCharacter) > 0 Then
+            r.Value = r.PrefixCharacter & Left(r.Value, lngPos)
+        Else
+            r.Value = Left(r.Value, lngPos)
+        End If
     End If
 
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
     Cancel = True
 End Sub

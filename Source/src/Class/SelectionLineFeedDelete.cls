@@ -111,12 +111,17 @@ Private Sub SFWork_SelectionMain(r As Range, ByVal NotHoldFormat As Boolean, Can
                     Exit For
             End Select
         Next
-        r.Value = s
+        If Len(r.PrefixCharacter) > 0 Then
+            r.Value = r.PrefixCharacter & s
+        Else
+            r.Value = s
+        End If
+        
     End If
 
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
     Cancel = True
     
 End Sub

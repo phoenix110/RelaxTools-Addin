@@ -94,7 +94,7 @@ Private Sub SFWork_SelectionMain(r As Range)
     
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
 End Sub
 
 '------------------------------------------------------------------------------------------------------------------------
@@ -104,7 +104,7 @@ Private Sub SFWork_SelectionMainShape(r As Shape, Cancel As Boolean)
 
     On Error GoTo e
     
-    If r.TextFrame2.HasText Then
+'    If r.TextFrame2.HasText Then
     
         Dim strColorNo As String
         strColorNo = GetSetting(C_TITLE, "Color2003", "back", C_COLOR_OTHER)
@@ -115,10 +115,10 @@ Private Sub SFWork_SelectionMainShape(r As Shape, Cancel As Boolean)
             r.Fill.ForeColor.RGB = ThisWorkbook.Colors(Val(strColorNo))
         End If
     
-    End If
+'    End If
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
 End Sub
 
 

@@ -116,7 +116,7 @@ Private Sub cmdHelp_Click()
     
 End Sub
 
-Private Sub cmdOK_Click()
+Private Sub cmdOk_Click()
 
     Dim XL As Excel.Application
     Dim WB As Workbook
@@ -150,10 +150,10 @@ Private Sub cmdOK_Click()
         o.Pattern = cboSearch.Text
         o.IgnoreCase = Not (chkCase.Value)
         o.Global = True
-        err.Clear
+        Err.Clear
         On Error Resume Next
         o.Execute ""
-        If err.Number <> 0 Then
+        If Err.Number <> 0 Then
             MsgBox "検索文字列の正規表現が正しくありません。", vbExclamation, C_TITLE
             cboSearch.SetFocus
             Exit Sub
@@ -175,7 +175,7 @@ Private Sub cmdOK_Click()
     mMm.DispGuidance "ファイルの数をカウントしています..."
     
     FileSearch objFs, strPath, strPatterns(), colBook
-    Select Case err.Number
+    Select Case Err.Number
     Case 75, 76
         mMm.Enable
         Set mMm = Nothing
@@ -188,9 +188,8 @@ Private Sub cmdOK_Click()
     Set objFs = Nothing
     
     ThisWorkbook.Worksheets("Grep結果").Copy
-    Set ResultWS = ActiveSheet
-    
-    'Set ResultWS = Workbooks.Add.Worksheets(1)
+    DoEvents
+    Set ResultWS = Application.Workbooks(Application.Workbooks.count).Worksheets(1)
     ResultWS.Name = "Grep結果"
     
     ResultWS.Cells(1, C_SEARCH_NO).Value = "ExcelファイルのGrep"
@@ -241,9 +240,9 @@ Private Sub cmdOK_Click()
     
 '        If Len(txtPassword.Text) <> 0 Then
             For Each pass In varPassword
-                err.Clear
-                Set WB = XL.Workbooks.Open(FileName:=varBook, ReadOnly:=True, IgnoreReadOnlyRecommended:=True, Notify:=False, Password:=pass, local:=True)
-                If err.Number = 0 Then
+                Err.Clear
+                Set WB = XL.Workbooks.Open(filename:=varBook, ReadOnly:=True, IgnoreReadOnlyRecommended:=True, UpdateLinks:=0, notify:=False, Password:=pass, local:=True)
+                If Err.Number = 0 Then
                     Exit For
                 End If
             Next
@@ -251,7 +250,7 @@ Private Sub cmdOK_Click()
 '            err.Clear
 '            Set WB = XL.Workbooks.Open(filename:=varBook, ReadOnly:=True, IgnoreReadOnlyRecommended:=True, Notify:=False, Password:="", Local:=True)
 '        End If
-        If err.Number = 0 Then
+        If Err.Number = 0 Then
             For Each WS In WB.Worksheets
                 If WS.visible = xlSheetVisible Then
                     Select Case cboObj.Text
@@ -275,13 +274,14 @@ Private Sub cmdOK_Click()
             ResultWS.Cells(mlngCount, C_SEARCH_ADDRESS).Value = ""
     
             ResultWS.Cells(mlngCount, C_SEARCH_STR).NumberFormatLocal = "@"
-            ResultWS.Cells(mlngCount, C_SEARCH_STR).Value = err.Description
+            ResultWS.Cells(mlngCount, C_SEARCH_STR).Value = Err.Description
             mlngCount = mlngCount + 1
         End If
         WB.Close SaveChanges:=False
         Set WB = Nothing
         lngBookCount = lngBookCount + 1
         mMm.DisplayGauge lngBookCount
+        DoEvents
     Next
     
     XL.EnableEvents = True
@@ -378,7 +378,7 @@ Private Sub FileSearch(objFs As Object, strPath As String, strPatterns() As Stri
         DoEvents
         DoEvents
         For Each f In strPatterns
-            If LCase(objfl.Name) Like LCase(f) Then
+            If LCase(objfl.Name) Like LCase(f) And Left$(objfl.Name, 2) <> "~$" Then
                 blnFind = True
                 Exit For
             End If
@@ -566,6 +566,10 @@ Private Sub seachCell(ByRef objSheet As Worksheet, ByRef ResultWS As Worksheet)
                     schStr = objFind.FormulaLocal
                 End If
                 
+                If IsError(schStr) Then
+                    GoTo pass
+                End If
+                
                 Dim objMatch As Object
                 Set objMatch = objRegx.Execute(schStr)
     
@@ -576,18 +580,23 @@ Private Sub seachCell(ByRef objSheet As Worksheet, ByRef ResultWS As Worksheet)
                     ResultWS.Cells(mlngCount, C_SEARCH_ADDRESS).Value = objFind.Address
     '                ResultWS.Cells(mlngCount, C_SEARCH_ID).Value = c.Address
             
+'                    ResultWS.Hyperlinks.Add _
+'                        Anchor:=ResultWS.Cells(mlngCount, C_SEARCH_ADDRESS), _
+'                        Address:="", _
+'                        SubAddress:=ResultWS.Cells(mlngCount, C_SEARCH_ADDRESS).Address, _
+'                        TextToDisplay:=objFind.Address
                     ResultWS.Hyperlinks.Add _
                         Anchor:=ResultWS.Cells(mlngCount, C_SEARCH_ADDRESS), _
                         Address:="", _
-                        SubAddress:=ResultWS.Cells(mlngCount, C_SEARCH_ADDRESS).Address, _
                         TextToDisplay:=objFind.Address
-            
+                        
                     ResultWS.Cells(mlngCount, C_SEARCH_STR).NumberFormatLocal = "@"
                     ResultWS.Cells(mlngCount, C_SEARCH_STR).Value = schStr
                     mlngCount = mlngCount + 1
                 End If
                 
                 Set objMatch = Nothing
+pass:
                 Set objFind = objSheet.UsedRange.FindNext(objFind)
                 
                 If objFind Is Nothing Then
@@ -619,12 +628,17 @@ Private Sub seachCell(ByRef objSheet As Worksheet, ByRef ResultWS As Worksheet)
 '                ResultWS.Cells(mlngCount, C_SEARCH_ID).Value = objFind.Address
                 ResultWS.Cells(mlngCount, C_SEARCH_SHEET).Value = objSheet.Name
                 
+'                ResultWS.Hyperlinks.Add _
+'                    Anchor:=ResultWS.Cells(mlngCount, C_SEARCH_ADDRESS), _
+'                    Address:="", _
+'                    SubAddress:=ResultWS.Cells(mlngCount, C_SEARCH_ADDRESS).Address, _
+'                    TextToDisplay:=objFind.Address
+        
                 ResultWS.Hyperlinks.Add _
                     Anchor:=ResultWS.Cells(mlngCount, C_SEARCH_ADDRESS), _
                     Address:="", _
-                    SubAddress:=ResultWS.Cells(mlngCount, C_SEARCH_ADDRESS).Address, _
                     TextToDisplay:=objFind.Address
-        
+                
                 ResultWS.Cells(mlngCount, C_SEARCH_STR).NumberFormatLocal = "@"
                 
                 If cboValue.Value = C_SEARCH_VALUE_VALUE Then
@@ -681,15 +695,15 @@ Private Sub searchShape(ByRef objSheet As Worksheet, ByRef ResultWS As Worksheet
                 'シェイプに文字があるかないか判断がつかないためエラー検出にて処理
                 On Error Resume Next
                 strBuf = c.TextFrame.Characters.Text
-                If err.Number = 0 Then
+                If Err.Number = 0 Then
                     On Error GoTo 0
                     
                     '正規表現の場合
                     If chkRegEx Then
-                        err.Clear
+                        Err.Clear
                         On Error Resume Next
                         Set objMatch = mobjRegx.Execute(strBuf)
-                        If err.Number <> 0 Then
+                        If Err.Number <> 0 Then
                             MsgBox "検索文字列の正規表現が正しくありません。", vbExclamation, C_TITLE
                             cboSearch.SetFocus
                             Exit Sub
@@ -721,10 +735,14 @@ Private Sub searchShape(ByRef objSheet As Worksheet, ByRef ResultWS As Worksheet
 '                    Address:="", _
 '                    SubAddress:=ResultWS.Cells(mlngCount, C_SEARCH_ADDRESS).Address, _
 '                    TextToDisplay:=c.Name
+'                ResultWS.Hyperlinks.Add _
+'                    Anchor:=ResultWS.Cells(mlngCount, C_SEARCH_ADDRESS), _
+'                    Address:="", _
+'                    SubAddress:=ResultWS.Cells(mlngCount, C_SEARCH_ADDRESS).Address, _
+'                    TextToDisplay:=c.Name & ":" & c.id
                 ResultWS.Hyperlinks.Add _
                     Anchor:=ResultWS.Cells(mlngCount, C_SEARCH_ADDRESS), _
                     Address:="", _
-                    SubAddress:=ResultWS.Cells(mlngCount, C_SEARCH_ADDRESS).Address, _
                     TextToDisplay:=c.Name & ":" & c.id
                     
                         ResultWS.Cells(mlngCount, C_SEARCH_SHEET).Value = objSheet.Name
@@ -735,7 +753,7 @@ Private Sub searchShape(ByRef objSheet As Worksheet, ByRef ResultWS As Worksheet
                     End If
                 Else
                     On Error GoTo 0
-                    err.Clear
+                    Err.Clear
                 End If
             Case msoGroup
                 grouprc c, c, colShapes, ResultWS
@@ -761,15 +779,15 @@ Private Sub grouprc(ByRef objTop As Shape, ByRef objShape As Shape, ByRef colSha
                 'シェイプに文字があるかないか判断がつかないためエラー検出にて処理
                 On Error Resume Next
                 strBuf = c.TextFrame.Characters.Text
-                If err.Number = 0 Then
+                If Err.Number = 0 Then
                     On Error GoTo 0
                     
                     '正規表現の場合
                     If chkRegEx Then
-                        err.Clear
+                        Err.Clear
                         On Error Resume Next
                         Set objMatch = mobjRegx.Execute(strBuf)
-                        If err.Number <> 0 Then
+                        If Err.Number <> 0 Then
                             MsgBox "検索文字列の正規表現が正しくありません。", vbExclamation, C_TITLE
                             cboSearch.SetFocus
                             Exit Sub
@@ -797,10 +815,14 @@ Private Sub grouprc(ByRef objTop As Shape, ByRef objShape As Shape, ByRef colSha
 '                    Address:="", _
 '                    SubAddress:=Cells(mlngCount, C_SEARCH_ADDRESS).Address, _
 '                    TextToDisplay:=c.Name
+'                ResultWS.Hyperlinks.Add _
+'                    Anchor:=ResultWS.Cells(mlngCount, C_SEARCH_ADDRESS), _
+'                    Address:="", _
+'                    SubAddress:=Cells(mlngCount, C_SEARCH_ADDRESS).Address, _
+'                    TextToDisplay:=c.Name & ":" & c.id
                 ResultWS.Hyperlinks.Add _
                     Anchor:=ResultWS.Cells(mlngCount, C_SEARCH_ADDRESS), _
                     Address:="", _
-                    SubAddress:=Cells(mlngCount, C_SEARCH_ADDRESS).Address, _
                     TextToDisplay:=c.Name & ":" & c.id
                         
                         ResultWS.Cells(mlngCount, C_SEARCH_STR).NumberFormatLocal = "@"
@@ -810,7 +832,7 @@ Private Sub grouprc(ByRef objTop As Shape, ByRef objShape As Shape, ByRef colSha
                     End If
                 Else
                     On Error GoTo 0
-                    err.Clear
+                    Err.Clear
                 End If
             Case msoGroup
                 '再帰呼出

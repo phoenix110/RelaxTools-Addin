@@ -154,9 +154,9 @@ Private Function getGroupId(ByRef objShape As Object) As String
     Dim s As Object
     
     On Error Resume Next
-    err.Clear
+    Err.Clear
     Set s = objShape.ParentGroup
-    Do Until err.Number <> 0
+    Do Until Err.Number <> 0
         strBuf = "/" & s.id & strBuf
         Set s = s.ParentGroup
     Loop
@@ -227,7 +227,7 @@ Private Sub cmdNoDsp_Click()
 
 End Sub
 
-Private Sub cmdOK_Click()
+Private Sub cmdOk_Click()
     
     On Error Resume Next
     
@@ -357,7 +357,7 @@ Private Sub lstResult_Change()
                     objShape.Select False
                 Else
                     blnFlg = True
-                    Application.Goto setCellPos(objShape.TopLeftCell), True
+                    Application.GoTo setCellPos(objShape.TopLeftCell), True
                     objShape.Select
                 End If
                 On Error GoTo 0
@@ -461,7 +461,7 @@ Private Function setCellPos(ByRef r As Range) As Range
             lngCol = r.Column
     End Select
 
-    Set setCellPos = r.Worksheet.Cells(r.row, lngCol)
+    Set setCellPos = r.Worksheet.Cells(r.Row, lngCol)
 
 End Function
 
@@ -476,10 +476,10 @@ Private Sub UserForm_Initialize()
     mblnRefresh = True
     
     Me.Top = (Application.Top + Application.Height - Me.Height) - 20
-    Me.Left = (Application.Left + Application.Width - Me.Width) - 20
+    Me.Left = (Application.Left + Application.width - Me.width) - 20
     
     Set MW = basMouseWheel.GetInstance
-    MW.Install
+    MW.Install Me
 End Sub
 
 Sub dispList()
@@ -521,9 +521,9 @@ Sub dispList()
         
     Next
 End Sub
-Private Sub UserForm_Activate()
-    MW.Activate
-End Sub
+'Private Sub UserForm_Activate()
+'    MW.Activate
+'End Sub
 Private Sub UserForm_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
     Set MW.obj = Nothing
 End Sub
@@ -534,14 +534,18 @@ Private Sub UserForm_Terminate()
 End Sub
 Private Sub MW_WheelDown(obj As Object)
 
+    On Error GoTo e
+
     If obj.ListCount = 0 Then Exit Sub
     obj.TopIndex = obj.TopIndex + 3
-    
+e:
 End Sub
 
 Private Sub MW_WheelUp(obj As Object)
 
     Dim lngPos As Long
+
+    On Error GoTo e
 
     If obj.ListCount = 0 Then Exit Sub
     lngPos = obj.TopIndex - 3
@@ -552,4 +556,5 @@ Private Sub MW_WheelUp(obj As Object)
 
     obj.TopIndex = lngPos
 
+e:
 End Sub

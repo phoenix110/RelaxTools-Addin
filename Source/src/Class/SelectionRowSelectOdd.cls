@@ -70,12 +70,12 @@ End Sub
 '------------------------------------------------------------------------------------------------------------------------
 ' 主処理(UOC)
 '------------------------------------------------------------------------------------------------------------------------
-Private Sub SFWork_SelectionMain(r As Range, ByVal row As Long, Cancel As Boolean)
+Private Sub SFWork_SelectionMain(r As Range, ByVal Row As Long, Cancel As Boolean)
         
     On Error GoTo e
     
     Select Case True
-        Case row Mod 2 = 1
+        Case Row Mod 2 = 1
             If mrngOdd Is Nothing Then
                 Set mrngOdd = r
             Else
@@ -86,7 +86,7 @@ Private Sub SFWork_SelectionMain(r As Range, ByVal row As Long, Cancel As Boolea
     
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
     Cancel = True
 End Sub
 '------------------------------------------------------------------------------------------------------------------------
@@ -105,5 +105,5 @@ Private Sub SFWork_SelectionTerm()
     
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
 End Sub

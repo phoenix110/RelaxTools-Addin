@@ -1,7 +1,7 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmTreeList 
    Caption         =   "フォルダツリー構造取得"
-   ClientHeight    =   2775
+   ClientHeight    =   3480
    ClientLeft      =   45
    ClientTop       =   330
    ClientWidth     =   7230
@@ -46,6 +46,7 @@ Attribute VB_Exposed = False
 Option Explicit
 Private mblnCancel As Boolean
 Private mMm As MacroManager
+Private XL As Excel.Application
 
 Private mdblLineWidth As Double
 
@@ -102,7 +103,7 @@ Private Sub cmdRun_Click()
     
     Set objFs = CreateObject("Scripting.FileSystemObject")
     
-    lngRow = ActiveCell.row
+    lngRow = ActiveCell.Row
     lngCol = ActiveCell.Column
     
     strLine = ""
@@ -138,13 +139,22 @@ Private Sub cmdRun_Click()
     
     On Error Resume Next
     
+    If optViewSheet.Value Then
+        Set XL = New Excel.Application
+    End If
+    
     lngFolderCnt = 0
     FileDisp objFs, strFolder, lngRow, lngCol, lngCol, strLine, lngFolderCnt
     
     Set mMm = Nothing
     Set objFs = Nothing
     
-    Select Case err.Number
+    If optViewSheet.Value Then
+        XL.Quit
+        Set XL = Nothing
+    End If
+    
+    Select Case Err.Number
     Case 75, 76
         MsgBox "フォルダが存在しません。", vbExclamation, "ツリー構造取得"
         txtFolder.SetFocus
@@ -159,6 +169,7 @@ Private Sub FileDisp(objFs, ByVal strPath, lngRow, ByVal lngCol, ByVal lngHCol A
 
     Dim objfld As Object
     Dim objfl As Object
+    Dim objKey As Variant
     Dim objSub As Object
     
     Dim i As Long
@@ -166,8 +177,9 @@ Private Sub FileDisp(objFs, ByVal strPath, lngRow, ByVal lngCol, ByVal lngHCol A
     Dim lngCol2 As Long
     
     Dim strLine As String
-    Dim colFolders As Collection
-    Dim colFiles As Collection
+    Dim colFolders As Object
+    Dim colFiles As Object
+    Dim v As Variant
     
     '罫線の列幅を２とする。
     Columns(lngCol).ColumnWidth = mdblLineWidth
@@ -189,16 +201,16 @@ Private Sub FileDisp(objFs, ByVal strPath, lngRow, ByVal lngCol, ByVal lngHCol A
     
     If chkFileName.Value Then
         
-        Set colFiles = New Collection
+        Set colFiles = CreateObject("Scripting.Dictionary")
         
         For Each objfl In objfld.files
-            colFiles.Add objfl, objfl.Name
+            colFiles.Add objfl.Name, objfl
         Next
         
-        rlxSortCollection colFiles
+        rlxSortDictionary colFiles
         
         'ファイルの一覧を作成する。
-        For Each objfl In colFiles
+        For Each objKey In colFiles.Keys
             DoEvents
             If mblnCancel Then
                 Exit Sub
@@ -208,8 +220,7 @@ Private Sub FileDisp(objFs, ByVal strPath, lngRow, ByVal lngCol, ByVal lngHCol A
             
             'ファイル名
             Cells(lngRow, lngCol2).NumberFormatLocal = "@"
-            Cells(lngRow, lngCol2).Value = objfl.Name
-    
+            Cells(lngRow, lngCol2).Value = colFiles.Item(objKey).Name
             
             'ハイパーリンク
             'Office プログラム内のハイパーリンクのファイル名でポンド文字を使用できません。(KB202261)
@@ -218,8 +229,18 @@ Private Sub FileDisp(objFs, ByVal strPath, lngRow, ByVal lngCol, ByVal lngHCol A
             If chkFile.Value Then
                 ActiveSheet.Hyperlinks.Add _
                     Anchor:=Cells(lngRow, lngCol2), _
-                    Address:=rlxAddFileSeparator(strPath) & objfl.Name, _
-                    TextToDisplay:=objfl.Name
+                    Address:=rlxAddFileSeparator(strPath) & colFiles.Item(objKey).Name, _
+                    TextToDisplay:=colFiles.Item(objKey).Name
+            End If
+    
+            If optViewSheet.Value Then
+                If rlxIsExcelFile(colFiles.Item(objKey).Name) Then
+                    For Each v In getSheets(colFiles.Item(objKey).Path)
+                        lngRow = lngRow + 1
+                        Cells(lngRow, lngCol2 + 1).Value = v
+                        SetTree strLine, lngRow, lngHCol
+                    Next
+                End If
             End If
             
             lngRow = lngRow + 1
@@ -236,15 +257,15 @@ Private Sub FileDisp(objFs, ByVal strPath, lngRow, ByVal lngCol, ByVal lngHCol A
     'サブフォルダ検索あり
     i = 1
     
-    Set colFolders = New Collection
+    Set colFolders = CreateObject("Scripting.Dictionary")
     
     For Each objSub In objfld.SubFolders
-        colFolders.Add objSub, objSub.Name
+        colFolders.Add objSub.Name, objSub
     Next
     
-    rlxSortCollection colFolders
+    rlxSortDictionary colFolders
         
-    For Each objSub In colFolders
+    For Each objKey In colFolders
         DoEvents
         If mblnCancel Then
             Exit Sub
@@ -262,18 +283,18 @@ Private Sub FileDisp(objFs, ByVal strPath, lngRow, ByVal lngCol, ByVal lngHCol A
         
         'フォルダ見出し
         Cells(lngRow, lngCol2).NumberFormatLocal = "@"
-        Cells(lngRow, lngCol2).Value = rlxGetFullpathFromFileName(objSub.Path)
+        Cells(lngRow, lngCol2).Value = rlxGetFullpathFromFileName(colFolders.Item(objKey).Path)
         
         'フォルダ指定の場合
         If chkFolder.Value Then
             ActiveSheet.Hyperlinks.Add _
                 Anchor:=Cells(lngRow, lngCol2), _
-                Address:=objSub.Path, _
-                TextToDisplay:=rlxGetFullpathFromFileName(objSub.Path)
+                Address:=colFolders.Item(objKey).Path, _
+                TextToDisplay:=rlxGetFullpathFromFileName(colFolders.Item(objKey).Path)
         End If
                 
         '自分自身を呼び出す（再帰）
-        FileDisp objFs, objSub.Path, lngRow, lngCol2, lngHCol, strLine, lngFolderCnt
+        FileDisp objFs, colFolders.Item(objKey).Path, lngRow, lngCol2, lngHCol, strLine, lngFolderCnt
         
         i = i + 1
         lngFolderCnt = lngFolderCnt + 1
@@ -282,8 +303,7 @@ Private Sub FileDisp(objFs, ByVal strPath, lngRow, ByVal lngCol, ByVal lngHCol A
     Next
     Set colFolders = Nothing
     
-End Sub
-'Tree描画
+End Sub 'Tree描画
 Private Sub SetTree(ByVal strLine As String, ByVal lngRow As Long, ByVal lngCol As Long)
 
     Dim lngLen As Long
@@ -338,3 +358,25 @@ End Sub
 Private Sub UserForm_Terminate()
     mblnCancel = True
 End Sub
+
+Private Function getSheets(ByVal strBook As String) As Collection
+
+    Dim WB As Workbook
+    Dim WS As Object
+    Set getSheets = New Collection
+    
+    On Error GoTo e
+        
+    Set WB = XL.Workbooks.Open(filename:=strBook, ReadOnly:=True, UpdateLinks:=0, IgnoreReadOnlyRecommended:=True)
+    
+    For Each WS In WB.Sheets
+        If WS.visible = xlSheetVisible Then
+            getSheets.Add WS.Name, WS.Name
+        End If
+    Next
+    
+    WB.Close SaveChanges:=False
+e:
+    Set WB = Nothing
+
+End Function

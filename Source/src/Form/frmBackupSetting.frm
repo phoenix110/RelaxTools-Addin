@@ -85,7 +85,7 @@ Private Sub cmdFolder_Click()
     
 End Sub
 
-Private Sub cmdOK_Click()
+Private Sub cmdOk_Click()
 
     Dim i As Long
     Dim strFile As String
@@ -244,10 +244,10 @@ Private Sub UserForm_Initialize()
     Next
    
     Me.Top = (Application.Top + Application.Height - Me.Height) - 20
-    Me.Left = (Application.Left + Application.Width - Me.Width) - 20
+    Me.Left = (Application.Left + Application.width - Me.width) - 20
     
     Set MW = basMouseWheel.GetInstance
-    MW.Install
+    MW.Install Me
 End Sub
 
 Private Sub UserForm_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
@@ -260,14 +260,18 @@ Private Sub UserForm_Terminate()
 End Sub
 Private Sub MW_WheelDown(obj As Object)
 
+    On Error GoTo e
+
     If obj.ListCount = 0 Then Exit Sub
     obj.TopIndex = obj.TopIndex + 3
-    
+e:
 End Sub
 
 Private Sub MW_WheelUp(obj As Object)
 
     Dim lngPos As Long
+
+    On Error GoTo e
 
     If obj.ListCount = 0 Then Exit Sub
     lngPos = obj.TopIndex - 3
@@ -277,5 +281,5 @@ Private Sub MW_WheelUp(obj As Object)
     End If
 
     obj.TopIndex = lngPos
-
+e:
 End Sub

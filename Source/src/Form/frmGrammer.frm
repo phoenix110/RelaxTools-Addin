@@ -121,7 +121,7 @@ Private Sub cmdHelp_Click()
 '    End If
 End Sub
 
-Private Sub cmdOK_Click()
+Private Sub cmdOk_Click()
 
 
     
@@ -158,7 +158,7 @@ Private Sub searchStart()
     Dim objSheet1 As Worksheet
     Dim objSheet2 As Worksheet
     Dim WD As Object
-    Dim DC As Object
+    Dim dc As Object
     
     lstResult.Clear
     mlngCount = 0
@@ -166,14 +166,14 @@ Private Sub searchStart()
     Set colSheet = New Collection
 
     On Error Resume Next
-    err.Clear
+    Err.Clear
     Set WD = CreateObject("Word.Application")
-    If err.Number <> 0 Then
+    If Err.Number <> 0 Then
         MsgBox "Wordがインストールされていないか、使用できません。", vbOKOnly + vbExclamation, C_TITLE
         Exit Sub
     End If
     
-    Set DC = WD.Documents.Add
+    Set dc = WD.Documents.Add
 '    WD.visible = True
 
     WD.DisplayAlerts = False
@@ -220,7 +220,7 @@ Private Sub searchStart()
 
     WD.DisplayAlerts = True
 
-    DC.Close False
+    dc.Close False
     WD.Quit
     Set WD = Nothing
 
@@ -300,9 +300,9 @@ Private Function GetGrammer(ByRef WD As Object, ByVal Value As String, ByRef str
     For lngCnt = 1 To lngMax
     
         On Error Resume Next
-        err.Clear
+        Err.Clear
         Set a = WD.ActiveDocument.GrammaticalErrors(lngCnt)
-        If err.Number <> 0 Then
+        If Err.Number <> 0 Then
             Exit For
         End If
         
@@ -418,7 +418,7 @@ Private Sub searchShape(ByRef WD As Object, ByRef objSheet As Worksheet)
                     End If
                 Else
                     On Error GoTo 0
-                    err.Clear
+                    Err.Clear
                 End If
             Case msoGroup
                 grouprc objSheet, c, c, colShapes, WD
@@ -467,7 +467,7 @@ Private Sub grouprc(ByRef WS As Worksheet, ByRef objTop As Shape, ByRef objShape
                     End If
                 Else
                     On Error GoTo 0
-                    err.Clear
+                    Err.Clear
                 End If
             Case msoGroup
                 '再帰呼出
@@ -547,9 +547,9 @@ Private Function getGroupId(ByRef objShape As Object) As String
     Dim s As Object
     
     On Error Resume Next
-    err.Clear
+    Err.Clear
     Set s = objShape.ParentGroup
-    Do Until err.Number <> 0
+    Do Until Err.Number <> 0
         strBuf = "/" & s.id & strBuf
         Set s = s.ParentGroup
     Loop
@@ -685,7 +685,7 @@ Private Sub lstResult_Change()
                         objShape.Shapes(1).Select False
                     Else
                         blnFlg = True
-                        Application.Goto setCellPos(objArt.TopLeftCell), True
+                        Application.GoTo setCellPos(objArt.TopLeftCell), True
                         objShape.Shapes(1).Select
                     End If
                     On Error GoTo 0
@@ -695,7 +695,7 @@ Private Sub lstResult_Change()
                         objShape.Select False
                     Else
                         blnFlg = True
-                        Application.Goto setCellPos(objShape.TopLeftCell), True
+                        Application.GoTo setCellPos(objShape.TopLeftCell), True
                         objShape.Select
                     End If
                     On Error GoTo 0
@@ -725,7 +725,7 @@ Private Function setCellPos(ByRef r As Range) As Range
         lngCol = r.Column
     End If
     
-    lngRow = r.row - 5
+    lngRow = r.Row - 5
     If lngRow < 1 Then
         lngRow = 1
     End If
@@ -768,19 +768,19 @@ End Sub
 
 
 
-Private Sub UserForm_Activate()
-'    Call FormResize
-    
-'    Me.Top = GetSetting(C_TITLE, "Search", "Top", (Application.Top + Application.Height - Me.Height) - 20)
-'    Me.Left = GetSetting(C_TITLE, "Search", "Left", (Application.Left + Application.Width - Me.Width) - 20)
-'    Me.Width = GetSetting(C_TITLE, "Search", "Width", Me.Width)
-'    Me.Height = GetSetting(C_TITLE, "Search", "Height", Me.Height)
-    
-    
-    
-'    Call UserForm_Resize
-    MW.Activate
-End Sub
+'Private Sub UserForm_Activate()
+''    Call FormResize
+'
+''    Me.Top = GetSetting(C_TITLE, "Search", "Top", (Application.Top + Application.Height - Me.Height) - 20)
+''    Me.Left = GetSetting(C_TITLE, "Search", "Left", (Application.Left + Application.Width - Me.Width) - 20)
+''    Me.Width = GetSetting(C_TITLE, "Search", "Width", Me.Width)
+''    Me.Height = GetSetting(C_TITLE, "Search", "Height", Me.Height)
+'
+'
+'
+''    Call UserForm_Resize
+'    MW.Activate
+'End Sub
 
 Private Sub UserForm_Initialize()
     
@@ -838,7 +838,7 @@ Private Sub UserForm_Initialize()
 '    chkSmartArt.value = GetSetting(C_TITLE, "Search", "chkSmartArt", False)
 
     Me.Top = (Application.Top + Application.Height - Me.Height) - 20
-    Me.Left = (Application.Left + Application.Width - Me.Width) - 20
+    Me.Left = (Application.Left + Application.width - Me.width) - 20
 '
 '    With txtSearch
 '        .SelStart = 0
@@ -859,7 +859,7 @@ Private Sub UserForm_Initialize()
 '    mlngColumnWidth = Val(Split(Me.lstResult.ColumnWidths, ";")(1))
 
     Set MW = basMouseWheel.GetInstance
-    MW.Install
+    MW.Install Me
     
 End Sub
 Public Sub Start(ByVal lngTab As Long)
@@ -1088,14 +1088,18 @@ End Sub
 
 Private Sub MW_WheelDown(obj As Object)
 
+    On Error GoTo e
+
     If obj.ListCount = 0 Then Exit Sub
     obj.TopIndex = obj.TopIndex + 3
-    
+e:
 End Sub
 
 Private Sub MW_WheelUp(obj As Object)
 
     Dim lngPos As Long
+
+    On Error GoTo e
 
     If obj.ListCount = 0 Then Exit Sub
     lngPos = obj.TopIndex - 3
@@ -1105,5 +1109,5 @@ Private Sub MW_WheelUp(obj As Object)
     End If
 
     obj.TopIndex = lngPos
-
+e:
 End Sub

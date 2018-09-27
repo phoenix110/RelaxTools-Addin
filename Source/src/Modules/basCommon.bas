@@ -31,32 +31,34 @@ Attribute VB_Name = "basCommon"
 Option Explicit
 Option Private Module
 
+
 ' 32-bit Function version.
 ' ドライブ名からネットワークドライブを取得
 #If VBA7 And Win64 Then
     'VBA7 = Excel2010以降。赤くコンパイルエラーになって見えますが問題ありません。
-    Private Declare PtrSafe Function WNetGetConnection32 Lib "MPR.DLL" Alias "WNetGetConnectionA" (ByVal lpszLocalName As String, ByVal lpszRemoteName As String, lSize As Long) As Long
-    Private Declare PtrSafe Function OpenClipboard Lib "user32" (ByVal hWnd As LongPtr) As Long
-    Private Declare PtrSafe Function CloseClipboard Lib "user32" () As Long
-    Private Declare PtrSafe Function EmptyClipboard Lib "user32" () As Long
-    Private Declare PtrSafe Function GetClipboardData Lib "user32" (ByVal wFormat As Long) As LongPtr
-    Private Declare PtrSafe Function SetClipboardData Lib "user32" (ByVal wFormat As Long, ByVal hMem As LongPtr) As LongPtr
-    Private Declare PtrSafe Function GlobalAlloc Lib "kernel32" (ByVal wFlags As Long, ByVal dwBytes As LongPtr) As LongPtr
-    Private Declare PtrSafe Function GlobalLock Lib "kernel32" (ByVal hMem As LongPtr) As LongPtr
-    Private Declare PtrSafe Function GlobalUnlock Lib "kernel32" (ByVal hMem As LongPtr) As Long
-    Private Declare PtrSafe Function GlobalSize Lib "kernel32" (ByVal hMem As LongPtr) As LongPtr
-    Private Declare PtrSafe Function lstrcpy Lib "kernel32" Alias "lstrcpyA" (ByVal lpString1 As Any, ByVal lpString2 As Any) As LongPtr
-    Private Declare PtrSafe Function ChooseColor Lib "comdlg32.dll" Alias "ChooseColorA" (pChoosecolor As ChooseColor) As Long
-    Private Declare PtrSafe Function DragQueryFile Lib "shell32.dll" Alias "DragQueryFileA" (ByVal hDrop As LongPtr, ByVal UINT As Long, ByVal lpszFile As String, ByVal ch As Long) As Long
-    Private Declare PtrSafe Function FindWindow Lib "user32" Alias "FindWindowA" (ByVal lpClassName As String, ByVal lpWindowName As String) As LongPtr
-    Private Declare PtrSafe Function FlashWindowEx Lib "user32.dll" (pfwi As FLASHWINFO) As LongPtr
-    Private Declare PtrSafe Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As LongPtr)
-    Private Declare PtrSafe Function IsClipboardFormatAvailable Lib "user32.dll" (ByVal wFormat As Long) As Long
-    Private Declare PtrSafe Function OleCreatePictureIndirect Lib "oleaut32" (ByRef lpPictDesc As PictDesc, ByRef RefIID As GUID, ByVal fPictureOwnsHandle As LongPtr, ByRef IPic As IPicture) As Long
-    Private Declare PtrSafe Function CopyImage Lib "user32" (ByVal handle As LongPtr, ByVal un1 As Long, ByVal n1 As Long, ByVal n2 As Long, ByVal un2 As Long) As LongPtr
-    Private Declare PtrSafe Function EnumClipboardFormats Lib "user32" (ByVal wFormat As Long) As Long
+    Declare PtrSafe Function WNetGetConnection32 Lib "MPR.DLL" Alias "WNetGetConnectionA" (ByVal lpszLocalName As String, ByVal lpszRemoteName As String, lSize As Long) As Long
+    Declare PtrSafe Function OpenClipboard Lib "user32" (ByVal hwnd As LongPtr) As Long
+    Declare PtrSafe Function CloseClipboard Lib "user32" () As Long
+    Declare PtrSafe Function EmptyClipboard Lib "user32" () As Long
+    Declare PtrSafe Function GetClipboardData Lib "user32" (ByVal wFormat As Long) As LongPtr
+    Declare PtrSafe Function SetClipboardData Lib "user32" (ByVal wFormat As Long, ByVal hMem As LongPtr) As LongPtr
+    Declare PtrSafe Function GlobalAlloc Lib "kernel32" (ByVal wFlags As Long, ByVal dwBytes As LongPtr) As LongPtr
+    Declare PtrSafe Function GlobalLock Lib "kernel32" (ByVal hMem As LongPtr) As LongPtr
+    Declare PtrSafe Function GlobalUnlock Lib "kernel32" (ByVal hMem As LongPtr) As Long
+    Declare PtrSafe Function GlobalSize Lib "kernel32" (ByVal hMem As LongPtr) As LongPtr
+    Declare PtrSafe Function lstrcpy Lib "kernel32" Alias "lstrcpyA" (ByVal lpString1 As Any, ByVal lpString2 As Any) As LongPtr
+    Declare PtrSafe Function ChooseColor Lib "comdlg32.dll" Alias "ChooseColorA" (pChoosecolor As ChooseColor) As Long
+    Declare PtrSafe Function DragQueryFile Lib "shell32.dll" Alias "DragQueryFileA" (ByVal hDrop As LongPtr, ByVal UINT As Long, ByVal lpszFile As String, ByVal ch As Long) As Long
+    Declare PtrSafe Function FindWindow Lib "user32" Alias "FindWindowA" (ByVal lpClassName As String, ByVal lpWindowName As String) As LongPtr
+    Declare PtrSafe Function FlashWindowEx Lib "user32.dll" (pfwi As FLASHWINFO) As LongPtr
+    Declare PtrSafe Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As LongPtr)
+    Declare PtrSafe Function IsClipboardFormatAvailable Lib "user32.dll" (ByVal wFormat As Long) As Long
+    Declare PtrSafe Function OleCreatePictureIndirect Lib "oleaut32" (ByRef lpPictDesc As PICTDESC, ByRef RefIID As GUID, ByVal fPictureOwnsHandle As LongPtr, ByRef IPic As IPicture) As Long
+    Declare PtrSafe Function CopyImage Lib "user32" (ByVal handle As LongPtr, ByVal un1 As Long, ByVal n1 As Long, ByVal n2 As Long, ByVal un2 As Long) As LongPtr
+    Declare PtrSafe Function EnumClipboardFormats Lib "user32" (ByVal wFormat As Long) As Long
     Declare PtrSafe Function SystemParametersInfo Lib "user32" Alias "SystemParametersInfoA" (ByVal uAction As Long, ByVal uParam As Long, ByRef lpvParam As Any, ByVal fuWinIni As Long) As Long
-    Private Declare PtrSafe Sub Sleep Lib "kernel32" (ByVal ms As LongPtr)
+    Declare PtrSafe Sub Sleep Lib "kernel32" (ByVal ms As LongPtr)
+    Declare PtrSafe Function RegisterClipboardFormat Lib "user32" Alias "RegisterClipboardFormatA" (ByVal lpString As String) As Long
 
     Private Type ChooseColor
         lStructSize As LongPtr
@@ -64,7 +66,7 @@ Option Private Module
         hInstance As LongPtr
         rgbResult As LongPtr
         lpCustColors As String
-        flags As LongPtr
+        Flags As LongPtr
         lCustData As LongPtr
         lpfnHook As LongPtr
         lpTemplateName As String
@@ -84,13 +86,13 @@ Option Private Module
     
     Private Type FLASHWINFO
         cbsize As LongPtr
-        hWnd As LongPtr
+        hwnd As LongPtr
         dwFlags As Long
         uCount As Long
         dwTimeout As LongPtr
     End Type
     
-    Private Type PictDesc
+    Private Type PICTDESC
         cbSizeofStruct As Long
         picType        As Long
         hImage         As LongPtr
@@ -105,7 +107,7 @@ Option Private Module
     End Type
 #Else
     Private Declare Function WNetGetConnection32 Lib "MPR.DLL" Alias "WNetGetConnectionA" (ByVal lpszLocalName As String, ByVal lpszRemoteName As String, lSize As Long) As Long
-    Declare Function OpenClipboard Lib "user32" (ByVal hWnd As Long) As Long
+    Declare Function OpenClipboard Lib "user32" (ByVal hwnd As Long) As Long
     Declare Function CloseClipboard Lib "user32" () As Long
     Declare Function EmptyClipboard Lib "user32" () As Long
     Declare Function GetClipboardData Lib "user32" (ByVal wFormat As Long) As Long
@@ -117,15 +119,17 @@ Option Private Module
     Declare Function lstrcpy Lib "kernel32" Alias "lstrcpyA" (ByVal lpString1 As Any, ByVal lpString2 As Any) As Long
     Declare Function ChooseColor Lib "comdlg32.dll" Alias "ChooseColorA" (pChoosecolor As ChooseColor) As Long
     Declare Function DragQueryFile Lib "shell32.dll" Alias "DragQueryFileA" (ByVal hDrop As Long, ByVal UINT As Long, ByVal lpszFile As String, ByVal ch As Long) As Long
-    Private Declare Function FindWindow Lib "user32.dll" Alias "FindWindowA" (ByVal lpClassName As String, ByVal lpWindowName As String) As Long
-    Private Declare Function FlashWindowEx Lib "user32.dll" (pfwi As FLASHWINFO) As Long
-    Private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As Long)
-    Private Declare Function IsClipboardFormatAvailable Lib "user32.dll" (ByVal wFormat As Long) As Long
-    Private Declare Function OleCreatePictureIndirect Lib "olepro32.dll" (ByRef lpPictDesc As PictDesc, ByRef RefIID As GUID, ByVal fPictureOwnsHandle As Long, ByRef IPic As IPicture) As Long
-    Private Declare Function CopyImage Lib "user32" (ByVal handle As Long, ByVal un1 As Long, ByVal n1 As Long, ByVal n2 As Long, ByVal un2 As Long) As Long
-    Private Declare Function EnumClipboardFormats Lib "user32" (ByVal wFormat As Long) As Long
+    Declare Function FindWindow Lib "user32.dll" Alias "FindWindowA" (ByVal lpClassName As String, ByVal lpWindowName As String) As Long
+    Declare Function FlashWindowEx Lib "user32.dll" (pfwi As FLASHWINFO) As Long
+    Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As Long)
+    Declare Function IsClipboardFormatAvailable Lib "user32.dll" (ByVal wFormat As Long) As Long
+    Declare Function OleCreatePictureIndirect Lib "olepro32.dll" (ByRef lpPictDesc As PICTDESC, ByRef RefIID As GUID, ByVal fPictureOwnsHandle As Long, ByRef IPic As IPicture) As Long
+    Declare Function CopyImage Lib "user32" (ByVal handle As Long, ByVal un1 As Long, ByVal n1 As Long, ByVal n2 As Long, ByVal un2 As Long) As Long
+    Declare Function EnumClipboardFormats Lib "user32" (ByVal wFormat As Long) As Long
     Declare Function SystemParametersInfo Lib "user32" Alias "SystemParametersInfoA" (ByVal uAction As Long, ByVal uParam As Long, ByRef lpvParam As Any, ByVal fuWinIni As Long) As Long
-    Private Declare Sub Sleep Lib "kernel32" (ByVal ms As Long)
+    Declare Sub Sleep Lib "kernel32" (ByVal ms As Long)
+    Public Declare Function RegisterClipboardFormat Lib "user32" Alias "RegisterClipboardFormatA" (ByVal lpString As String) As Long
+    
 
 Private Type ChooseColor
       lStructSize As Long
@@ -133,7 +137,7 @@ Private Type ChooseColor
       hInstance As Long
       rgbResult As Long
       lpCustColors As String
-      flags As Long
+      Flags As Long
       lCustData As Long
       lpfnHook As Long
       lpTemplateName As String
@@ -153,13 +157,13 @@ Private Type ChooseColor
     
     Private Type FLASHWINFO
         cbsize As Long
-        hWnd As Long
+        hwnd As Long
         dwFlags As Long
         uCount As Long
         dwTimeout As Long
     End Type
     
-    Private Type PictDesc
+    Private Type PICTDESC
         cbSizeofStruct As Long
         picType        As Long
         hImage         As Long
@@ -192,6 +196,7 @@ Private cbRemoteName As Long
 Public Const IMAGE_BITMAP As Long = 0
 Public Const LR_COPYRETURNORG As Long = &H4
 
+Public Const C_EXCEL_VERSION_2016 As Long = 16
 Public Const C_EXCEL_VERSION_2013 As Long = 15
 Public Const C_EXCEL_VERSION_2010 As Long = 14
 Public Const C_EXCEL_VERSION_2007 As Long = 12
@@ -199,11 +204,7 @@ Public Const C_EXCEL_VERSION_2003 As Long = 11
 
 'UNDOバッファ
 Public Const C_TITLE As String = "RelaxTools-Addin"
-Public Const C_GITHUB_URL As String = "https://github.com/RelaxTools/RelaxTools-Addin"
-Public Const C_URL As String = "http://software.opensquare.net/relaxtools/"
-Public Const C_REGEXP_URL As String = "http://software.opensquare.net/relaxtools/about/foruse/regexp/"
-Public Const C_STAMP_URL As String = "http://software.opensquare.net/relaxtools/about/foruse/stamp/"
-Public Const C_CAMPAIGN_URL As String = "http://software.opensquare.net/relaxtools/support-2/campaign/"
+
 Public Const C_MAX_CELLS As Long = 100000
 Public pvarSelectionBuffer As Variant
 Public pobjSelection As Object
@@ -351,7 +352,7 @@ Attribute rlxSelectFolder.VB_ProcData.VB_Invoke_Func = " \n19"
             Set WS = CreateObject("WScript.Shell")
             rlxSelectFolder = WS.SpecialFolders("Desktop")
         Else
-            rlxSelectFolder = objPath.items.Item.Path
+            rlxSelectFolder = objPath.Items.Item.Path
         
         End If
     Else
@@ -473,7 +474,7 @@ Attribute rlxShellExec.VB_ProcData.VB_Invoke_Func = " \n19"
 
 End Function
 '--------------------------------------------------------------
-'　小文字がなかったらDB項目（大雑把）
+'　アンダーバーがあったらDB項目（大雑把）
 '--------------------------------------------------------------
 Public Function rlxIsDBField(ByVal strBuf As String) As Boolean
 Attribute rlxIsDBField.VB_Description = "DB項目名（半角大文字＋アンダーバー）の場合\ntrueを返却します。"
@@ -485,10 +486,15 @@ Attribute rlxIsDBField.VB_ProcData.VB_Invoke_Func = " \n19"
     
     rlxIsDBField = False
     
+    If InStr(strBuf, "_") > 0 Then
+        rlxIsDBField = True
+        Exit Function
+    End If
+
     lngLen = Len(strBuf)
-    
+
     For i = 1 To lngLen
-    
+
         Select Case Mid$(strBuf, i, 1)
             Case "a" To "z"
             Case Else
@@ -499,6 +505,7 @@ Attribute rlxIsDBField.VB_ProcData.VB_Invoke_Func = " \n19"
     If lngLen = lngCnt Then
         rlxIsDBField = True
     End If
+
 
 End Function
 '--------------------------------------------------------------
@@ -1334,8 +1341,8 @@ Attribute rlxHtmlSanitizing.VB_ProcData.VB_Invoke_Func = " \n19"
 
     Dim strRep As String
 
-    strRep = Replace(strBuf, """", "&quot;")
     strRep = Replace(strRep, "&", "&amp;")
+    strRep = Replace(strBuf, """", "&quot;")
     strRep = Replace(strRep, "<", "&lt;")
     rlxHtmlSanitizing = Replace(strRep, ">", "&gt;")
 
@@ -1406,6 +1413,75 @@ Public Sub rlxSortCollection(ByRef col As Collection)
     Set col2 = Nothing
 
 End Sub
+'--------------------------------------------------------------
+'  ディクショナリのソート
+'--------------------------------------------------------------
+Public Sub rlxSortDictionary(ByRef col As Object)
+
+    Dim i As Long
+    Dim j As Long
+    Dim n As Long
+    Dim key1 As String
+    Dim key2 As String
+    Dim col2 As Object
+    Dim strKey() As String
+    Dim wk As String
+
+    'Collectionが空ならなにもしない
+    If col Is Nothing Then
+        Exit Sub
+    End If
+
+    'Collectionの要素数が０または１の場合ソート不要
+    If col.count <= 1 Then
+        Exit Sub
+    End If
+
+    n = col.count
+    ReDim strKey(1 To n)
+
+    i = i + 1
+    Dim v As Variant
+    For Each v In col
+        strKey(i) = v
+        i = i + 1
+    Next
+
+    '挿入ソート
+    For i = 2 To n
+
+        wk = strKey(i)
+
+        If strKey(i - 1) > wk Then
+
+            j = i
+
+            Do
+
+                strKey(j) = strKey(j - 1)
+
+                j = j - 1
+
+                If j = 1 Then
+                    Exit Do
+                End If
+
+            Loop While strKey(j - 1) > wk
+            strKey(j) = wk
+
+        End If
+    Next
+
+    Set col2 = CreateObject("Scripting.Dictionary")
+
+    For i = 1 To n
+        col2.Add col.Item(strKey(i)).Name, col.Item(strKey(i))
+    Next
+
+    Set col = col2
+    Set col2 = Nothing
+
+End Sub
 
 'クリップボードにテキストデータを書き込むプロシージャ
 Public Sub SetClipText(strData As String)
@@ -1461,8 +1537,53 @@ Public Sub SetClipText(strData As String)
   If blnErrflg Then MsgBox "クリップボードに情報が書き込めません", vbOKOnly, C_TITLE
 
 End Sub
+'クリップボードからテキストデータを取得するプロシージャ
+Public Function GetClipText() As String
 
-'クリップボードにテキストデータを書き込むプロシージャ
+#If VBA7 And Win64 Then
+  Dim lngHwnd As LongPtr, lngMEM As LongPtr
+  Dim lngDataLen As LongPtr
+  Dim lngRet As LongPtr
+#Else
+  Dim lngHwnd As Long, lngMEM As Long
+  Dim lngDataLen As Long
+  Dim lngRet As Long
+#End If
+
+    Const MAXSIZE = 4096
+    Dim MyString As String
+  
+    'クリップボードをオープン
+    If OpenClipboard(0&) <> 0 Then
+    
+        lngMEM = GetClipboardData(CF_TEXT)
+        
+        If lngMEM <> 0 Then
+        
+            lngHwnd = GlobalLock(lngMEM)
+            
+            If lngHwnd <> 0 Then
+            
+                MyString = Space$(MAXSIZE)
+                
+                lngRet = lstrcpy(MyString, lngHwnd)
+                lngRet = GlobalUnlock(lngMEM)
+                
+                MyString = Mid(MyString, 1, InStr(1, MyString, Chr$(0), 0) - 1)
+            
+            End If
+        
+        End If
+        
+        lngRet = CloseClipboard()
+    
+    End If
+    
+    GetClipText = MyString
+
+End Function
+
+'クリップボードにファイルコピー情報を書き込むプロシージャ
 Public Sub SetCopyClipText(strBuf() As String)
 
 #If VBA7 And Win64 Then
@@ -1484,9 +1605,7 @@ Public Sub SetCopyClipText(strBuf() As String)
     Dim i As Long
     
     For i = LBound(strBuf) To UBound(strBuf)
-    
         strData = strData & strBuf(i) & vbNullChar
-    
     Next
     strData = strData & vbNullChar
 
@@ -1525,6 +1644,36 @@ Public Sub SetCopyClipText(strBuf() As String)
                     
                 End If
                 
+            End If
+            
+            
+            'テキストも一緒に書き込んでおく
+            strData = ""
+            For i = LBound(strBuf) To UBound(strBuf)
+                strData = strData & strBuf(i) & vbCrLf
+            Next
+            
+            'グローバルメモリに書き込む領域を確保してそのハンドルを取得
+            lngDataLen = LenB(strData) + 1
+            
+            lngHwnd = GlobalAlloc(GMEM_MOVEABLE, lngDataLen)
+            
+            If lngHwnd <> 0 Then
+            
+                'グローバルメモリをロックしてそのポインタを取得
+                lngMEM = GlobalLock(lngHwnd)
+                
+                If lngMEM <> 0 Then
+            
+                    '書き込むテキストをグローバルメモリにコピー
+                    If lstrcpy(lngMEM, strData) <> 0 Then
+                        'クリップボードにメモリブロックのデータを書き込み
+                        lngRet = SetClipboardData(CF_TEXT, lngHwnd)
+                        blnErrflg = False
+                    End If
+                    'グローバルメモリブロックのロックを解除
+                    lngRet = GlobalUnlock(lngHwnd)
+                End If
             End If
             
         End If
@@ -1736,7 +1885,7 @@ Attribute rlxGetFileNameFromCli.VB_ProcData.VB_Invoke_Func = " \n19"
                 If i = 0 Then
                     ret = Mid$(strFilePath, 1, InStr(strFilePath, vbNullChar) - 1)
                 Else
-                    ret = ret & vbTab & Mid$(strFilePath, 1, InStr(strFilePath, vbNullChar) - 1)
+                    ret = ret & vbCrLf & Mid$(strFilePath, 1, InStr(strFilePath, vbNullChar) - 1)
                 End If
             Next
         End If
@@ -1817,9 +1966,9 @@ End Function
 Sub rlxFlashWindow()
 
 #If VBA7 And Win64 Then
-    Dim hWnd As LongPtr
+    Dim hwnd As LongPtr
 #Else
-    Dim hWnd As Long
+    Dim hwnd As Long
 #End If
     Dim udtFLASHWINFO As FLASHWINFO
     
@@ -1830,12 +1979,12 @@ Sub rlxFlashWindow()
     Const FLASH_TIMER = &H4
     Const FLASH_TIMERNOFG = &HC
 
-    hWnd = FindWindow("XLMAIN", Application.Caption)
+    hwnd = FindWindow("XLMAIN", Application.Caption)
     
     '点滅の設定
     With udtFLASHWINFO
         .cbsize = Len(udtFLASHWINFO)
-        .hWnd = hWnd
+        .hwnd = hwnd
         .dwFlags = FLASH_ALL
         .uCount = 5
         .dwTimeout = 100
@@ -1855,7 +2004,7 @@ Sub rlxErrMsg(ByRef objErr As Object)
         Case 1004
             MsgBox "エラーです。シート保護などを確認してください。", vbCritical + vbOKOnly, C_TITLE
         Case Else
-            MsgBox objErr.Description & "(" & err.Number & ")", vbCritical + vbOKOnly, C_TITLE
+            MsgBox objErr.Description & "(" & Err.Number & ")", vbCritical + vbOKOnly, C_TITLE
     End Select
 
 End Sub
@@ -1874,12 +2023,12 @@ Public Function CreatePictureFromClipboard(o As Object) As StdPicture
     Dim hCopy As Long
 #End If
     
-    Dim uPictDesc As PictDesc
+    Dim uPictDesc As PICTDESC
     Dim uGUID     As GUID
     
     Set CreatePictureFromClipboard = Nothing
   
-    Dim c As New Collection
+'    Dim c As New Collection
     
     On Error GoTo e
     
@@ -2103,16 +2252,43 @@ Public Function StrConvU(ByVal strSource As String, conv As VbStrConv) As String
     Dim strRet As String
     Dim strBefore As String
     Dim strChr As String
+    Dim strNext As String
 
     strRet = ""
     strBuf = ""
     strBefore = ""
+    strNext = ""
 
     For i = 1 To Len(strSource)
 
-        c = Mid(strSource, i, 1)
+        c = Mid$(strSource, i, 1)
+        
+        If i = Len(strSource) Then
+            strNext = ""
+        Else
+            strNext = Mid$(strSource, i + 1, 1)
+        End If
 
         Select Case c
+            '全角の￥
+            Case "￥"
+                If (conv And vbNarrow) > 0 Then
+                    strChr = "\"
+                    strRet = strRet & StrConv(strBuf, conv) & strChr
+                    strBuf = ""
+                Else
+                    strBuf = strBuf & c
+                End If
+           
+            '半角の\
+            Case "\"
+                If (conv And vbWide) > 0 Then
+                    strChr = "￥"
+                    strRet = strRet & StrConv(strBuf, conv) & strChr
+                    strBuf = ""
+                Else
+                    strBuf = strBuf & c
+                End If
             '全角の濁点、半濁点
             Case "゜", "゛"
                 If (conv And vbNarrow) > 0 Then
@@ -2121,11 +2297,11 @@ Public Function StrConvU(ByVal strSource As String, conv As VbStrConv) As String
                     Else
                         strChr = "ﾞ"
                     End If
+                    strRet = strRet & StrConv(strBuf, conv) & strChr
+                    strBuf = ""
                 Else
-                    strChr = c
+                    strBuf = strBuf & c
                 End If
-                strRet = strRet & StrConv(strBuf, conv) & strChr
-                strBuf = ""
                 
             '半角の半濁点
             Case "ﾟ"
@@ -2136,29 +2312,61 @@ Public Function StrConvU(ByVal strSource As String, conv As VbStrConv) As String
                     Case Else
                         If (conv And vbWide) > 0 Then
                              strChr = "゜"
+                            strRet = strRet & StrConv(strBuf, conv) & strChr
+                            strBuf = ""
                         Else
-                            strChr = c
+                            strBuf = strBuf & c
                         End If
-                        strRet = strRet & StrConv(strBuf, conv) & strChr
-                        strBuf = ""
                 End Select
                 
             '半角の濁点
             Case "ﾞ"
                 '１つ前の文字
                 Select Case strBefore
-                    Case "ｶ" To "ｺ", "ｻ" To "ｿ", "ﾀ" To "ﾄ", "ﾊ" To "ﾎ"
+                    Case "ｳ", "ｶ" To "ｺ", "ｻ" To "ｿ", "ﾀ" To "ﾄ", "ﾊ" To "ﾎ"
                         strBuf = strBuf & c
                     Case Else
                         If (conv And vbWide) > 0 Then
                             strChr = "゛"
+                            strRet = strRet & StrConv(strBuf, conv) & strChr
+                            strBuf = ""
                         Else
-                            strChr = c
+                            strBuf = strBuf & c
                         End If
-                        strRet = strRet & StrConv(strBuf, conv) & strChr
-                        strBuf = ""
                 End Select
-                
+            'ヴ
+            Case "ヴ"
+                If (conv And vbHiragana) > 0 Then
+                    Dim b() As Byte
+                    ReDim b(0 To 1)
+                    b(0) = &H94
+                    b(1) = &H30
+                    strChr = b
+                    strRet = strRet & StrConv(strBuf, conv) & strChr
+                    strBuf = ""
+                Else
+                    strBuf = strBuf & c
+                End If
+            'う゛
+            Case "う"
+                If strNext = "゛" And (conv And vbKatakana) > 0 Then
+                    strChr = "ヴ"
+                    strRet = strRet & StrConv(strBuf, conv) & strChr
+                    strBuf = ""
+                    i = i + 1
+                Else
+                    strBuf = strBuf & c
+                End If
+
+            'ヶヵ
+            Case "ヶ", "ヵ"
+                If (conv And vbHiragana) > 0 Then
+                    strRet = strRet & StrConv(strBuf, conv) & c
+                    strBuf = ""
+                Else
+                    strBuf = strBuf & c
+                End If
+
             'その他
             Case Else
                 '第二水準等StrConvで文字化けするものを退避
@@ -2166,7 +2374,18 @@ Public Function StrConvU(ByVal strSource As String, conv As VbStrConv) As String
                     strRet = strRet & StrConv(strBuf, conv) & c
                     strBuf = ""
                 Else
-                    strBuf = strBuf & c
+                    'う”
+                    If Unicode(c) = &H3094 Then
+                        If conv = vbKatakana Then
+                            strRet = strRet & StrConv(strBuf, conv) & "ヴ"
+                            strBuf = ""
+                        Else
+                            strRet = strRet & StrConv(strBuf, conv) & c
+                            strBuf = ""
+                        End If
+                    Else
+                        strBuf = strBuf & c
+                    End If
                 End If
         End Select
         
@@ -2181,6 +2400,14 @@ Public Function StrConvU(ByVal strSource As String, conv As VbStrConv) As String
 
     StrConvU = strRet
 
+End Function
+Private Function Unicode(ByVal strBuf As String) As Long
+    Dim bytBuf() As Byte
+    
+    If Len(strBuf) <> 0 Then
+        bytBuf = strBuf
+        Unicode = CLng(bytBuf(1)) * &H100 + bytBuf(0)
+    End If
 End Function
 '--------------------------------------------------------------
 '  フォルダの作成
@@ -2206,6 +2433,7 @@ Sub rlxCreateFolder(ByVal strPath As String)
         End If
     
     Next
+    Err.Clear
 
 End Sub
 '--------------------------------------------------------------
@@ -2294,9 +2522,9 @@ Sub RenameActiveBook()
     On Error Resume Next
     Application.ScreenUpdating = False
     
-    err.Clear
-    WB.SaveAs FileName:=strNew, local:=True
-    If err.Number <> 0 Then
+    Err.Clear
+    WB.SaveAs filename:=strNew, local:=True
+    If Err.Number <> 0 Then
         Application.ScreenUpdating = True
         MsgBox "エラーが発生しました。名前の変更に失敗しました。", vbOKOnly + vbExclamation, C_TITLE
         Exit Sub
@@ -2305,7 +2533,8 @@ Sub RenameActiveBook()
     End If
     Application.ScreenUpdating = True
     
-End Sub '--------------------------------------------------------------
+End Sub
+'--------------------------------------------------------------
 '  全角トリム
 '--------------------------------------------------------------
 Function TrimZen(ByVal strBuf As String) As String
@@ -2441,3 +2670,347 @@ Public Sub CopyClipboardSleep()
     DoEvents
     Sleep Val(GetSetting(C_TITLE, "Option", "ClipboardSleep", 0))
 End Sub
+
+'--------------------------------------------------------------
+'  UNICODE対応ひらがな→カタカナ変換
+'--------------------------------------------------------------
+Function ToKatakana(ByVal strBuf As String, Optional ByVal flag As Boolean = False) As String
+
+    Dim bytBuf() As Byte
+    Dim retBuf() As Byte
+    Dim lngBuf As Long
+    Dim i As Long
+    Dim lngLen As Long
+    Dim lngConv As Long
+    Dim lngOpt As Long
+    
+    lngLen = 0
+    
+    If Len(strBuf) = 0 Then
+        ToKatakana = ""
+        Exit Function
+    End If
+    
+    bytBuf = strBuf
+    retBuf = strBuf
+    
+    If flag Then
+        lngOpt = &H3096&
+    Else
+        lngOpt = &H3094&
+    End If
+    
+    For i = LBound(bytBuf) To UBound(bytBuf) Step 2
+    
+        lngBuf = LShift(bytBuf(i + 1), 8) + bytBuf(i)
+    
+        Select Case lngBuf
+            'ひらがな
+            Case &H3041& To lngOpt, &H309D&, &H309E&
+            
+                lngConv = lngBuf + &H60&
+                retBuf(i) = LByte(lngConv)
+                retBuf(i + 1) = UByte(lngConv)
+            
+        End Select
+    
+    Next
+    
+    ToKatakana = retBuf()
+
+End Function
+'--------------------------------------------------------------
+'  UNICODE対応カタカナ→ひらがな変換
+'--------------------------------------------------------------
+Function ToHiragana(ByVal strBuf As String, Optional ByVal flag As Boolean = False) As String
+
+    Dim bytBuf() As Byte
+    Dim retBuf() As Byte
+    Dim lngBuf As Long
+    Dim i As Long
+    Dim lngLen As Long
+    Dim lngConv As Long
+    Dim lngOpt As Long
+    
+    lngLen = 0
+    
+    If Len(strBuf) = 0 Then
+        ToHiragana = ""
+        Exit Function
+    End If
+    
+    bytBuf = strBuf
+    retBuf = strBuf
+    
+    If flag Then
+        lngOpt = &H30F6&
+    Else
+        lngOpt = &H30F4&
+    End If
+    
+    For i = LBound(bytBuf) To UBound(bytBuf) Step 2
+    
+        lngBuf = LShift(bytBuf(i + 1), 8) + bytBuf(i)
+    
+        Select Case lngBuf
+            'カタカナ
+            Case &H30A1& To lngOpt, &H30FD&, &H30FE&
+            
+                lngConv = lngBuf - &H60&
+                retBuf(i) = LByte(lngConv)
+                retBuf(i + 1) = UByte(lngConv)
+            
+        End Select
+    
+    Next
+    
+    ToHiragana = retBuf()
+
+End Function
+'シート名不可文字チェック
+Function IsErrSheetNameChar(ByVal strBuf As String) As Boolean
+
+    Dim lngChar As Long
+    Dim i As Long
+    Dim bytBuf() As Byte
+    
+    IsErrSheetNameChar = False
+    
+    '空はエラー
+    If Len(strBuf) = 0 Then
+        IsErrSheetNameChar = True
+        Exit Function
+    End If
+    
+    '履歴は予約語なので
+    If strBuf = "履歴" Then
+        IsErrSheetNameChar = True
+        Exit Function
+    End If
+    
+    bytBuf = strBuf
+    
+    For i = LBound(bytBuf) To UBound(bytBuf) Step 2
+    
+        lngChar = LShift(bytBuf(i + 1), 8) + bytBuf(i)
+    
+        Select Case lngChar
+            'エラーになる文字'*/:?[\]’＇＊／：？［＼］￥
+            Case &H0&, &H27&, &H2A&, &H2F&, &H3A&, &H3F&, &H5B&, &H5C&, &H5D&, &H2019&, &HFF07&, &HFF0A&, &HFF0F&, &HFF1A&, &HFF1F&, &HFF3B&, &HFF3C&, &HFF3D&, &HFFE5&
+                IsErrSheetNameChar = True
+                Exit Function
+                
+        End Select
+    
+    Next
+
+End Function
+Function getVersionInfo()
+
+    Dim strVer As String
+    Dim strTitle As String
+
+    strTitle = ThisWorkbook.BuiltinDocumentProperties("Title").Value
+    strVer = ThisWorkbook.BuiltinDocumentProperties("Comments").Value
+    
+    Dim strBuf As String
+    Dim i As Long
+    Dim obj As Object
+
+    strBuf = strTitle
+    Dim s() As String
+    s = Split(strVer, vbLf)
+    strBuf = strBuf & " " & s(0) & vbCrLf
+    
+    strBuf = strBuf & "Microsoft "
+    Select Case True
+        Case InStr(Application.OperatingSystem, "5.00") > 0
+            strBuf = strBuf & "Windows 2000"
+        Case InStr(Application.OperatingSystem, "5.01") > 0
+            strBuf = strBuf & "Windows XP"
+        Case InStr(Application.OperatingSystem, "6.00") > 0
+            strBuf = strBuf & "Windows Vista"
+        Case InStr(Application.OperatingSystem, "6.01") > 0
+            strBuf = strBuf & "Windows 7"
+        Case InStr(Application.OperatingSystem, "6.02") > 0
+            strBuf = strBuf & "Windows 8 or 8.1"
+        Case Else
+            strBuf = strBuf & "Windows 10 or Later"
+    End Select
+    If Isx64 Then
+        strBuf = strBuf & " (64bit)"
+    Else
+        strBuf = strBuf & " (32bit)"
+    End If
+    
+    strBuf = strBuf & vbCrLf
+
+    strBuf = strBuf & "Microsoft Excel "
+
+    Select Case Val(Application.Version)
+        Case Is = 0
+            strBuf = strBuf & "不明"
+        Case Is <= 11
+            strBuf = strBuf & "2003以前"
+        Case 12
+            strBuf = strBuf & "2007"
+        Case 14
+            strBuf = strBuf & "2010"
+        Case 15
+            strBuf = strBuf & "2013"
+        Case 16
+            strBuf = strBuf & "2016"
+        Case Else
+            strBuf = strBuf & "2016より未来のバージョン"
+    End Select
+    strBuf = strBuf & " Build " & Application.Build
+#If Win64 Then
+    strBuf = strBuf & " (64bit)"
+#Else
+    strBuf = strBuf & " (32bit)"
+#End If
+
+    getVersionInfo = strBuf
+
+End Function
+Private Function Isx64() As Boolean
+
+    On Error GoTo xp
+
+    Dim colItems As Object
+    Dim itm As Object
+    Dim ret As Boolean
+
+    ret = False '初期化
+
+    Set colItems = CreateObject("WbemScripting.SWbemLocator").ConnectServer.ExecQuery("Select * From Win32_OperatingSystem")
+
+    For Each itm In colItems
+        If InStr(itm.OSArchitecture, "64") Then
+            ret = True
+            Exit For
+        End If
+    Next
+
+    Isx64 = ret
+
+    Exit Function
+xp:
+    Isx64 = False
+
+End Function
+'マルチプロセス実行用
+Public Sub MultiProsess(ByVal strMacro As String)
+
+    frmMulti.Show
+
+'    With CreateObject("WScript.Shell")
+'        .Run (.SpecialFolders("AppData") & "\" & C_TITLE & "\" & "RunMacro.vbs """ & strMacro & """")
+'    End With
+
+'    Dim strAddin As String
+'
+'    strAddin = CreateObject("WScript.Shell").SpecialFolders("Appdata") & "\Microsoft\Addins\Relaxtools.xlam"
+    
+    Err.Clear
+    
+    On Error Resume Next
+    With CreateObject("Excel.Application")
+        .Workbooks.Open ThisWorkbook.FullName
+        .Run strMacro
+    End With
+    
+    
+    Unload frmMulti
+    
+    If Err.Number <> 0 Then
+        MsgBox "Grep検索(Multi Process版)の起動に失敗しました。", vbCritical + vbOKOnly, C_TITLE
+    End If
+    
+    
+End Sub
+'**
+' コピーアドレスの取得
+'**
+Public Function getObjectLink() As String
+
+#If VBA7 And Win64 Then
+  Dim lngHwnd As LongPtr, lngMEM As LongPtr
+  Dim lngDataLen As LongPtr
+  Dim lngRet As LongPtr
+#Else
+  Dim lngHwnd As Long, lngMEM As Long
+  Dim lngDataLen As Long
+  Dim lngRet As Long
+#End If
+
+    Const MAXSIZE = 4096
+    Dim MyString As String
+    Dim size As Long
+    Dim data() As Byte
+    Dim i As Long
+  
+    'クリップボードをオープン
+    If OpenClipboard(0&) <> 0 Then
+    
+'        lngMEM = GetClipboardData(RegisterClipboardFormat("Link"))
+        lngMEM = GetClipboardData(RegisterClipboardFormat("ObjectLink"))
+        
+        If lngMEM <> 0 Then
+        
+            size = CLng(GlobalSize(lngMEM))
+            lngHwnd = GlobalLock(lngMEM)
+            
+            If lngHwnd <> 0 Then
+                
+                ReDim data(0 To size - 1)
+                Call CopyMemory(data(0), ByVal lngHwnd, size)
+                
+                lngRet = GlobalUnlock(lngMEM)
+                
+                For i = 0 To size - 1
+                    If data(i) = 0 Then
+                        data(i) = &H9
+                    End If
+                Next i
+                MyString = StrConv(data(), vbUnicode)
+                
+            End If
+        
+        End If
+        
+        lngRet = CloseClipboard()
+    
+    End If
+    
+    getObjectLink = MyString
+
+End Function
+Function SpecialCellsEx(v As Range) As Range
+
+    Dim r As Range
+    Dim c As Range
+    Dim f As Range
+
+    On Error Resume Next
+
+    Set c = v.SpecialCells(xlCellTypeConstants)
+    Set f = v.SpecialCells(xlCellTypeFormulas)
+
+    Set r = Nothing
+
+    If Not c Is Nothing Then
+        Set r = c
+    End If
+
+    If Not f Is Nothing Then
+        If r Is Nothing Then
+            Set r = f
+        Else
+            Set r = v.Application.Union(r, f)
+        End If
+    End If
+
+    Set SpecialCellsEx = r
+
+End Function

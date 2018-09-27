@@ -708,8 +708,6 @@ Sub execSelectionRowDrawGrid()
     obj.EvenColor = -1
     obj.Custom = False
     
-'    obj.HoganMode = True
-    
     obj.Run
     
     Set obj = Nothing
@@ -2358,6 +2356,437 @@ Sub execSelectionNumberAsText()
     Dim obj As SelectionNumberAsText
     
     Set obj = New SelectionNumberAsText
+    
+    obj.Run
+    
+    Set obj = Nothing
+
+End Sub
+
+'--------------------------------------------------------------
+' 月＋１
+'--------------------------------------------------------------
+Sub execSelectioDateMonthAdd()
+    
+    Dim obj As SelectionDateAdd
+    
+    Set obj = New SelectionDateAdd
+    
+    obj.DateType = "m"
+    obj.DateValue = 1
+    
+    obj.Run
+    
+    Set obj = Nothing
+
+End Sub
+'--------------------------------------------------------------
+' 月－１
+'--------------------------------------------------------------
+Sub execSelectioDateMonthMinus()
+    
+    Dim obj As SelectionDateAdd
+    
+    Set obj = New SelectionDateAdd
+    
+    obj.DateType = "m"
+    obj.DateValue = -1
+    
+    obj.Run
+    
+    Set obj = Nothing
+
+End Sub
+'--------------------------------------------------------------
+' 年＋１
+'--------------------------------------------------------------
+Sub execSelectioDateYearAdd()
+    
+    Dim obj As SelectionDateAdd
+    
+    Set obj = New SelectionDateAdd
+    
+    obj.DateType = "yyyy"
+    obj.DateValue = 1
+    
+    obj.Run
+    
+    Set obj = Nothing
+
+End Sub
+'--------------------------------------------------------------
+' 年－１
+'--------------------------------------------------------------
+Sub execSelectioDateYearMinus()
+    
+    Dim obj As SelectionDateAdd
+    
+    Set obj = New SelectionDateAdd
+    
+    obj.DateType = "yyyy"
+    obj.DateValue = -1
+    
+    obj.Run
+    
+    Set obj = Nothing
+
+End Sub
+'--------------------------------------------------------------
+' 日＋１
+'--------------------------------------------------------------
+Sub execSelectioDateDayAdd()
+    
+    Dim obj As SelectionDateAdd
+    
+    Set obj = New SelectionDateAdd
+    
+    obj.DateType = "d"
+    obj.DateValue = 1
+    
+    obj.Run
+    
+    Set obj = Nothing
+
+End Sub
+'--------------------------------------------------------------
+' 日－１
+'--------------------------------------------------------------
+Sub execSelectioDateDayMinus()
+    
+    Dim obj As SelectionDateAdd
+    
+    Set obj = New SelectionDateAdd
+    
+    obj.DateType = "d"
+    obj.DateValue = -1
+    
+    obj.Run
+    
+    Set obj = Nothing
+
+End Sub
+'--------------------------------------------------------------
+' 式セット(小数点以下四捨五入)
+'--------------------------------------------------------------
+Sub execSelectionSetRound()
+    
+    Dim obj As SelectionSetRound
+    
+    Set obj = New SelectionSetRound
+    
+    obj.Run
+    
+    Set obj = Nothing
+
+End Sub
+'--------------------------------------------------------------
+' 式セット(小数点以下切り上げ)
+'--------------------------------------------------------------
+Sub execSelectionSetRoundUp()
+    
+    Dim obj As SelectionSetRoundUp
+    
+    Set obj = New SelectionSetRoundUp
+    
+    obj.Run
+    
+    Set obj = Nothing
+
+End Sub
+'--------------------------------------------------------------
+' 式セット(小数点以下切り捨て)
+'--------------------------------------------------------------
+Sub execSelectionSetRoundDown()
+    
+    Dim obj As SelectionSetRoundDown
+    
+    Set obj = New SelectionSetRoundDown
+    
+    obj.Run
+    
+    Set obj = Nothing
+
+End Sub
+'--------------------------------------------------------------
+' カッコ挿入(丸括弧)半角
+'--------------------------------------------------------------
+Sub execSelectionSetParenthesis()
+    
+    Dim obj As SelectionSetParenthesis
+    
+    Set obj = New SelectionSetParenthesis
+    
+    obj.Left = "("
+    obj.Right = ")"
+    
+    obj.Run
+    
+    Set obj = Nothing
+
+End Sub
+'--------------------------------------------------------------
+' カッコ挿入[角括弧]半角
+'--------------------------------------------------------------
+Sub execSelectionSetParenthesis2()
+    
+    Dim obj As SelectionSetParenthesis
+    
+    Set obj = New SelectionSetParenthesis
+    
+    obj.Left = "["
+    obj.Right = "]"
+    
+    obj.Run
+    
+    Set obj = Nothing
+
+End Sub
+'--------------------------------------------------------------
+' カッコ挿入{波括弧}半角
+'--------------------------------------------------------------
+Sub execSelectionSetParenthesis3()
+    
+    Dim obj As SelectionSetParenthesis
+    
+    Set obj = New SelectionSetParenthesis
+    
+    obj.Left = "{"
+    obj.Right = "}"
+    
+    obj.Run
+    
+    Set obj = Nothing
+
+End Sub
+'--------------------------------------------------------------
+' カッコ挿入<不等号>半角
+'--------------------------------------------------------------
+Sub execSelectionSetParenthesis4()
+    
+    Dim obj As SelectionSetParenthesis
+    
+    Set obj = New SelectionSetParenthesis
+    
+    obj.Left = "<"
+    obj.Right = ">"
+    
+    obj.Run
+    
+    Set obj = Nothing
+
+End Sub
+'--------------------------------------------------------------
+' カッコ挿入｢鍵括弧｣半角
+'--------------------------------------------------------------
+Sub execSelectionSetParenthesis5()
+    
+    Dim obj As SelectionSetParenthesis
+    
+    Set obj = New SelectionSetParenthesis
+    
+    obj.Left = "｢"
+    obj.Right = "｣"
+    
+    obj.Run
+    
+    Set obj = Nothing
+
+End Sub
+'--------------------------------------------------------------
+' カッコ挿入（丸括弧）全角
+'--------------------------------------------------------------
+Sub execSelectionSetParenthesis6()
+    
+    Dim obj As SelectionSetParenthesis
+    
+    Set obj = New SelectionSetParenthesis
+    
+    obj.Left = "（"
+    obj.Right = "）"
+    
+    obj.Run
+    
+    Set obj = Nothing
+
+End Sub
+'--------------------------------------------------------------
+' カッコ挿入［角括弧］全角
+'--------------------------------------------------------------
+Sub execSelectionSetParenthesis7()
+    
+    Dim obj As SelectionSetParenthesis
+    
+    Set obj = New SelectionSetParenthesis
+    
+    obj.Left = "［"
+    obj.Right = "］"
+    
+    obj.Run
+    
+    Set obj = Nothing
+
+End Sub
+'--------------------------------------------------------------
+' カッコ挿入｛波括弧｝全角
+'--------------------------------------------------------------
+Sub execSelectionSetParenthesis8()
+    
+    Dim obj As SelectionSetParenthesis
+    
+    Set obj = New SelectionSetParenthesis
+    
+    obj.Left = "｛"
+    obj.Right = "｝"
+    
+    obj.Run
+    
+    Set obj = Nothing
+
+End Sub
+'--------------------------------------------------------------
+' カッコ挿入＜不等号＞全角
+'--------------------------------------------------------------
+Sub execSelectionSetParenthesis9()
+    
+    Dim obj As SelectionSetParenthesis
+    
+    Set obj = New SelectionSetParenthesis
+    
+    obj.Left = "＜"
+    obj.Right = "＞"
+    
+    obj.Run
+    
+    Set obj = Nothing
+
+End Sub
+
+'--------------------------------------------------------------
+' カッコ挿入「鉤括弧」全角
+'--------------------------------------------------------------
+Sub execSelectionSetParenthesis10()
+    
+    Dim obj As SelectionSetParenthesis
+    
+    Set obj = New SelectionSetParenthesis
+    
+    obj.Left = "「"
+    obj.Right = "」"
+    
+    obj.Run
+    
+    Set obj = Nothing
+
+End Sub
+'--------------------------------------------------------------
+' カッコ挿入【隅付き括弧】全角
+'--------------------------------------------------------------
+Sub execSelectionSetParenthesis11()
+    
+    Dim obj As SelectionSetParenthesis
+    
+    Set obj = New SelectionSetParenthesis
+    
+    obj.Left = "【"
+    obj.Right = "】"
+    
+    obj.Run
+    
+    Set obj = Nothing
+
+End Sub
+'--------------------------------------------------------------
+' カッコ挿入『二重鉤括弧』全角
+'--------------------------------------------------------------
+Sub execSelectionSetParenthesis12()
+    
+    Dim obj As SelectionSetParenthesis
+    
+    Set obj = New SelectionSetParenthesis
+    
+    obj.Left = "『"
+    obj.Right = "』"
+    
+    obj.Run
+    
+    Set obj = Nothing
+
+End Sub
+'--------------------------------------------------------------
+' カッコ挿入〈山括弧〉全角
+'--------------------------------------------------------------
+Sub execSelectionSetParenthesis13()
+    
+    Dim obj As SelectionSetParenthesis
+    
+    Set obj = New SelectionSetParenthesis
+    
+    obj.Left = "〈"
+    obj.Right = "〉"
+    
+    obj.Run
+    
+    Set obj = Nothing
+
+End Sub
+'--------------------------------------------------------------
+' カッコ挿入≪ギュメ≫全角
+'--------------------------------------------------------------
+Sub execSelectionSetParenthesis14()
+    
+    Dim obj As SelectionSetParenthesis
+    
+    Set obj = New SelectionSetParenthesis
+    
+    obj.Left = "≪"
+    obj.Right = "≫"
+    
+    obj.Run
+    
+    Set obj = Nothing
+
+End Sub
+'--------------------------------------------------------------
+' カッコ挿入〔亀甲括弧〕全角
+'--------------------------------------------------------------
+Sub execSelectionSetParenthesis15()
+    
+    Dim obj As SelectionSetParenthesis
+    
+    Set obj = New SelectionSetParenthesis
+    
+    obj.Left = "〔"
+    obj.Right = "〕"
+    
+    obj.Run
+    
+    Set obj = Nothing
+
+End Sub
+
+
+'--------------------------------------------------------------
+' カッコ削除
+'--------------------------------------------------------------
+Sub execSelectionRemoveParenthesis()
+    
+    Dim obj As SelectionRemoveParenthesis
+    
+    Set obj = New SelectionRemoveParenthesis
+    
+    obj.Run
+    
+    Set obj = Nothing
+
+End Sub
+'--------------------------------------------------------------
+' 選択セルにクリップボードのテキストを貼り付ける
+'--------------------------------------------------------------
+Sub execSelectionAllSetValue()
+    
+    Dim obj As SelectionAllSetValue
+    
+    Set obj = New SelectionAllSetValue
     
     obj.Run
     

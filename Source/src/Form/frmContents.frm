@@ -61,7 +61,7 @@ Private Sub cmdCancel_Click()
     Unload Me
 End Sub
 
-Private Sub cmdOK_Click()
+Private Sub cmdOk_Click()
 
 
     Dim i As Long
@@ -220,11 +220,11 @@ Private Sub cmdOK_Click()
             If l <> 0 Then
                 ReDim p(1 To l)
                 For k = 1 To l
-                    p(k) = Worksheets(strSheet).HPageBreaks(k).Location.row
+                    p(k) = Worksheets(strSheet).HPageBreaks(k).Location.Row
                 Next
             End If
             
-            lngRow = Worksheets(strSheet).UsedRange.Item(Worksheets(strSheet).UsedRange.count).row
+            lngRow = Worksheets(strSheet).UsedRange.Item(Worksheets(strSheet).UsedRange.count).Row
             lngCol = getSectionCol(Worksheets(strSheet))
             If lngCol = 0 Then
                 Exit For
@@ -311,7 +311,7 @@ Private Function getSectionCol(ByRef WS As Worksheet) As Long
     
     For j = 1 To WS.UsedRange.Item(WS.UsedRange.count).Column
     
-        For i = 1 To WS.UsedRange.Item(WS.UsedRange.count).row
+        For i = 1 To WS.UsedRange.Item(WS.UsedRange.count).Row
         
             strBuf = WS.Cells(i, j).Value
                         
@@ -465,7 +465,7 @@ Private Sub UserForm_Initialize()
     txtRow.Text = C_START_ROW
     
     Set MW = basMouseWheel.GetInstance
-    MW.Install
+    MW.Install Me
 End Sub
 Private Function getAto1(ByVal strCol As String) As Long
 
@@ -530,14 +530,18 @@ Private Sub UserForm_Terminate()
 End Sub
 Private Sub MW_WheelDown(obj As Object)
 
+    On Error GoTo e
+
     If obj.ListCount = 0 Then Exit Sub
     obj.TopIndex = obj.TopIndex + 3
-    
+e:
 End Sub
 
 Private Sub MW_WheelUp(obj As Object)
 
     Dim lngPos As Long
+
+    On Error GoTo e
 
     If obj.ListCount = 0 Then Exit Sub
     lngPos = obj.TopIndex - 3
@@ -547,5 +551,5 @@ Private Sub MW_WheelUp(obj As Object)
     End If
 
     obj.TopIndex = lngPos
-
+e:
 End Sub

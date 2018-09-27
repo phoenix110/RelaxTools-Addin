@@ -102,14 +102,9 @@ End Sub
 '--------------------------------------------------------------
 '　バックアップ設定画面
 '--------------------------------------------------------------
-Sub backupSetting()
-
-    If ActiveWorkbook Is Nothing Then
-        MsgBox "アクティブなブックが見つかりません。", vbCritical, C_TITLE
-        Exit Sub
-    End If
+Sub timeLeapSetting()
     
-    frmBackupSetting.Show
+    frmTimeLeapSetting.Show
     
 End Sub
 '--------------------------------------------------------------
@@ -134,6 +129,19 @@ Sub execSheetManager()
     If ActiveWorkbook Is Nothing Then
         Exit Sub
     End If
+    
+    If ActiveWorkbook.ProtectStructure Then
+        MsgBox "このブックは保護されているためシート管理は使用できません。", vbOKOnly + vbInformation, C_TITLE
+        Exit Sub
+    End If
+    
+    Dim WS As Object
+    For Each WS In ActiveWorkbook.Sheets
+        If WS.Name = "履歴" Then
+            MsgBox "「履歴」ワークシートが存在するためシート管理は使用できません。", vbOKOnly + vbInformation, C_TITLE
+            Exit Sub
+        End If
+    Next
 
     frmSheetManager.Show
 
@@ -164,7 +172,7 @@ End Sub
 Sub dispVer()
     
     frmVersion.Show
-    
+
 End Sub
 
 '--------------------------------------------------------------
@@ -185,6 +193,11 @@ End Sub
 Sub KantanLine()
 
     If ActiveCell Is Nothing Then
+        Exit Sub
+    End If
+    
+    If TypeOf Selection Is Range Then
+    Else
         Exit Sub
     End If
 
@@ -208,6 +221,11 @@ End Sub
 '--------------------------------------------------------------
 Sub convertHtml()
 
+    If TypeOf Selection Is Range Then
+    Else
+        Exit Sub
+    End If
+    
     frmHtml.Show vbModal
     
 End Sub
@@ -227,6 +245,22 @@ End Sub
 Sub excelGrep()
 
     frmGrep.Show
+    
+End Sub
+'--------------------------------------------------------------
+'　ExcelファイルのGrep(マルチプロセス版)
+'--------------------------------------------------------------
+Sub excelGrepMulti()
+
+    MultiProsess "excelGrepMultiShow"
+    
+End Sub
+'--------------------------------------------------------------
+'　ExcelファイルのGrep(マルチプロセス版)
+'--------------------------------------------------------------
+Sub excelGrepMultiShow()
+
+    frmGrepMulti.Show
     
 End Sub
 '--------------------------------------------------------------
@@ -312,17 +346,29 @@ Sub scrollSetting()
     frmScroll.Show
 End Sub
 Sub convertTextile()
+
+    If TypeOf Selection Is Range Then
+    Else
+        Exit Sub
+    End If
+
     frmRedmine.Show
 End Sub
 Sub convertMarkdown()
+
+    If TypeOf Selection Is Range Then
+    Else
+        Exit Sub
+    End If
+    
     frmMarkdown.Show
 End Sub
 Sub showGrammer()
     frmGrammer.Show
 End Sub
-Sub showInfo()
-    frmInfo.Show
-End Sub
+'Sub showInfo()
+'    frmInfo.show
+'End Sub
 'Sub showHoldBook()
 '    frmHoldBook.Show
 'End Sub
@@ -332,4 +378,36 @@ End Sub
 
 Sub execBinaryView()
     frmBinary.Show
+End Sub
+Sub KanaSetting()
+    frmKana.Show
+End Sub
+
+Sub PickSetting()
+    frmPickSetting.Show
+End Sub
+
+Sub ShowReport()
+    frmReport.Show
+End Sub
+Sub contextMenu()
+    frmContextMenu.Show
+End Sub
+Sub showStaticCheck()
+    frmStaticCheck.Show
+End Sub
+Sub showMergeFile()
+    frmMergeFile.Show
+End Sub
+Sub showCharacter()
+'    frmCharacter.Show
+    If ActiveWorkbook Is Nothing Then
+        MsgBox "アクティブなブックが見つかりません。", vbCritical, C_TITLE
+        Exit Sub
+    End If
+    
+    frmSearchEx.schTab.Value = 2
+    
+    frmSearchEx.Show
+
 End Sub

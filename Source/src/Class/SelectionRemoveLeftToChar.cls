@@ -84,7 +84,7 @@ Private Sub SFWork_SelectionInit(Cancel As Boolean, Undo As Boolean, Func As Boo
 
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
 End Sub
 
 '------------------------------------------------------------------------------------------------------------------------
@@ -105,12 +105,16 @@ Private Sub SFWork_SelectionMain(r As Range, ByVal NotHoldFormat As Boolean, Can
     If Not (NotHoldFormat) And VarType(r.Value) = vbString Then
         r.Characters(1, lngPos + Len(mstrIns) - 1).Delete
     Else
-        r.Value = Mid(r.Value, lngPos + Len(mstrIns))
+        If Len(r.PrefixCharacter) > 0 Then
+            r.Value = r.PrefixCharacter & Mid(r.Value, lngPos + Len(mstrIns))
+        Else
+            r.Value = Mid(r.Value, lngPos + Len(mstrIns))
+        End If
     End If
 
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
     Cancel = True
 End Sub
 

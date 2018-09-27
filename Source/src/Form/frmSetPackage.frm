@@ -4,7 +4,7 @@ Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmSetPackage
    ClientHeight    =   5625
    ClientLeft      =   45
    ClientTop       =   435
-   ClientWidth     =   8745
+   ClientWidth     =   8745.001
    OleObjectBlob   =   "frmSetPackage.frx":0000
    StartUpPosition =   1  'オーナー フォームの中央
 End
@@ -228,7 +228,7 @@ Private Sub setJavaPackage()
                     
                     
                     On Error GoTo 0
-                    err.Clear
+                    Err.Clear
                     
                     strSource = BASE_FOLDER & strDir
                     strDest = DEST_FOLDER & strDest & "\" & strDir
@@ -236,13 +236,13 @@ Private Sub setJavaPackage()
                     On Error Resume Next
                     blnCopySuccess = False
                     FileCopy strSource, strDest
-                    If err.Number = 0 Then
+                    If Err.Number = 0 Then
                         blnCopySuccess = True
                     End If
                     
                     
                     On Error GoTo 0
-                    err.Clear
+                    Err.Clear
                     
                     'チェックボックスが選択されている場合
                     lngDeleteSuccess = C_DELETE_NONE
@@ -251,13 +251,13 @@ Private Sub setJavaPackage()
                             '元ファイルを削除する。
                             On Error Resume Next
                             Kill strSource
-                            If err.Number = 0 Then
+                            If Err.Number = 0 Then
                                 lngDeleteSuccess = C_DELETE_SUCCESS
                             Else
                                 lngDeleteSuccess = C_DELETE_FAIL
                             End If
                             On Error GoTo 0
-                            err.Clear
+                            Err.Clear
                         End If
                     End If
                     
@@ -322,7 +322,7 @@ End Sub
 
 Private Sub UserForm_Initialize()
     Set MW = basMouseWheel.GetInstance
-    MW.Install
+    MW.Install Me
 End Sub
 
 Private Sub UserForm_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
@@ -335,16 +335,20 @@ Private Sub UserForm_Terminate()
 End Sub
 Private Sub MW_WheelDown(obj As Object)
 
+    On Error GoTo e
+
     If obj.ListCount = 0 Then Exit Sub
     obj.TopIndex = obj.TopIndex + 3
-    
+e:
 End Sub
-Private Sub UserForm_Activate()
-    MW.Activate
-End Sub
+'Private Sub UserForm_Activate()
+'    MW.Activate
+'End Sub
 Private Sub MW_WheelUp(obj As Object)
 
     Dim lngPos As Long
+
+    On Error GoTo e
 
     If obj.ListCount = 0 Then Exit Sub
     lngPos = obj.TopIndex - 3
@@ -354,5 +358,5 @@ Private Sub MW_WheelUp(obj As Object)
     End If
 
     obj.TopIndex = lngPos
-
+e:
 End Sub

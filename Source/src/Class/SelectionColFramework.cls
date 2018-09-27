@@ -158,7 +158,7 @@ Public Sub Run()
             
             For i = 1 To lngRows
                 ''フィルタおよび非表示対策。
-                If rArea(i, lngCur).Rows.Hidden Or rArea(i, lngCur).Columns.Hidden Then
+                If rArea(i, lngCur).Rows.Hidden Or rArea(i, lngCur).Columns.Hidden Or rArea(i, lngCur).MergeArea(1).Address <> rArea(i, lngCur).Address Then
                 Else
                     If r Is Nothing Then
                         Set r = rArea(i, lngCur)
@@ -203,11 +203,11 @@ Public Sub Run()
     '---------------------------
     '終了イベント
     '---------------------------
-    Application.ScreenUpdating = False
+'    Application.ScreenUpdating = False
     
     RaiseEvent SelectionTerm
     
-    Application.ScreenUpdating = True
+'    Application.ScreenUpdating = True
     
     If Undo Then
         'Undo

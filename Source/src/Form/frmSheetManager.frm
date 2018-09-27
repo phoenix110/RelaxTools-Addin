@@ -4,7 +4,7 @@ Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmSheetManager
    ClientHeight    =   6045
    ClientLeft      =   45
    ClientTop       =   435
-   ClientWidth     =   8385
+   ClientWidth     =   8385.001
    OleObjectBlob   =   "frmSheetManager.frx":0000
    StartUpPosition =   1  'オーナー フォームの中央
 End
@@ -79,22 +79,32 @@ Private Sub cmdPrint_Click()
     Dim lngCnt As Long
     Dim strSheets As String
     Dim r As Range
+    Dim s As Worksheet
 
     strSheets = ""
     For lngCnt = 0 To lstSheet.ListCount - 1
 
         If lstSheet.Selected(lngCnt) And lstSheet.List(lngCnt, C_SHEET_OLD_STATUS) = C_SHOW Then
 
-            If strSheets = "" Then
-                strSheets = lstSheet.List(lngCnt, C_SHEET_OLD_NAME)
-            Else
-                strSheets = strSheets & vbTab & lstSheet.List(lngCnt, C_SHEET_OLD_NAME)
+            Err.Clear
+            On Error Resume Next
+            Set s = mBook.Sheets(lstSheet.List(lngCnt, C_SHEET_OLD_NAME))
+            If Err.Number = 0 And s.Type = xlWorksheet Then
+                If s.PageSetup.Pages.count > 0 Then
+    
+                    If strSheets = "" Then
+                        strSheets = lstSheet.List(lngCnt, C_SHEET_OLD_NAME)
+                    Else
+                        strSheets = strSheets & vbTab & lstSheet.List(lngCnt, C_SHEET_OLD_NAME)
+                    End If
+    
+                End If
             End If
-
         End If
     Next
 
     If strSheets = "" Then
+        MsgBox "プレビューできるシートがありません。", vbOKOnly + vbExclamation, C_TITLE
     Else
         Me.Hide
         mBook.Sheets(Split(strSheets, vbTab)).PrintPreview
@@ -134,7 +144,7 @@ Private Sub cmdSaveBook_Click()
         Dim o As Object
         Dim vntFileName As Variant
         
-        vntFileName = Application.GetSaveAsFilename(InitialFileName:="", FileFilter:="Excel ブック(*.xlsx),*.xlsx,Excel マクロ有効ブック(*.xlsm),*.xlsm,Excel 97-2003ブック(*.xls),*.xls", Title:="ブックの保存")
+        vntFileName = Application.GetSaveAsFilename(InitialFileName:="", fileFilter:="Excel ブック(*.xlsx),*.xlsx,Excel マクロ有効ブック(*.xlsm),*.xlsm,Excel 97-2003ブック(*.xls),*.xls", Title:="ブックの保存")
         
         If vntFileName <> False Then
         
@@ -150,14 +160,15 @@ Private Sub cmdSaveBook_Click()
             ActiveWorkbook.Sheets(Split(strSheets, vbTab)).Copy
             
             'ActiveWorkbook.Windows(1).SelectedSheets.Copy
-            Set b = ActiveWorkbook
+            Set b = Application.Workbooks(Application.Workbooks.count)
+            
             Select Case LCase(Mid$(vntFileName, InStr(vntFileName, ".") + 1))
                 Case "xls"
-                    b.SaveAs FileName:=vntFileName, FileFormat:=xlExcel8, local:=True
+                    b.SaveAs filename:=vntFileName, FileFormat:=xlExcel8, local:=True
                 Case "xlsm"
-                    b.SaveAs FileName:=vntFileName, FileFormat:=xlOpenXMLWorkbookMacroEnabled, local:=True
+                    b.SaveAs filename:=vntFileName, FileFormat:=xlOpenXMLWorkbookMacroEnabled, local:=True
                 Case Else
-                    b.SaveAs FileName:=vntFileName, local:=True
+                    b.SaveAs filename:=vntFileName, local:=True
             End Select
             b.Close
             Set b = Nothing
@@ -226,14 +237,15 @@ Private Sub txtSheetName_Change()
     
 End Sub
 
-Private Sub UserForm_Activate()
-    MW.Activate
-End Sub
+'Private Sub UserForm_Activate()
+'    MW.Activate
+'End Sub
 
 '------------------------------------------------------------------------------------------------------------------------
 ' リスト初期表示イベント
 '------------------------------------------------------------------------------------------------------------------------
 Private Sub UserForm_Initialize()
+
 
 '    Dim i As Long
 '    Dim sh As Object
@@ -256,8 +268,14 @@ Private Sub UserForm_Initialize()
 '            End If
 '        Next
 '    Next
+    
+    If mBook.MultiUserEditing Then
+        cmdDel.enabled = False
+        cmdUndo.enabled = False
+    End If
+
     Set MW = basMouseWheel.GetInstance
-    MW.Install
+    MW.Install Me
 End Sub
 '------------------------------------------------------------------------------------------------------------------------
 ' リフレッシュ処理
@@ -454,7 +472,8 @@ End Sub
 Private Sub errorMsg()
     MsgBox "入力されたシートまたはグラフの名前が正しくありません。次の点を確認して修正してください。" & vbCrLf & vbCrLf & _
     "・入力文字が31文字以内であること" & vbCrLf & _
-    "・次の使用できない文字が含まれていないこと:コロン(:)、円記号(\)、スラッシュ(/)、疑問符(?)、アスタリスク(*)、左角かっこ([)、右角かっこ(])" & vbCrLf & _
+    "・次の使用できない文字が含まれていないこと(全角も含む):コロン(:)、円記号(\)、スラッシュ(/)、バックスラッシュ(＼)、疑問符(?)、アスタリスク(*)、シングルコーテーション(')、左角かっこ([)、右角かっこ(])、アポストロフィー(＇)" & vbCrLf & _
+    "・「履歴」という名前は予約語なのでシート名には使えません。" & vbCrLf & _
     "・名前が空白でないこと", vbOKOnly + vbExclamation, C_TITLE
 
 End Sub
@@ -605,12 +624,18 @@ End Sub
 Private Sub cmdUp_Click()
      Call moveList(C_UP)
 End Sub
+
+Private Sub cmdDown_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
+    Call cmdDown_Click
+End Sub
 '------------------------------------------------------------------------------------------------------------------------
 ' 選択行を下に移動
 '------------------------------------------------------------------------------------------------------------------------
 Private Sub cmdDown_Click()
      Call moveList(C_DOWN)
 End Sub
+
+
 '------------------------------------------------------------------------------------------------------------------------
 ' 移動処理
 '------------------------------------------------------------------------------------------------------------------------
@@ -719,31 +744,34 @@ End Sub
 '------------------------------------------------------------------------------------------------------------------------
 Private Sub cmdSubmit_Click()
 
+
+    On Error GoTo ErrHandle
+    
     Const C_TEMP_NAME As String = "~~temp"
+    Dim strSheetName As String
+
 
     Dim WS As Object
     Dim lngCnt As Long
     Dim lngCnt2 As Long
     Dim lngVisibleCount As Long
     Dim lngDeleteCount As Long
-    Dim strBuf As String
-    Dim lngLen As Long
+
     Dim i As Long
+    
+    strSheetName = C_TEMP_NAME & "_" & Format(Now, "yyyymmddhhmmss") & "_"
 
     Dim lngLast As Long
-    
-    strBuf = ":\/?*[]：￥／？＊［］"
-    lngLen = Len(strBuf)
 
     For lngCnt = 0 To lstSheet.ListCount - 1
-        For i = 1 To lngLen
     
-            If InStr(lstSheet.List(lngCnt, C_SHEET_NEW_NAME), Mid$(strBuf, i, 1)) > 0 Then
+        If lstSheet.List(lngCnt, C_SHEET_NEW_NAME) <> lstSheet.List(lngCnt, C_SHEET_OLD_NAME) Then
+            If IsErrSheetNameChar(lstSheet.List(lngCnt, C_SHEET_NEW_NAME)) Or Len(Trim(lstSheet.List(lngCnt, C_SHEET_NEW_NAME))) = 0 Or Len(Trim(lstSheet.List(lngCnt, C_SHEET_NEW_NAME))) > 31 Then
                 Call errorMsg
                 Exit Sub
             End If
+        End If
     
-        Next
     Next
     
     lngVisibleCount = 0
@@ -752,10 +780,6 @@ Private Sub cmdSubmit_Click()
             lngVisibleCount = lngVisibleCount + 1
         End If
     Next
-    If lngVisibleCount = lstSheet.ListCount Then
-        MsgBox "すべてのシートを非表示にはできません。", vbOKOnly + vbExclamation, C_TITLE
-        Exit Sub
-    End If
     
     lngDeleteCount = 0
     For lngCnt = 0 To lstSheet.ListCount - 1
@@ -767,8 +791,8 @@ Private Sub cmdSubmit_Click()
         
     Next
     
-    If lngDeleteCount = lstSheet.ListCount Then
-        MsgBox "すべてのシートを削除できません。", vbOKOnly + vbExclamation, C_TITLE
+    If (lngVisibleCount = lstSheet.ListCount) Or (lngDeleteCount = lstSheet.ListCount) Or (lngDeleteCount + lngVisibleCount = lstSheet.ListCount) Then
+        MsgBox "すべてのシートを非表示・削除はできません。", vbOKOnly + vbExclamation, C_TITLE
         Exit Sub
     End If
     
@@ -776,7 +800,7 @@ Private Sub cmdSubmit_Click()
     
         For lngCnt2 = lngCnt + 1 To lstSheet.ListCount - 1
             If lstSheet.List(lngCnt, C_SHEET_STATUS) <> C_DEL And lstSheet.List(lngCnt2, C_SHEET_STATUS) <> C_DEL Then
-                If lstSheet.List(lngCnt, C_SHEET_NEW_NAME) = lstSheet.List(lngCnt2, C_SHEET_NEW_NAME) Then
+                If StrConv(UCase(lstSheet.List(lngCnt, C_SHEET_NEW_NAME)), vbNarrow) = StrConv(UCase(lstSheet.List(lngCnt2, C_SHEET_NEW_NAME)), vbNarrow) Then
                     MsgBox "シートの名前をほかのシート、Visual Basic で参照されるオブジェクト ライブラリまたはワークシートと同じ名前に変更することはできません。", vbOKOnly + vbExclamation, C_TITLE
                     Exit Sub
                 End If
@@ -812,12 +836,14 @@ Private Sub cmdSubmit_Click()
     For lngCnt = 0 To lstSheet.ListCount - 1
     
         '名称が同じなら何もしない
-        If mBook.Sheets(lngCnt + 1).Name = lstSheet.List(lngCnt, C_SHEET_OLD_NAME) Then
+        If mBook.Sheets(lngCnt + 1).visible = xlSheetVeryHidden Then
         Else
-            '異なる場合、リストを正とし、現在のシートの前に移動。
-            mBook.Sheets(lstSheet.List(lngCnt, C_SHEET_OLD_NAME)).Move Before:=mBook.Sheets(lngCnt + 1)
+            If mBook.Sheets(lngCnt + 1).Name = lstSheet.List(lngCnt, C_SHEET_OLD_NAME) Then
+            Else
+                '異なる場合、リストを正とし、現在のシートの前に移動。
+                mBook.Sheets(lstSheet.List(lngCnt, C_SHEET_OLD_NAME)).Move Before:=mBook.Sheets(lngCnt + 1)
+            End If
         End If
-        
     Next
     'もともとアクティブだったシートを選択
     WS.Select
@@ -848,11 +874,12 @@ Private Sub cmdSubmit_Click()
 
         
         'シート名変更
-        strNew = C_TEMP_NAME & lngCnt
-        strOld = lstSheet.List(lngCnt, C_SHEET_OLD_NAME)
-        
-        If strNew <> strOld Then
-            mBook.Sheets(strOld).Name = strNew
+        If lstSheet.List(lngCnt, C_SHEET_NEW_NAME) <> lstSheet.List(lngCnt, C_SHEET_OLD_NAME) Then
+            strNew = strSheetName & lngCnt
+            strOld = lstSheet.List(lngCnt, C_SHEET_OLD_NAME)
+            If strNew <> strOld Then
+                mBook.Sheets(strOld).Name = strNew
+            End If
         End If
         
     Next
@@ -860,19 +887,13 @@ Private Sub cmdSubmit_Click()
     For lngCnt = 0 To lstSheet.ListCount - 1
         
         'シート名変更
-        strNew = lstSheet.List(lngCnt, C_SHEET_NEW_NAME)
-        strOld = C_TEMP_NAME & lngCnt
-        
-        If strNew <> strOld Then
-            mBook.Sheets(strOld).Name = strNew
+        If lstSheet.List(lngCnt, C_SHEET_NEW_NAME) <> lstSheet.List(lngCnt, C_SHEET_OLD_NAME) Then
+            strNew = lstSheet.List(lngCnt, C_SHEET_NEW_NAME)
+            strOld = strSheetName & lngCnt
+            If strNew <> strOld Then
+                mBook.Sheets(strOld).Name = strNew
+            End If
         End If
-        
-'        'シートの削除
-'        If lstSheet.List(lngCnt, C_SHEET_STATUS) = C_DEL Then
-'            strDel = lstSheet.List(lngCnt, C_SHEET_OLD_NAME)
-'            mBook.Sheets(strDel).Delete
-'        End If
-        
     Next
     
     Application.DisplayAlerts = True
@@ -888,6 +909,11 @@ Private Sub cmdSubmit_Click()
 '    If lstSheet.ListCount > 0 Then
 '        lstSheet.Selected(lngLast) = True
 '    End If
+
+    Exit Sub
+ErrHandle:
+    MsgBox "エラーが発生しました。", vbOKOnly, C_TITLE
+
 End Sub
 
 Private Sub UserForm_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
@@ -900,15 +926,19 @@ Private Sub UserForm_Terminate()
 End Sub
 
 Private Sub MW_WheelDown(obj As Object)
+    
+    On Error GoTo e
 
     If obj.ListCount = 0 Then Exit Sub
     obj.TopIndex = obj.TopIndex + 3
-    
+e:
 End Sub
 
 Private Sub MW_WheelUp(obj As Object)
 
     Dim lngPos As Long
+
+    On Error GoTo e
 
     If obj.ListCount = 0 Then Exit Sub
     lngPos = obj.TopIndex - 3
@@ -919,4 +949,5 @@ Private Sub MW_WheelUp(obj As Object)
 
     obj.TopIndex = lngPos
 
+e:
 End Sub

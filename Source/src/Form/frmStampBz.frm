@@ -67,6 +67,7 @@ Private Const C_DOWN As Long = 2
 Private mResult As VbMsgBoxResult
 
 Private mblnRefresh As Boolean
+Private mblnSpin As Boolean
 
 Private Sub cmbFont_Click()
     If cmbFont.ListIndex = -1 Then
@@ -468,7 +469,7 @@ Sub dispPreview()
     bz.Color = "&H" & Right$("00000000" & Hex(lblColor.BackColor), 8)
     bz.Font = cmbFont.Text
     bz.Round = txtRound.Text
-    bz.Size = txtWidth.Text
+    bz.size = txtWidth.Text
     
     bz.LineSize = txtLineSize.Text
     
@@ -545,7 +546,7 @@ End Sub
 
 
 
-Private Sub cmdOK_Click()
+Private Sub cmdOk_Click()
         
     Dim datStampBz As StampBzDTO
     Dim col As Collection
@@ -570,7 +571,7 @@ Private Sub cmdOK_Click()
         datStampBz.UserDate = varBuf(C_UserDate)
         datStampBz.Font = varBuf(C_Font)
         datStampBz.Color = varBuf(C_Color)
-        datStampBz.Size = varBuf(C_SIZE)
+        datStampBz.size = varBuf(C_SIZE)
         datStampBz.Round = varBuf(C_Round)
         datStampBz.Rotate = varBuf(C_Rotate)
         datStampBz.LineSize = varBuf(C_LineSize)
@@ -586,7 +587,7 @@ Private Sub cmdOK_Click()
             End If
         End If
         
-        If IsNumeric(datStampBz.Size) Then
+        If IsNumeric(datStampBz.size) Then
         Else
             MsgBox "幅には数値をで入力してください。", vbExclamation + vbOKOnly, C_TITLE
             lstStampBz.Selected(i) = True
@@ -594,7 +595,7 @@ Private Sub cmdOK_Click()
             Exit Sub
         End If
         
-        If CDbl(datStampBz.Size) < 0 Then
+        If CDbl(datStampBz.size) < 0 Then
             MsgBox "幅は０以上を入力してください。", vbExclamation + vbOKOnly, C_TITLE
             lstStampBz.Selected(i) = True
             txtWidth.SetFocus
@@ -851,26 +852,56 @@ Private Function spinDownSize(ByVal vntValue As Variant) As Variant
 
 End Function
 Private Sub spnLine_Spindown()
+    If mblnSpin Then
+        Exit Sub
+    End If
+    mblnSpin = True
     txtLineSize.Text = spinDownSize(txtLineSize.Text)
+    mblnSpin = False
 End Sub
 Private Sub spnLine_SpinUp()
+    If mblnSpin Then
+        Exit Sub
+    End If
+    mblnSpin = True
     txtLineSize.Text = spinUpSize(txtLineSize.Text)
+    mblnSpin = False
 End Sub
 
 Private Sub spnWidth_SpinDown()
+    If mblnSpin Then
+        Exit Sub
+    End If
+    mblnSpin = True
     txtWidth.Text = spinDownWidth(txtWidth.Text)
+    mblnSpin = False
 End Sub
 
 Private Sub spnWidth_SpinUp()
+    If mblnSpin Then
+        Exit Sub
+    End If
+    mblnSpin = True
     txtWidth.Text = spinUpWidth(txtWidth.Text)
+    mblnSpin = False
 End Sub
 
 Private Sub spnRound_SpinDown()
+    If mblnSpin Then
+        Exit Sub
+    End If
+    mblnSpin = True
     txtRound.Text = spinDownRound(txtRound.Text)
+    mblnSpin = False
 End Sub
 
 Private Sub spnRound_SpinUp()
+    If mblnSpin Then
+        Exit Sub
+    End If
+    mblnSpin = True
     txtRound.Text = spinUpRound(txtRound.Text)
+    mblnSpin = False
 End Sub
 
 Private Sub txtFormat_Change()
@@ -934,7 +965,7 @@ Private Sub UserForm_Initialize()
         varBuf(C_UserDate) = datStampBz.UserDate
         varBuf(C_Font) = datStampBz.Font
         varBuf(C_Color) = datStampBz.Color
-        varBuf(C_SIZE) = datStampBz.Size
+        varBuf(C_SIZE) = datStampBz.size
         varBuf(C_Round) = datStampBz.Round
         varBuf(C_Rotate) = datStampBz.Rotate
         varBuf(C_LineSize) = datStampBz.LineSize

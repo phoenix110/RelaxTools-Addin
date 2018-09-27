@@ -1,11 +1,15 @@
 ' -------------------------------------------------------------------------------
-' RelaxTools-Addin インストールスクリプト Ver.1.0.2
+' RelaxTools-Addin インストールスクリプト Ver.1.0.5
 ' -------------------------------------------------------------------------------
 ' 参考サイト
 ' ある SE のつぶやき
 ' VBScript で Excel にアドインを自動でインストール/アンインストールする方法
 ' http://fnya.cocolog-nifty.com/blog/2014/03/vbscript-excel-.html
 ' 修正
+'   1.0.5 同名ブックを参照用に開くVBSをインストールするよう修正。
+'   1.0.4 マルチプロセス用VBSが不要になったので削除。
+'   1.0.3 マルチプロセス用VBSをコピーするよう修正。
+'   1.0.3 images フォルダをコピーするように修正。
 '   1.0.2 Windows Update にて インターネットより取得したアドインファイルが Excel にて読み込まれない場合に対応。
 '         警告とプロパティウィンドウを表示して「ブロック解除」をお願いするようにした。
 ' -------------------------------------------------------------------------------
@@ -16,10 +20,12 @@ Dim addInName
 Dim addInFileName 
 Dim objExcel 
 Dim objAddin
+Dim imageFolder
 
 'アドイン情報を設定 
 addInName = "RelaxTools Addin" 
 addInFileName = "Relaxtools.xlam"
+appFile = "rlxAliasOpen.vbs"
 
 Set objWshShell = CreateObject("WScript.Shell") 
 Set objFileSys = CreateObject("Scripting.FileSystemObject")
@@ -34,6 +40,7 @@ END IF
 '(ex)C:\Users\[User]\AppData\Roaming\Microsoft\AddIns\[addInFileName] 
 strPath = objWshShell.SpecialFolders("Appdata") & "\Microsoft\Addins\"
 installPath = strPath  & addInFileName
+imageFolder = objWshShell.SpecialFolders("Appdata") & "\RelaxTools-Addin\"
 
 IF MsgBox(addInName & " をインストールしますか？" & vbCrLf &  "Version 4.0.0 以降とそれ以前では設定が引き継がれませんのでご了承ください。", vbYesNo + vbQuestion, addInName) = vbNo Then 
   WScript.Quit 
@@ -41,6 +48,17 @@ End IF
 
 'ファイルコピー(上書き) 
 objFileSys.CopyFile  addInFileName ,installPath , True
+
+'イメージフォルダがない場合は作成
+IF Not objFileSys.FolderExists(imageFolder) THEN
+  objFileSys.CreateFolder(imageFolder)
+END IF
+
+'イメージフォルダをコピー(上書き) 
+objFileSys.CopyFolder  "Source\customUI\images" ,imageFolder , True
+
+'ファイルをコピー(上書き) 
+objFileSys.CopyFile  appFile, imageFolder & appFile, True
 
 Set objFileSys = Nothing
 
@@ -70,11 +88,16 @@ ELSE
     WScript.Quit 
 End IF
 
-If MsgBox("エクスプローラ右クリック(Excelの読み取り専用)を有効にしますか？" & vbCrLf & "実行には管理者権限が必要です。", vbYesNo + vbQuestion, "読み取り専用有効化") = vbNo Then 
+If MsgBox("エクスプローラ右クリック(同名ブックを参照用に開く)を有効にしますか？" & vbCrLf & "実行には管理者権限が必要です。", vbYesNo + vbQuestion, addInName) <> vbNo Then 
+    objWshShell.Run "rlxAliasOpen.vbs /install", 1, true
+End IF
+
+If MsgBox("エクスプローラ右クリック(Excelの読み取り専用)を有効にしますか？" & vbCrLf & "実行には管理者権限が必要です。", vbYesNo + vbQuestion, addInName) = vbNo Then 
     WScript.Quit 
 End IF
 
-objWshShell.Run "ExcelReadOnly.vbs"
+objWshShell.Run "ExcelReadOnly.vbs", 1, true
+
 
 Set objWshShell = Nothing 
 

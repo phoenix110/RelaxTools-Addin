@@ -70,7 +70,7 @@ End Sub
 Sub StartGauge(ByVal lngValue As Long)
     mlngMax = lngValue
     
-    mFrm.lblGauge.Width = 0
+    mFrm.lblGauge.width = 0
     mFrm.lblGauge.visible = True
     mFrm.lblGauge.ForeColor = vbWhite
     mFrm.lblBack.BackColor = vbWhite
@@ -88,9 +88,9 @@ Sub DisplayGauge(ByVal lngValue As Long)
         lngValue = mlngMax
     End If
     dblValue = (CDbl(lngValue) / mlngMax)
-    mFrm.lblGauge.Width = mFrm.lblBack.Width * dblValue
+    mFrm.lblGauge.width = mFrm.lblBack.width * dblValue
     
-    strMessage = Space$(Fix(mFrm.lblBack.Width * 0.16)) & Format$(rlxRoundDown(dblValue * 100, 0), "0") & "%"
+    strMessage = Space$(Fix(mFrm.lblBack.width * 0.16)) & Format$(rlxRoundDown(dblValue * 100, 0), "0") & "%"
     mFrm.lblBack.Caption = strMessage
     mFrm.lblGauge.Caption = strMessage
     DoEvents
@@ -114,7 +114,7 @@ Sub Disable()
     
     For Each c In mFrm.Controls
     
-        If c.tag <> "e" Then
+        If c.Tag <> "e" Then
             c.enabled = False
         End If
     
@@ -131,7 +131,7 @@ Sub Enable()
     
     For Each c In mFrm.Controls
     
-        If c.tag <> "e" Then
+        If c.Tag <> "e" Then
             c.enabled = True
         End If
     

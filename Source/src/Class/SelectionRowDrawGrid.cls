@@ -121,7 +121,7 @@ Private Sub SFWork_SelectionInit(rArea As Areas, Cancel As Boolean, Undo As Bool
     
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
 End Sub
 
 '------------------------------------------------------------------------------------------------------------------------
@@ -254,14 +254,14 @@ Private Sub SFWork_SelectionBegin(rArea As Range, Cancel As Boolean)
     
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
     Cancel = True
 End Sub
 
 '------------------------------------------------------------------------------------------------------------------------
 ' 主処理(UOC)
 '------------------------------------------------------------------------------------------------------------------------
-Private Sub SFWork_SelectionMain(r As Range, ByVal row As Long, Cancel As Boolean)
+Private Sub SFWork_SelectionMain(r As Range, ByVal Row As Long, Cancel As Boolean)
         
     On Error GoTo e
     
@@ -270,15 +270,15 @@ Private Sub SFWork_SelectionMain(r As Range, ByVal row As Long, Cancel As Boolea
         Set mrngOdd = Nothing
     Else
         Select Case True
-            Case row <= mlngHead
-            Case (row - mlngHead) Mod 2 = 0
+            Case Row <= mlngHead
+            Case (Row - mlngHead) Mod 2 = 0
                 If mrngEven Is Nothing Then
                     Set mrngEven = r
                 Else
                     Set mrngEven = Union(mrngEven, r)
                 End If
                 
-            Case (row - mlngHead) Mod 2 = 1
+            Case (Row - mlngHead) Mod 2 = 1
                 If mrngOdd Is Nothing Then
                     Set mrngOdd = r
                 Else
@@ -290,7 +290,7 @@ Private Sub SFWork_SelectionMain(r As Range, ByVal row As Long, Cancel As Boolea
     
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
     Cancel = True
 End Sub
 
@@ -366,7 +366,7 @@ Private Sub SFWork_SelectionFinal(rArea As Range)
     
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
 End Sub
 
 Public Property Let HeadColor(ByVal lngColor As Long)

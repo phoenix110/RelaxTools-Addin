@@ -13,6 +13,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+
 '-----------------------------------------------------------------------------------------------------
 '
 ' [RelaxTools-Addin] v4
@@ -52,7 +53,7 @@ Private Sub cmdCancel_Click()
     Unload Me
 End Sub
 
-Private Sub cmdOK_Click()
+Private Sub cmdOk_Click()
 
     Dim i As Long
     Dim fav As favoriteDTO
@@ -76,7 +77,7 @@ Private Sub cmdOK_Click()
                     End If
                 Next
                 If frmFavorite.mobjCategory.Exists(.List(.ListIndex)) Then
-                    frmFavorite.mobjCategory.KEY(.List(.ListIndex)) = Me.txtCat.Text
+                    frmFavorite.mobjCategory.Key(.List(.ListIndex)) = Me.txtCat.Text
                     Dim cat As Variant
                     Set cat = frmFavorite.mobjCategory.Item(Me.txtCat.Text)
                     

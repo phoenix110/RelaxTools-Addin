@@ -77,7 +77,7 @@ Private Sub cmdCancel_Click()
     Unload Me
 End Sub
 
-Private Sub cmdOK_Click()
+Private Sub cmdOk_Click()
 
     Dim strBuf As String
     Dim lngCount As Long
@@ -152,8 +152,8 @@ Private Function getTop(ByVal s As Range) As Long
     lngMin = 2147483647
 
     For Each r In s.Areas
-        If lngMin > r.row Then
-            lngMin = r.row
+        If lngMin > r.Row Then
+            lngMin = r.Row
         End If
     Next
     getTop = lngMin

@@ -77,7 +77,7 @@ End Sub
 
 Private Sub SFWork_SelectionMain(r As Range, ByVal NotHoldFormat As Boolean, Cancel As Boolean)
     
-    err.Clear
+    Err.Clear
     On Error Resume Next
     
     If r.HasFormula Then
@@ -85,7 +85,11 @@ Private Sub SFWork_SelectionMain(r As Range, ByVal NotHoldFormat As Boolean, Can
         If Not (NotHoldFormat) And VarType(r.Value) = vbString Then
             r.Characters(1, 1).Delete
         Else
-            r.Value = Mid$(r.Value, 2)
+            If Len(r.PrefixCharacter) > 0 Then
+                r.Value = r.PrefixCharacter & Mid$(r.Value, 2)
+            Else
+                r.Value = Mid$(r.Value, 2)
+            End If
         End If
     End If
     

@@ -163,7 +163,11 @@ Sub setItemNo(ByRef r As Range, ByVal strNewNo As String)
     If VarType(r.Value) = vbString Then
         r.Characters(0, 0).Insert strNewNo
     Else
-        r.Value = strNewNo & r.Value
+        If Len(r.PrefixCharacter) > 0 Then
+            r.Value = r.PrefixCharacter & strNewNo & r.Value
+        Else
+            r.Value = strNewNo & r.Value
+        End If
     End If
     
 End Sub
@@ -184,7 +188,11 @@ Sub delItemNo(ByRef r As Range)
         End If
     Else
         If Len(strSecNo) > 0 Then
-            r.Value = Mid$(r.Value, Len(strSecNo) + 1)
+            If Len(r.PrefixCharacter) > 0 Then
+                r.Value = r.PrefixCharacter & Mid$(r.Value, Len(strSecNo) + 1)
+            Else
+                r.Value = Mid$(r.Value, Len(strSecNo) + 1)
+            End If
         End If
     End If
 
@@ -192,7 +200,7 @@ End Sub
 '--------------------------------------------------------------
 '　クラス名からオブジェクトを取得
 '--------------------------------------------------------------
-Function rlxGetItemObject(ByVal className As String) As Object
+Function rlxGetItemObject(ByVal classname As String) As Object
 Attribute rlxGetItemObject.VB_Description = "ワークシート関数として使用できません。"
 Attribute rlxGetItemObject.VB_ProcData.VB_Invoke_Func = " \n19"
 
@@ -206,7 +214,7 @@ Attribute rlxGetItemObject.VB_ProcData.VB_Invoke_Func = " \n19"
     
     For Each obj In mColAllItem
     
-        If className = obj.Class Then
+        If classname = obj.Class Then
             Set ret = obj
             Exit For
         End If

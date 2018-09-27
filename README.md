@@ -1,6 +1,6 @@
-#RelaxTools Addin For Excel 2007/2010/2013/2016 
+# RelaxTools Addin For Excel 2010/2013/2016 
 *対応OS: Windows Vista, Windws 7, Windows 8, Windows 8.1, Windows 10(macには対応していません)
-*対応Excel: 2007, 2010, 2013, 2016
+*対応Excel: 2010, 2013, 2016
 
 各種変換、編集、検索などの機能追加を行うツールです。
 Copyright(C) Yasuhiro Watanabe 2009
@@ -49,6 +49,7 @@ Copyright(C) Yasuhiro Watanabe 2009
 * 付箋作成機能。
 * Excel/Word/PowerPointのページ数カウント
 * VBAのステップカウント
+* バージョン管理クライアント「TortoiseSVN」「TortoiseGit」に対応。Commit, Revert が簡単に。
 ・・・などなど250を超える機能を搭載
 
 ---
@@ -57,7 +58,6 @@ Copyright(C) Yasuhiro Watanabe 2009
 * README.txt                     ・・・・・・・・ 本書です。
 * RelaxTools.xlam                ・・・・・・・・ RelaxTools本体
 * install.vbs                    ・・・・・・・・ インストールに使用します。
-* uninstall.vbs                  ・・・・・・・・ アンインストールに使用します。
 * Section_No_Manual.xlsx         ・・・・・・・・ 段落番号の使用説明書です。
 * relaxtools.png                 ・・・・・・・・ アイコンファイルご自由にお使いください。
 * ExcelReadOnly.vbs              ・・・・・・・・ エクスプローラの右クリックメニューに「読み取り専用で開く」を追加するスクリプト
@@ -77,12 +77,6 @@ Copyright(C) Yasuhiro Watanabe 2009
 
 ## アンインストール方法
 * RelaxToolsヘルプ　→　「RelaxToolsのアンインストール」ボタンを押下する。
-
-## アンインストール方法(uninstall.vbsを使用する方法)
-* Excelが起動していないことを確認する。起動している場合は終了する。
-* uninstall.vbs を実行する。
-* Excelを起動し「RelaxTools」タブが表示されないことを確認する。
-* レジストリエディタで以下のキーを削除する。HKEY_CURRENT_USER\Software\VB and VBA Program Settings\RelaxTools-Addin」
 
 ## 使用方法
  使用方法についてはRelaxToolsを起動した後、ヘルプを表示してください。

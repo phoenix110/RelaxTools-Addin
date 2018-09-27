@@ -1,7 +1,7 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmEdit 
    Caption         =   "セルの拡大表示＋編集"
-   ClientHeight    =   9390
+   ClientHeight    =   9390.001
    ClientLeft      =   45
    ClientTop       =   435
    ClientWidth     =   13350
@@ -54,7 +54,7 @@ Private Sub cmbFont_Change()
 End Sub
 
 Private Sub cmbSize_Change()
-    txtEdit.Font.Size = Val(cmbSize.Text)
+    txtEdit.Font.size = Val(cmbSize.Text)
 End Sub
 
 Private Sub cmdCancel_Click()
@@ -81,10 +81,10 @@ Private Sub cmdFormatXML_Click()
     
 End Sub
 
-Private Sub cmdOK_Click()
+Private Sub cmdOk_Click()
     
     On Error Resume Next
-    err.Clear
+    Err.Clear
     
     If mBlnFormura Then
         ActiveCell.Formula = Replace(txtEdit.Text, vbCrLf, vbLf)
@@ -92,7 +92,7 @@ Private Sub cmdOK_Click()
         ActiveCell.Value = Replace(txtEdit.Text, vbCrLf, vbLf)
     End If
     
-    If err.Number = 0 Then
+    If Err.Number = 0 Then
         Unload Me
     Else
         MsgBox "式の設定に失敗しました。式が正しくない可能性があります。", vbOKOnly + vbExclamation, C_TITLE
@@ -103,7 +103,7 @@ End Sub
 Private Sub cmdReload_Click()
 
     On Error GoTo e
-    err.Clear
+    Err.Clear
     
 '    If mBlnFormura Then
 '        ActiveCell.Formula = Replace(txtEdit.Text, vbCrLf, vbLf)
@@ -167,9 +167,9 @@ Private Sub txtEdit_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, B
     Set MW.obj = txtEdit
 End Sub
 
-Private Sub UserForm_Activate()
-    MW.Activate
-End Sub
+'Private Sub UserForm_Activate()
+'    MW.Activate
+'End Sub
 
 Private Sub UserForm_Initialize()
 
@@ -227,10 +227,10 @@ Private Sub UserForm_Initialize()
         txtFormura.Text = Replace(Replace(ActiveCell.Value, vbCrLf, vbLf), vbLf, vbCrLf)
     End If
     
-    err.Clear
+    Err.Clear
     On Error Resume Next
     txtValue.Text = Replace(Replace(ActiveCell.Value, vbCrLf, vbLf), vbLf, vbCrLf)
-    If err.Number <> 0 Then
+    If Err.Number <> 0 Then
         txtValue.Text = C_ERROR
     End If
     
@@ -240,7 +240,7 @@ Private Sub UserForm_Initialize()
     optFormura.Value = True
     
     Set MW = basMouseWheel.GetInstance
-    MW.Install
+    MW.Install Me
     
 End Sub
 
@@ -252,9 +252,9 @@ Private Sub UserForm_Terminate()
     
     strSize = cmbSize.Text
     If Val(strSize) = 0 Then
-        txtEdit.Font.Size = 12
+        txtEdit.Font.size = 12
     Else
-        txtEdit.Font.Size = Val(strSize)
+        txtEdit.Font.size = Val(strSize)
     End If
     SaveSetting C_TITLE, "Edit", "Size", strSize
     
@@ -295,6 +295,7 @@ Private Sub MW_WheelDown(obj As Object)
     Dim lngPos As Long
     
     On Error GoTo e
+    
     lngPos = obj.CurLine + 3
     If lngPos >= obj.LineCount Then
         lngPos = obj.LineCount - 1
@@ -308,6 +309,7 @@ Private Sub MW_WheelUp(obj As Object)
     Dim lngPos As Long
     
     On Error GoTo e
+    
     lngPos = obj.CurLine - 3
     If lngPos < 0 Then
         lngPos = 0

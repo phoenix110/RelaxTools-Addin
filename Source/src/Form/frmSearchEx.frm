@@ -1,7 +1,7 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmSearchEx 
-   Caption         =   "セル・シェイプの正規表現検索／置換"
-   ClientHeight    =   6150
+   Caption         =   "セル・シェイプの正規表現検索／置換／文字修飾"
+   ClientHeight    =   6180
    ClientLeft      =   45
    ClientTop       =   435
    ClientWidth     =   12270
@@ -13,6 +13,8 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+
+
 '-----------------------------------------------------------------------------------------------------
 '
 ' [RelaxTools-Addin] v4
@@ -60,6 +62,9 @@ Private Const C_SEARCH_SHEET As Long = 3
 Private Const C_SEARCH_ID As Long = 4
 Private Const C_SEARCH_BOOK As Long = 5
 
+
+Private Const C_SEARCH_PLACE_SELECTION = "選択範囲"
+
 Private Const C_SEARCH_PLACE_SHEET = "現在のシート"
 Private Const C_SEARCH_PLACE_SELECT = "選択したシート"
 Private Const C_SEARCH_PLACE_BOOK = "ブック全体"
@@ -86,8 +91,12 @@ Private mlngColumnWidth As Long
 Private WithEvents MW As MouseWheel
 Attribute MW.VB_VarHelpID = -1
 
-'Private Const C_SEARCH_VALUE_FORMULA_NO As Long = 2
-'Private Const C_SEACH_VALUE_VALUE_NO As Long = 1
+Private Sub chkDefault_Change()
+    
+    fraMarkup.visible = Not (chkDefault.Value)
+
+End Sub
+
 
 Private Sub chkRegEx_Change()
 
@@ -109,7 +118,9 @@ Private Sub cmdHelp_Click()
 
 End Sub
 
-Private Sub cmdOK_Click()
+Private Sub cmdMarkup_Click()
+
+    Dim lngRet As Long
 
     If Len(Trim(txtSearch.Text)) = 0 Then
         MsgBox "検索文字列を指定してください。", vbExclamation, C_TITLE
@@ -124,10 +135,57 @@ Private Sub cmdOK_Click()
         o.Pattern = txtSearch.Text
         o.IgnoreCase = Not (chkCase.Value)
         o.Global = True
-        err.Clear
+        Err.Clear
         On Error Resume Next
         o.Execute ""
-        If err.Number <> 0 Then
+        If Err.Number <> 0 Then
+            MsgBox "検索文字列の正規表現が正しくありません。", vbExclamation, C_TITLE
+            txtSearch.SetFocus
+            Exit Sub
+        End If
+    End If
+    
+    Call searchStart
+    
+    If lstResult.ListCount = 0 Then
+        MsgBox "検索対象が見つかりませんでした。", vbInformation + vbOKOnly, C_TITLE
+        Exit Sub
+    End If
+    
+    lngRet = markupStart(True)
+    If lngRet < 0 Then
+        Exit Sub
+    End If
+        
+    MsgBox lngRet & " 個の文字列を修飾しました。", vbInformation + vbOKOnly, C_TITLE
+    
+    Call SaveSetting(C_TITLE, "Character", "Bold", cmdBold.Value)
+    Call SaveSetting(C_TITLE, "Character", "Italic", cmdItalic.Value)
+    Call SaveSetting(C_TITLE, "Character", "Underline", cmdUnderline.Value)
+    Call SaveSetting(C_TITLE, "Character", "Color", CLng(lblColor.BackColor))
+    Call SaveSetting(C_TITLE, "Character", "Default", chkDefault.Value)
+    
+End Sub
+
+Private Sub cmdOk_Click()
+
+    If Len(Trim(txtSearch.Text)) = 0 Then
+        MsgBox "検索文字列を指定してください。", vbExclamation, C_TITLE
+        txtSearch.SetFocus
+        Exit Sub
+    End If
+    
+    '正規表現の場合
+    If chkRegEx.Value Then
+        Dim o As Object
+        Set o = CreateObject("VBScript.RegExp")
+        o.Pattern = txtSearch.Text
+        o.IgnoreCase = Not (chkCase.Value)
+        o.Global = True
+        Err.Clear
+        On Error Resume Next
+        o.Execute ""
+        If Err.Number <> 0 Then
             MsgBox "検索文字列の正規表現が正しくありません。", vbExclamation, C_TITLE
             txtSearch.SetFocus
             Exit Sub
@@ -135,6 +193,14 @@ Private Sub cmdOK_Click()
     End If
     
     Logger.LogBegin TypeName(Me) & ".cmdOk_Click"
+    
+    Static sw
+    
+    If sw Then
+        Exit Sub
+    End If
+    
+    sw = True
     
     Call searchStart
     
@@ -181,6 +247,8 @@ Private Sub cmdOK_Click()
         MsgBox "検索対象が見つかりませんでした。", vbInformation + vbOKOnly, C_TITLE
     End If
     
+    sw = False
+
 End Sub
 
 
@@ -201,10 +269,10 @@ Private Sub cmdReplace_Click()
         o.Pattern = txtSearch.Text
         o.IgnoreCase = Not (chkCase.Value)
         o.Global = True
-        err.Clear
+        Err.Clear
         On Error Resume Next
         o.Execute ""
-        If err.Number <> 0 Then
+        If Err.Number <> 0 Then
             MsgBox "検索文字列の正規表現が正しくありません。", vbExclamation, C_TITLE
             txtSearch.SetFocus
             Exit Sub
@@ -323,7 +391,7 @@ Private Function replaceStart(ByVal blnAsk As Boolean) As Long
             
             DoEvents
             
-            ret = frmSearchBox.Start()
+            ret = frmSearchBox.Start("置換")
             Select Case ret
                 Case 2
                     blnAsk = False
@@ -444,6 +512,259 @@ pass:
     replaceStart = lngRet
 
 End Function
+Private Function markupStart(ByVal blnAsk As Boolean) As Long
+
+    Dim objMatch As Object
+    Dim matchCount As Long
+    Dim i As Long
+    Dim j As Long
+    Dim ret As Long
+    Dim lngRet As Long
+    Dim strAddress As String
+    Dim strSheet As String
+    Dim objRegx As Object
+    Dim strBuf As String
+    
+    Dim strPattern As String
+    Dim strReplace As String
+    
+    Dim lngStart As Long
+    Dim lngLen As Long
+    Dim def As Boolean
+    
+    
+    strPattern = txtSearch.Text
+    strReplace = txtReplace.Text
+    
+    If lstResult.ListCount = 0 Then
+        Exit Function
+    End If
+    
+    For i = 0 To lstResult.ListCount - 1
+    
+        strAddress = lstResult.List(i, C_SEARCH_ID)
+        strSheet = lstResult.List(i, C_SEARCH_SHEET)
+        If blnAsk Then
+        
+            mblnRefresh = False
+            For j = 0 To lstResult.ListCount - 1
+                If j = i Then
+                Else
+                    lstResult.Selected(j) = False
+                End If
+            Next
+            mblnRefresh = True
+            lstResult.Selected(i) = True
+            lstResult.TopIndex = i
+            
+            DoEvents
+            
+            ret = frmSearchBox.Start("適用")
+            Select Case ret
+                Case 2
+                    blnAsk = False
+                Case 4
+                    GoTo pass
+                Case 8
+                    lngRet = -1
+                    Exit For
+            End Select
+        End If
+        
+        If InStr(strAddress, "$") > 0 Then
+        
+            'セルの場合
+        
+            Dim r As Range
+            Set r = Worksheets(strSheet).Range(strAddress)
+            def = chkDefault.Value
+           
+            '正規表現の場合
+            If chkRegEx.Value Then
+            
+                If r.HasFormula Then
+                Else
+                    Set objRegx = CreateObject("VBScript.RegExp")
+                    
+                    objRegx.Pattern = strPattern
+                    objRegx.IgnoreCase = Not (chkCase.Value)
+                    objRegx.Global = True
+                    Dim matches As Object
+                    Set matches = objRegx.Execute(r.Value)
+                    
+                    Dim match As Object
+                    For Each match In matches
+                    
+                        lngStart = match.FirstIndex + 1
+                        lngLen = match.Length
+                
+                        If def Then
+                            With r.Characters(lngStart, lngLen).Font
+                                .ColorIndex = xlAutomatic
+                                .Bold = False
+                                .Italic = False
+                                .Underline = False
+                            End With
+                        Else
+                            With r.Characters(lngStart, lngLen).Font
+                                .Color = lblColor.BackColor
+                                .Bold = cmdBold.Value
+                                .Italic = cmdItalic.Value
+                                .Underline = cmdUnderline.Value
+                            End With
+                        End If
+                    Next
+                End If
+                Set objRegx = Nothing
+               
+            Else
+            
+                If chkCase.Value Then
+                    lngStart = InStr(r.Value, strPattern)
+                Else
+                    lngStart = InStr(UCase(r.Value), UCase(strPattern))
+                End If
+                
+                lngLen = Len(strPattern)
+                
+                Do Until lngStart = 0
+                
+                    If def Then
+                        With r.Characters(lngStart, lngLen).Font
+                            .ColorIndex = xlAutomatic
+                            .Bold = False
+                            .Italic = False
+                            .Underline = False
+                        End With
+                    Else
+                        With r.Characters(lngStart, lngLen).Font
+                            .Color = lblColor.BackColor
+                            .Bold = cmdBold.Value
+                            .Italic = cmdItalic.Value
+                            .Underline = cmdUnderline.Value
+                        End With
+                    End If
+                    
+                    If chkCase.Value Then
+                        lngStart = InStr(lngStart + 1, r.Value, strPattern)
+                    Else
+                        lngStart = InStr(lngStart + 1, UCase(r.Value), UCase(strPattern))
+                    End If
+                    
+                Loop
+            End If
+
+            Set r = Nothing
+        
+        Else
+        
+            'シェイプの場合
+        
+            Dim s As Object
+            Dim c As Object
+
+            Set s = getObjFromID(Worksheets(strSheet), Mid$(strAddress, InStrRev(strAddress, ":") + 1))
+                
+            If InStr(strAddress, C_SEARCH_ID_SMARTART) > 0 Then
+                Set c = s.TextFrame2.TextRange
+            Else
+                Set c = s.TextFrame
+            End If
+            
+            strBuf = c.Characters.Text
+
+            '正規表現の場合
+            If chkRegEx.Value Then
+            
+            
+                Set objRegx = CreateObject("VBScript.RegExp")
+                
+                objRegx.Pattern = strPattern
+                objRegx.IgnoreCase = Not (chkCase.Value)
+                objRegx.Global = True
+                Set matches = objRegx.Execute(strBuf)
+                
+                For Each match In matches
+                
+                    lngStart = match.FirstIndex + 1
+                    lngLen = match.Length
+            
+                    If def Then
+                        With c.Characters(lngStart, lngLen).Font
+                            .ColorIndex = xlAutomatic
+                            .Bold = False
+                            .Italic = False
+                            .Underline = msoNoUnderline
+                        End With
+                    Else
+                        With c.Characters(lngStart, lngLen).Font
+                            .Color = lblColor.BackColor
+                            .Bold = cmdBold.Value
+                            .Italic = cmdItalic.Value
+                            If cmdUnderline.Value Then
+                                .Underline = msoUnderlineSingleLine
+                            Else
+                                .Underline = msoNoUnderline
+                            End If
+                        End With
+                    End If
+                Next
+                Set objRegx = Nothing
+
+            Else
+            
+                If chkCase.Value Then
+                    lngStart = InStr(strBuf, strPattern)
+                Else
+                    lngStart = InStr(UCase(strBuf), UCase(strPattern))
+                End If
+                
+                lngLen = Len(strPattern)
+                
+                Do Until lngStart = 0
+                
+                    If def Then
+                        With c.Characters(lngStart, lngLen).Font
+                            .ColorIndex = xlAutomatic
+                            .Bold = False
+                            .Italic = False
+                            .Underline = msoNoUnderline
+                        End With
+                    Else
+                        With c.Characters(lngStart, lngLen).Font
+                            .Color = lblColor.BackColor
+                            .Bold = cmdBold.Value
+                            .Italic = cmdItalic.Value
+                            
+                            If cmdUnderline.Value Then
+                                .Underline = msoUnderlineSingleLine
+                            Else
+                                .Underline = msoNoUnderline
+                            End If
+                        End With
+                    End If
+                    
+                    If chkCase.Value Then
+                        lngStart = InStr(lngStart + 1, strBuf, strPattern)
+                    Else
+                        lngStart = InStr(lngStart + 1, UCase(strBuf), UCase(strPattern))
+                    End If
+                    
+                Loop
+            End If
+
+            Set c = Nothing
+            Set s = Nothing
+
+        End If
+        lngRet = lngRet + 1
+pass:
+    Next
+    
+    Me.Show
+    markupStart = lngRet
+
+End Function
 Private Sub searchStart()
     
     Dim colSheet As Collection
@@ -500,77 +821,99 @@ Private Sub seachCell(ByRef objSheet As Worksheet)
     Dim strPattern As String
     Dim objFind As Range
     Dim strFirstAddress As String
+    Dim r As Range
+    Dim objRegx As Object
+    Dim schStr As Variant
     
     strPattern = txtSearch.Text
-        
+    
     '正規表現の場合
     If chkRegEx Then
     
-        Dim objRegx As Object
+        '選択範囲対応
+        Select Case cboPlace.Text
+            Case C_SEARCH_PLACE_SELECTION
+                If TypeOf Selection Is Range Then
+                    Set r = SpecialCellsEx(Selection)
+                    If r Is Nothing Then
+                        Exit Sub
+                    End If
+                Else
+                    Exit Sub
+                End If
+            
+            Case Else
+                Set r = SpecialCellsEx(objSheet.UsedRange)
+                If r Is Nothing Then
+                    Exit Sub
+                End If
+        End Select
+        
         Set objRegx = CreateObject("VBScript.RegExp")
         
         objRegx.Pattern = strPattern
         objRegx.IgnoreCase = Not (chkCase.Value)
         objRegx.Global = True
         
-        If cboValue.Value = C_SEARCH_VALUE_VALUE Then
-            Set objFind = objSheet.UsedRange.Find("*", , xlValues, xlPart, xlByRows, xlNext, chkCase.Value, chkZenHan.Value)
-        Else
-            Set objFind = objSheet.UsedRange.Find("*", , xlFormulas, xlPart, xlByRows, xlNext, chkCase.Value, chkZenHan.Value)
-        End If
-        
-        If Not objFind Is Nothing Then
-        
-            strFirstAddress = objFind.Address
     
-            Do
+        For Each objFind In r
     
-                Dim schStr As Variant
-                
-                If cboValue.Value = C_SEARCH_VALUE_VALUE Then
-                    schStr = objFind.Value
+            If cboValue.Value = C_SEARCH_VALUE_VALUE Then
+                schStr = objFind.Value
+            Else
+                If objFind.HasFormula Then
+                    schStr = objFind.FormulaLocal
                 Else
-                    If objFind.HasFormula Then
-                        schStr = objFind.FormulaLocal
-                    Else
-                        schStr = objFind.Value
-                    End If
+                    schStr = objFind.Value
                 End If
+            End If
                 
-                Dim objMatch As Object
-                Set objMatch = objRegx.Execute(schStr)
-    
-                If objMatch.count > 0 Then
+            '式エラーの場合パス
+            If IsError(schStr) Then
+                GoTo pass
+            End If
                 
-                    lstResult.AddItem ""
-                    lstResult.List(mlngCount, C_SEARCH_NO) = mlngCount + 1
-                    
-                    lstResult.List(mlngCount, C_SEARCH_STR) = Left(schStr, C_SIZE)
-                    
-                    lstResult.List(mlngCount, C_SEARCH_ADDRESS) = objFind.Address
-                    lstResult.List(mlngCount, C_SEARCH_ID) = objFind.Address
-                    lstResult.List(mlngCount, C_SEARCH_SHEET) = objSheet.Name
-                    lstResult.List(mlngCount, C_SEARCH_BOOK) = objSheet.Parent.Name
-    
-                    mlngCount = mlngCount + 1
-                End If
+            If objRegx.Test(schStr) Then
+            
+                lstResult.AddItem ""
+                lstResult.List(mlngCount, C_SEARCH_NO) = mlngCount + 1
                 
-                Set objMatch = Nothing
-                Set objFind = objSheet.UsedRange.FindNext(objFind)
+                lstResult.List(mlngCount, C_SEARCH_STR) = Left(schStr, C_SIZE)
                 
-                If objFind Is Nothing Then
-                    Exit Do
-                End If
-                
-            Loop Until strFirstAddress = objFind.Address
-            Set objRegx = Nothing
-        End If
+                lstResult.List(mlngCount, C_SEARCH_ADDRESS) = objFind.Address
+                lstResult.List(mlngCount, C_SEARCH_ID) = objFind.Address
+                lstResult.List(mlngCount, C_SEARCH_SHEET) = objSheet.Name
+                lstResult.List(mlngCount, C_SEARCH_BOOK) = objSheet.Parent.Name
+
+                mlngCount = mlngCount + 1
+            End If
+pass:
+        Next
+        Set objRegx = Nothing
     Else
+        '選択範囲対応
+        Select Case cboPlace.Text
+            Case C_SEARCH_PLACE_SELECTION
+                If TypeOf Selection Is Range Then
+                    Set r = Selection
+                    If r Is Nothing Then
+                        Exit Sub
+                    End If
+                Else
+                    Exit Sub
+                End If
+            
+            Case Else
+                Set r = objSheet.UsedRange
+                If r Is Nothing Then
+                    Exit Sub
+                End If
+        End Select
         
         If cboValue.Value = C_SEARCH_VALUE_VALUE Then
-            Set objFind = objSheet.UsedRange.Find(strPattern, , xlValues, xlPart, xlByRows, xlNext, chkCase.Value, chkZenHan.Value)
+            Set objFind = r.Find(strPattern, r(r.count), xlValues, xlPart, xlByRows, xlNext, chkCase.Value, chkZenHan.Value)
         Else
-            Set objFind = objSheet.UsedRange.Find(strPattern, , xlFormulas, xlPart, xlByRows, xlNext, chkCase.Value, chkZenHan.Value)
+            Set objFind = r.Find(strPattern, r(r.count), xlFormulas, xlPart, xlByRows, xlNext, chkCase.Value, chkZenHan.Value)
         End If
         
         If Not objFind Is Nothing Then
@@ -600,11 +943,13 @@ Private Sub seachCell(ByRef objSheet As Worksheet)
 
                 mlngCount = mlngCount + 1
         
-                Set objFind = objSheet.UsedRange.FindNext(objFind)
+                Set objFind = r.FindNext(objFind)
                 
                 If objFind Is Nothing Then
                     Exit Do
                 End If
+                
+'                DoEvents
                 
             Loop Until strFirstAddress = objFind.Address
             
@@ -650,10 +995,10 @@ Private Sub searchShape(ByRef objSheet As Worksheet)
                     
                     '正規表現の場合
                     If chkRegEx Then
-                        err.Clear
+                        Err.Clear
                         On Error Resume Next
                         Set objMatch = mobjRegx.Execute(strBuf)
-                        If err.Number <> 0 Then
+                        If Err.Number <> 0 Then
                             MsgBox "検索文字列の正規表現が正しくありません。", vbExclamation, C_TITLE
                             txtSearch.SetFocus
                             Exit Sub
@@ -682,7 +1027,7 @@ Private Sub searchShape(ByRef objSheet As Worksheet)
                     End If
                 Else
                     On Error GoTo 0
-                    err.Clear
+                    Err.Clear
                 End If
             Case msoGroup
                 grouprc objSheet, c, c, colShapes
@@ -694,6 +1039,7 @@ Private Sub searchShape(ByRef objSheet As Worksheet)
                 End If
 
         End Select
+        DoEvents
     Next
 
 End Sub
@@ -717,10 +1063,10 @@ Private Sub grouprc(ByRef WS As Worksheet, ByRef objTop As Shape, ByRef objShape
                     
                     '正規表現の場合
                     If chkRegEx Then
-                        err.Clear
+                        Err.Clear
                         On Error Resume Next
                         Set objMatch = mobjRegx.Execute(strBuf)
-                        If err.Number <> 0 Then
+                        If Err.Number <> 0 Then
                             MsgBox "検索文字列の正規表現が正しくありません。", vbExclamation, C_TITLE
                             txtSearch.SetFocus
                             Exit Sub
@@ -750,7 +1096,7 @@ Private Sub grouprc(ByRef WS As Worksheet, ByRef objTop As Shape, ByRef objShape
                     End If
                 Else
                     On Error GoTo 0
-                    err.Clear
+                    Err.Clear
                 End If
             Case msoGroup
                 '再帰呼出
@@ -788,10 +1134,10 @@ Private Sub SmartArtprc(ByRef WS As Worksheet, ByRef objTop As Shape, ByRef objS
             
             '正規表現の場合
             If chkRegEx Then
-                err.Clear
+                Err.Clear
                 On Error Resume Next
                 Set objMatch = mobjRegx.Execute(strBuf)
-                If err.Number <> 0 Then
+                If Err.Number <> 0 Then
                     MsgBox "検索文字列の正規表現が正しくありません。", vbExclamation, C_TITLE
                     txtSearch.SetFocus
                     Exit Sub
@@ -817,7 +1163,7 @@ Private Sub SmartArtprc(ByRef WS As Worksheet, ByRef objTop As Shape, ByRef objS
             End If
         Else
             On Error GoTo 0
-            err.Clear
+            Err.Clear
         End If
     
     Next
@@ -830,9 +1176,9 @@ Private Function getGroupId(ByRef objShape As Object) As String
     Dim s As Object
     
     On Error Resume Next
-    err.Clear
+    Err.Clear
     Set s = objShape.ParentGroup
-    Do Until err.Number <> 0
+    Do Until Err.Number <> 0
         strBuf = "/" & s.id & strBuf
         Set s = s.ParentGroup
     Loop
@@ -840,6 +1186,21 @@ Private Function getGroupId(ByRef objShape As Object) As String
     getGroupId = strBuf
 
 End Function
+
+Private Sub lblColor_Click()
+
+    Dim lngColor As Long
+    Dim Result As VbMsgBoxResult
+
+    lngColor = lblColor.BackColor
+
+    Result = frmColor.Start(lngColor)
+
+    If Result = vbOK Then
+        lblColor.BackColor = lngColor
+    End If
+    
+End Sub
 
 Private Sub lstResult_Change()
 
@@ -933,7 +1294,7 @@ Private Sub lstResult_Change()
         Next
         If r Is Nothing Then
         Else
-            Application.Goto setCellPos(r(1)), True
+            Application.GoTo setCellPos(r(1)), True
             r.Select
         End If
     Else
@@ -962,7 +1323,7 @@ Private Sub lstResult_Change()
                         objShape.Shapes(1).Select False
                     Else
                         blnFlg = True
-                        Application.Goto setCellPos(objArt.TopLeftCell), True
+                        Application.GoTo setCellPos(objArt.TopLeftCell), True
                         objShape.Shapes(1).Select
                     End If
                     On Error GoTo 0
@@ -972,7 +1333,7 @@ Private Sub lstResult_Change()
                         objShape.Select False
                     Else
                         blnFlg = True
-                        Application.Goto setCellPos(objShape.TopLeftCell), True
+                        Application.GoTo setCellPos(objShape.TopLeftCell), True
                         objShape.Select
                     End If
                     On Error GoTo 0
@@ -1003,7 +1364,7 @@ Private Function setCellPos(ByRef r As Range) As Range
             lngCol = r.Column
     End Select
 
-    Set setCellPos = r.Worksheet.Cells(r.row, lngCol)
+    Set setCellPos = r.Worksheet.Cells(r.Row, lngCol)
 
 End Function
 Private Sub lstResult_KeyDown(ByVal KeyCode As MSForms.ReturnInteger, ByVal Shift As Integer)
@@ -1044,16 +1405,34 @@ Private Sub schTab_Change()
         Case 0
             Dim c As Object
             For Each c In Controls
-                If c.tag = "v" Then
+                If c.Tag = "v" Then
+                    c.visible = False
+                End If
+                If c.Tag = "c" Then
                     c.visible = False
                 End If
             Next
             cboValue.enabled = True
         Case 1
             For Each c In Controls
-                If c.tag = "v" Then
+                If c.Tag = "v" Then
                     c.visible = True
                 End If
+                If c.Tag = "c" Then
+                    c.visible = False
+                End If
+            Next
+            cboValue.enabled = False
+            cboValue.ListIndex = 0
+        Case 2
+            For Each c In Controls
+                If c.Tag = "v" Then
+                    c.visible = False
+                End If
+                If c.Tag = "c" Then
+                    c.visible = True
+                End If
+                Call chkDefault_Change
             Next
             cboValue.enabled = False
             cboValue.ListIndex = 0
@@ -1072,22 +1451,26 @@ Private Sub schTab_MouseMove(ByVal Index As Long, ByVal Button As Integer, ByVal
 
 End Sub
 
-Private Sub UserForm_Activate()
-'    Call FormResize
-    
-'    Me.Top = GetSetting(C_TITLE, "Search", "Top", (Application.Top + Application.Height - Me.Height) - 20)
-'    Me.Left = GetSetting(C_TITLE, "Search", "Left", (Application.Left + Application.Width - Me.Width) - 20)
-'    Me.Width = GetSetting(C_TITLE, "Search", "Width", Me.Width)
-'    Me.Height = GetSetting(C_TITLE, "Search", "Height", Me.Height)
-    
-    
-    
-'    Call UserForm_Resize
-#If VBA7 And Win64 Then
-#Else
-    MW.Activate
-#End If
-End Sub
+'Private Sub scrTransparent_Change()
+'    Tr.setTransparent scrTransparent.Value
+'End Sub
+
+'Private Sub UserForm_Activate()
+''    Call FormResize
+'
+''    Me.Top = GetSetting(C_TITLE, "Search", "Top", (Application.Top + Application.Height - Me.Height) - 20)
+''    Me.Left = GetSetting(C_TITLE, "Search", "Left", (Application.Left + Application.Width - Me.Width) - 20)
+''    Me.Width = GetSetting(C_TITLE, "Search", "Width", Me.Width)
+''    Me.Height = GetSetting(C_TITLE, "Search", "Height", Me.Height)
+'
+'
+'
+''    Call UserForm_Resize
+'#If VBA7 And Win64 Then
+'#Else
+'    MW.Activate
+'#End If
+'End Sub
 
 Private Sub UserForm_Initialize()
     
@@ -1120,9 +1503,11 @@ Private Sub UserForm_Initialize()
     
     mblnRefresh = True
     
+    
     cboPlace.AddItem C_SEARCH_PLACE_SHEET
     cboPlace.AddItem C_SEARCH_PLACE_SELECT
     cboPlace.AddItem C_SEARCH_PLACE_BOOK
+    cboPlace.AddItem C_SEARCH_PLACE_SELECTION
     cboPlace.ListIndex = GetSetting(C_TITLE, "Search", "cboPlace", 0)
     
     cboObj.AddItem C_SEARCH_OBJECT_CELL_AND_SHAPE
@@ -1136,16 +1521,27 @@ Private Sub UserForm_Initialize()
     
     schTab.Tabs(0).Caption = "検索"
     schTab.Tabs(1).Caption = "置換"
-    schTab.Value = 0
-    Call schTab_Change
+    schTab.Tabs(2).Caption = "文字修飾"
+    
+
     
     chkRegEx.Value = GetSetting(C_TITLE, "Search", "chkRegEx", False)
     chkCase.Value = GetSetting(C_TITLE, "Search", "chkCase", False)
     chkZenHan.Value = GetSetting(C_TITLE, "Search", "chkZenHan", False)
     chkSmartArt.Value = GetSetting(C_TITLE, "Search", "chkSmartArt", False)
+    
+    cmdBold.Value = GetSetting(C_TITLE, "Character", "Bold", False)
+    cmdItalic.Value = GetSetting(C_TITLE, "Character", "Italic", False)
+    cmdUnderline.Value = GetSetting(C_TITLE, "Character", "Underline", False)
+    lblColor.BackColor = CLng(GetSetting(C_TITLE, "Character", "Color", vbRed))
+    
+    chkDefault.Value = GetSetting(C_TITLE, "Character", "Default", False)
+    
+    schTab.Value = 0
+    Call schTab_Change
 
     Me.Top = (Application.Top + Application.Height - Me.Height) - 20
-    Me.Left = (Application.Left + Application.Width - Me.Width) - 20
+    Me.Left = (Application.Left + Application.width - Me.width) - 20
     
     With txtSearch
         .SelStart = 0
@@ -1153,14 +1549,14 @@ Private Sub UserForm_Initialize()
     End With
     
     
-    RW.FormWidth = Me.Width
+    RW.FormWidth = Me.width
     RW.FormHeight = Me.Height
     
-    mlngListWidth = Me.lstResult.Width
+    mlngListWidth = Me.lstResult.width
     mlngListHeight = Me.lstResult.Height
-    mlngTabWidth = Me.schTab.Width
+    mlngTabWidth = Me.schTab.width
     mlngTabHeight = Me.schTab.Height
-    mlngLblWidth = Me.lblSearch.Width
+    mlngLblWidth = Me.lblSearch.width
     mlngLblObjLeft = Me.lblObj.Left
     mlngLblPlaceLeft = Me.lblPlace.Left
     mlngColumnWidth = Val(Split(Me.lstResult.ColumnWidths, ";")(1))
@@ -1168,8 +1564,12 @@ Private Sub UserForm_Initialize()
 #If VBA7 And Win64 Then
 #Else
     Set MW = basMouseWheel.GetInstance
-    MW.Install
+    MW.Install Me
 #End If
+'
+'    Set TR = New Transparent
+'    TR.Init Me
+'    TR.setTransparent 220
 
 End Sub
 Public Sub Start(ByVal lngTab As Long)
@@ -1363,26 +1763,26 @@ End Sub
 
 Private Sub UserForm_Resize()
     On Error Resume Next
-    If RW.FormWidth > Me.Width Then
-        Me.Width = RW.FormWidth
+    If RW.FormWidth > Me.width Then
+        Me.width = RW.FormWidth
     End If
     If RW.FormHeight > Me.Height Then
         Me.Height = RW.FormHeight
     End If
     
-    lstResult.Width = mlngListWidth + (Me.Width - RW.FormWidth)
+    lstResult.width = mlngListWidth + (Me.width - RW.FormWidth)
     lstResult.Height = mlngListHeight + (Me.Height - RW.FormHeight)
-    schTab.Width = mlngTabWidth + (Me.Width - RW.FormWidth)
+    schTab.width = mlngTabWidth + (Me.width - RW.FormWidth)
     schTab.Height = mlngTabHeight + (Me.Height - RW.FormHeight)
-    lblSearch.Width = mlngLblWidth + (Me.Width - RW.FormWidth)
-    lblObj.Left = mlngLblObjLeft + (Me.Width - RW.FormWidth)
-    lblPlace.Left = mlngLblPlaceLeft + (Me.Width - RW.FormWidth)
+    lblSearch.width = mlngLblWidth + (Me.width - RW.FormWidth)
+    lblObj.Left = mlngLblObjLeft + (Me.width - RW.FormWidth)
+    lblPlace.Left = mlngLblPlaceLeft + (Me.width - RW.FormWidth)
     
     
     Dim a As Variant
     a = Split(Me.lstResult.ColumnWidths, ";")
     
-    a(1) = mlngColumnWidth + (Me.Width - RW.FormWidth)
+    a(1) = mlngColumnWidth + (Me.width - RW.FormWidth)
     Me.lstResult.ColumnWidths = Join(a, ";")
     
     
@@ -1399,19 +1799,27 @@ Private Sub UserForm_Terminate()
     MW.UnInstall
     Set MW = Nothing
 #End If
+    
+'    TR.Term
+'    Set TR = Nothing
 
 End Sub
 
 Private Sub MW_WheelDown(obj As Object)
 
+    On Error GoTo e
+
     If obj.ListCount = 0 Then Exit Sub
     obj.TopIndex = obj.TopIndex + 3
     
+e:
 End Sub
 
 Private Sub MW_WheelUp(obj As Object)
 
     Dim lngPos As Long
+
+    On Error GoTo e
 
     If obj.ListCount = 0 Then Exit Sub
     lngPos = obj.TopIndex - 3
@@ -1421,7 +1829,7 @@ Private Sub MW_WheelUp(obj As Object)
     End If
 
     obj.TopIndex = lngPos
-
+e:
 End Sub
 Public Sub listCopy()
 

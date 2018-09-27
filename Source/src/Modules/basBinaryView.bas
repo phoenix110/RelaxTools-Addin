@@ -29,6 +29,7 @@ Attribute VB_Name = "basBinaryView"
 '
 '-----------------------------------------------------------------------------------------------------
 Option Explicit
+Option Private Module
 
 '--------------------------------------------------------------
 '　バイナリービュー
@@ -46,7 +47,7 @@ Sub BinaryViewer()
     
     Dim lngRead As Long
     
-    Const KEY As Byte = &H44
+    Const Key As Byte = &H44
     Const C_BUFFER_SIZE = 1048576 '1MB
 
     On Error GoTo ErrHandle
@@ -69,7 +70,7 @@ Sub BinaryViewer()
     Dim WS As Worksheet
     
     ThisWorkbook.Worksheets("BinaryView").Copy
-    Set WS = ActiveSheet
+    Set WS = Application.Workbooks(Application.Workbooks.count).Worksheets(1)
     
     Dim lngRow As Long
     Dim lngCol As Long

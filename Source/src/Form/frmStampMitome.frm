@@ -1,7 +1,7 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmStampMitome 
    Caption         =   "認め印"
-   ClientHeight    =   9285
+   ClientHeight    =   9285.001
    ClientLeft      =   45
    ClientTop       =   435
    ClientWidth     =   11595
@@ -66,6 +66,7 @@ Private Const C_DOWN As Long = 2
 
 Private mResult As VbMsgBoxResult
 Private mblnRefresh As Boolean
+Private mblnSpin As Boolean
 
 Sub dispPreview()
     
@@ -106,7 +107,7 @@ Sub dispPreview()
             s.Text = txtName.Text
             Dim c As control
             For Each c In Controls
-                Select Case c.tag
+                Select Case c.Tag
                     Case "N"
                         c.enabled = True
                     Case "F"
@@ -118,7 +119,7 @@ Sub dispPreview()
             s.Text = rlxGetFullpathFromFileName(txtFile.Text)
 '            Dim c As control
             For Each c In Controls
-                Select Case c.tag
+                Select Case c.Tag
                     Case "N"
                         c.enabled = False
                     Case "F"
@@ -151,16 +152,16 @@ Sub dispPreview()
     Dim lngsize As Double
     Select Case True
         Case optLineSingle.Value, optLineBold.Value
-            lngsize = ThisWorkbook.Worksheets("stampEx").Shapes("shpMitome").Width
+            lngsize = ThisWorkbook.Worksheets("stampEx").Shapes("shpMitome").width
 
         Case optLineDouble.Value
-            lngsize = ThisWorkbook.Worksheets("stampEx").Shapes("shpMitome").Width * 0.8
+            lngsize = ThisWorkbook.Worksheets("stampEx").Shapes("shpMitome").width * 0.8
 
     End Select
     ThisWorkbook.Worksheets("stampEx").Shapes("shpMitome").Height = lngsize
     
     s.Color = getHexColor(lblColor.BackColor)
-    s.Size = txtSize.Text
+    s.size = txtSize.Text
     s.FilePath = txtFile.Text
     s.LineSize = txtLineSize.Text
     s.Round = txtRound.Text
@@ -198,7 +199,7 @@ Sub dispPreview()
     varBuf(C_TEXT) = s.Text
     varBuf(C_File) = s.FilePath
     varBuf(C_Color) = s.Color
-    varBuf(C_SIZE) = s.Size
+    varBuf(C_SIZE) = s.size
     varBuf(C_Line) = s.Line
     varBuf(C_Font) = s.Font
     varBuf(C_LineSize) = s.LineSize
@@ -365,7 +366,7 @@ Private Sub cmdFile_Click()
 '    Call dispPicture
 End Sub
 
-Private Sub cmdOK_Click()
+Private Sub cmdOk_Click()
     
 '    Dim strSize As String
 '    Dim strColor As String
@@ -441,7 +442,7 @@ Private Sub cmdOK_Click()
         s.Text = varBuf(C_TEXT)
         s.Font = varBuf(C_Font)
         s.Color = varBuf(C_Color)
-        s.Size = varBuf(C_SIZE)
+        s.size = varBuf(C_SIZE)
         s.Line = varBuf(C_Line)
         s.FilePath = varBuf(C_File)
         s.LineSize = varBuf(C_LineSize)
@@ -458,7 +459,7 @@ Private Sub cmdOK_Click()
             Exit Sub
         End If
         
-        If IsNumeric(s.Size) Then
+        If IsNumeric(s.size) Then
         Else
             MsgBox "幅には数値をで入力してください。", vbExclamation + vbOKOnly, C_TITLE
             lstStamp.Selected(i) = True
@@ -466,7 +467,7 @@ Private Sub cmdOK_Click()
             Exit Sub
         End If
         
-        If CDbl(s.Size) < 0 Then
+        If CDbl(s.size) < 0 Then
             MsgBox "幅は０以上を入力してください。", vbExclamation + vbOKOnly, C_TITLE
             lstStamp.Selected(i) = True
             txtSize.SetFocus
@@ -676,35 +677,75 @@ Private Sub optVertical_Click()
 End Sub
 
 Private Sub spnLine_SpinUp()
+    If mblnSpin Then
+        Exit Sub
+    End If
+    mblnSpin = True
     txtLineSize.Text = spinUpSize(txtLineSize.Text)
+    mblnSpin = False
 End Sub
 
 Private Sub spnLine_Spindown()
+    If mblnSpin Then
+        Exit Sub
+    End If
+    mblnSpin = True
     txtLineSize.Text = spinDownSize(txtLineSize.Text)
+    mblnSpin = False
 End Sub
 
 Private Sub spnRect_SpinDown()
+    If mblnSpin Then
+        Exit Sub
+    End If
+    mblnSpin = True
     txtRect.Text = spinDownRect(txtRect.Text)
+    mblnSpin = False
 End Sub
 
 Private Sub spnRect_SpinUp()
+    If mblnSpin Then
+        Exit Sub
+    End If
+    mblnSpin = True
     txtRect.Text = spinUpRect(txtRect.Text)
+    mblnSpin = False
 End Sub
 
 Private Sub spnRound_SpinDown()
+    If mblnSpin Then
+        Exit Sub
+    End If
+    mblnSpin = True
     txtRound.Text = spinDownRound(txtRound.Text)
+    mblnSpin = False
 End Sub
 
 Private Sub spnRound_SpinUp()
+    If mblnSpin Then
+        Exit Sub
+    End If
+    mblnSpin = True
     txtRound.Text = spinUpRound(txtRound.Text)
+    mblnSpin = False
 End Sub
 
 Private Sub spnSize_SpinDown()
+    If mblnSpin Then
+        Exit Sub
+    End If
+    mblnSpin = True
     txtSize.Text = spinDown(txtSize.Text)
+    mblnSpin = False
 End Sub
 
 Private Sub spnSize_SpinUp()
+    If mblnSpin Then
+        Exit Sub
+    End If
+    mblnSpin = True
     txtSize.Text = spinUp(txtSize.Text)
+    mblnSpin = False
 End Sub
 
 Private Sub txtFile_Change()
@@ -836,7 +877,7 @@ Private Sub UserForm_Initialize()
         varBuf(C_TEXT) = s.Text
         varBuf(C_Font) = s.Font
         varBuf(C_Color) = s.Color
-        varBuf(C_SIZE) = s.Size
+        varBuf(C_SIZE) = s.size
         varBuf(C_Line) = s.Line
         varBuf(C_File) = s.FilePath
         varBuf(C_LineSize) = s.LineSize

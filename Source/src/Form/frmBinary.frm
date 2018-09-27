@@ -4,7 +4,7 @@ Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmBinary
    ClientHeight    =   6195
    ClientLeft      =   120
    ClientTop       =   465
-   ClientWidth     =   8655
+   ClientWidth     =   8655.001
    OleObjectBlob   =   "frmBinary.frx":0000
    StartUpPosition =   1  'オーナー フォームの中央
 End
@@ -58,40 +58,48 @@ End Sub
 
 Private Sub MW_WheelDown(obj As Object)
     Dim lngValue As Long
+    
+    On Error GoTo e
+
     lngValue = scrBar.Value + 3
     If lngValue > scrBar.Max Then
         scrBar.Value = scrBar.Max
     Else
         scrBar.Value = lngValue
     End If
-    disp
+    Disp
+e:
 End Sub
 
 Private Sub MW_WheelUp(obj As Object)
     Dim lngValue As Long
+    
+    On Error GoTo e
+
     lngValue = scrBar.Value - 3
     If lngValue < scrBar.Min Then
         scrBar.Value = scrBar.Min
     Else
         scrBar.Value = lngValue
     End If
-    disp
+    Disp
+e:
 End Sub
 
 Private Sub scrBar_Change()
-    disp
+    Disp
 End Sub
 
 Private Sub scrBar_Scroll()
-    disp
+    Disp
 End Sub
 
-Private Sub UserForm_Activate()
-    If MW Is Nothing Then
-    Else
-        MW.Activate
-    End If
-End Sub
+'Private Sub UserForm_Activate()
+'    If MW Is Nothing Then
+'    Else
+'        MW.Activate
+'    End If
+'End Sub
 
 Private Sub UserForm_Initialize()
             
@@ -103,7 +111,7 @@ Private Sub UserForm_Initialize()
     Dim varWidth As Variant
     
     varLeft = Array(lblHead01.Left, lblHead02.Left, lblHead03.Left, lblHead04.Left, lblHead05.Left, lblHead06.Left, lblHead07.Left, lblHead08.Left, lblHead09.Left, lblHead18.Left)
-    varWidth = Array(lblHead01.Width, lblHead02.Width, lblHead03.Width, lblHead04.Width, lblHead05.Width, lblHead06.Width, lblHead07.Width, lblHead08.Width, lblHead09.Width, lblHead18.Width)
+    varWidth = Array(lblHead01.width, lblHead02.width, lblHead03.width, lblHead04.width, lblHead05.width, lblHead06.width, lblHead07.width, lblHead08.width, lblHead09.width, lblHead18.width)
     
     lngTop = 4
     ReDim objLabel(1 To 16, 1 To 10)
@@ -124,7 +132,7 @@ Private Sub UserForm_Initialize()
             
             lbl.Top = lngTop
             lbl.Left = varLeft(j - 1)
-            lbl.Width = varWidth(j - 1)
+            lbl.width = varWidth(j - 1)
 '            lbl.Height = 16
             lbl.BackColor = &HFFFFFF
             lbl.SpecialEffect = fmSpecialEffectEtched
@@ -218,14 +226,14 @@ Private Sub UserForm_Initialize()
     End If
     scrBar.LargeChange = 16
     scrBar.SmallChange = 1
-    disp
+    Disp
     
     Set MW = basMouseWheel.GetInstance
-    MW.Install
+    MW.Install Me
     Set MW.obj = scrBar
 
 End Sub
-Sub disp()
+Sub Disp()
     Dim i As Long
     Dim j As Long
     Dim k As Long

@@ -117,12 +117,16 @@ Private Sub SFWork_SelectionMain(r As Range, ByVal NotHoldFormat As Boolean, Can
         f = Mid$(r.Value, 1, lngPos - 1)
         b = Mid$(r.Value, lngPos)
 
-        r.Value = f & mstrIns & b
+        If Len(r.PrefixCharacter) > 0 Then
+            r.Value = r.PrefixCharacter & f & mstrIns & b
+        Else
+            r.Value = f & mstrIns & b
+        End If
     End If
 
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
     Cancel = True
 
 End Sub

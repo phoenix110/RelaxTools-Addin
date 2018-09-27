@@ -154,13 +154,13 @@ Public Function editStamp(ByRef s As StampDatDTO, ByVal lngFormat As Long) As St
     Select Case s.Line
         Case C_STAMP_LINE_SINGLE
             WS.Shapes("shpCircle").Line.Weight = 10
-            WS.Shapes("shpCircle").Line.Style = msoLineSingle
+            WS.Shapes("shpCircle").Line.style = msoLineSingle
         Case C_STAMP_LINE_DOUBLE
             WS.Shapes("shpCircle").Line.Weight = 20
-            WS.Shapes("shpCircle").Line.Style = msoLineThinThin
+            WS.Shapes("shpCircle").Line.style = msoLineThinThin
         Case Else
             WS.Shapes("shpCircle").Line.Weight = 20
-            WS.Shapes("shpCircle").Line.Style = msoLineSingle
+            WS.Shapes("shpCircle").Line.style = msoLineSingle
     End Select
     
     If s.Fill = C_STAMP_FILL_ON Then
@@ -170,6 +170,8 @@ Public Function editStamp(ByRef s As StampDatDTO, ByVal lngFormat As Long) As St
         WS.Shapes("shpCircle").Fill.visible = False
     End If
     
+    r.Rotation = getRect(s.rect)
+    
     If lngFormat = xlBitmap Then
     
         Dim b As Shape
@@ -177,10 +179,10 @@ Public Function editStamp(ByRef s As StampDatDTO, ByVal lngFormat As Long) As St
         
         Set b = WS.Shapes("shpBack")
         
-        b.Top = r.Top - ((r.Width - r.Height) / 2)
+        b.Top = r.Top - ((r.width - r.Height) / 2)
         b.Left = r.Left
-        b.Height = r.Width
-        b.Width = r.Width
+        b.Height = r.width
+        b.width = r.width
         
         b.ZOrder msoSendToBack
         
@@ -196,6 +198,18 @@ Public Function editStamp(ByRef s As StampDatDTO, ByVal lngFormat As Long) As St
     End If
     
     Set WS = Nothing
+    
+End Function
+Function getRect(rect As String) As Single
+    Dim a As Single
+    Dim b As Single
+    a = (Val(rect) / 100) * -1
+    
+    b = (a * 180)
+    If b < 0 Then
+        b = b + 360
+    End If
+    getRect = b '+ 90
     
 End Function
 '--------------------------------------------------------------
@@ -270,7 +284,7 @@ Sub pasteStamp2(ByVal Index As Long)
 
     Dim sngSize As Single
 
-    sngSize = CSng(s.Size) * C_RASIO
+    sngSize = CSng(s.size) * C_RASIO
 
     Dim destLeft As Long
     Dim destWidth As Long
@@ -289,16 +303,16 @@ Sub pasteStamp2(ByVal Index As Long)
             If ss.Address = ss.MergeArea(1, 1).Address Then
 
                 destLeft = ss.MergeArea.Left
-                destWidth = ss.MergeArea.Width
+                destWidth = ss.MergeArea.width
                 destTop = ss.MergeArea.Top
                 destHeight = ss.MergeArea.Height
 
                 ActiveSheet.Paste
 
-                Selection.ShapeRange.Width = sngSize
+                Selection.ShapeRange.width = sngSize
 
                 Selection.ShapeRange.Top = destTop + (destHeight / 2) - (Selection.ShapeRange.Height / 2)
-                Selection.ShapeRange.Left = destLeft + (destWidth / 2) - (Selection.ShapeRange.Width / 2)
+                Selection.ShapeRange.Left = destLeft + (destWidth / 2) - (Selection.ShapeRange.width / 2)
             End If
         End If
     Next
@@ -336,10 +350,11 @@ Public Function getProperty() As Collection
         s.Font = "ＭＳ ゴシック"
         s.Color = "&H0"
         s.Line = C_STAMP_LINE_SINGLE
-        s.Size = "15"
+        s.size = "15"
         s.WordArt = C_STAMP_WORDART_ON
         s.Fill = C_STAMP_FILL_OFF
-    
+        s.rect = "0"
+
         col.Add s
         
         Set s = Nothing
@@ -354,9 +369,10 @@ Public Function getProperty() As Collection
         s.Font = "ＭＳ ゴシック"
         s.Color = "&HFF"
         s.Line = C_STAMP_LINE_SINGLE
-        s.Size = "15"
+        s.size = "15"
         s.WordArt = C_STAMP_WORDART_ON
         s.Fill = C_STAMP_FILL_OFF
+        s.rect = "0"
     
         col.Add s
         
@@ -372,9 +388,10 @@ Public Function getProperty() As Collection
         s.Font = "ＭＳ ゴシック"
         s.Color = "&H0"
         s.Line = C_STAMP_LINE_SINGLE
-        s.Size = "15"
+        s.size = "15"
         s.WordArt = C_STAMP_WORDART_ON
         s.Fill = C_STAMP_FILL_OFF
+        s.rect = "0"
     
         col.Add s
         
@@ -392,9 +409,10 @@ Public Function getProperty() As Collection
             s.Font = GetSetting(C_TITLE, "Stamp", "Font" & Format$(i, "000"), "ＭＳ ゴシック")
             s.Color = GetSetting(C_TITLE, "Stamp", "Color" & Format$(i, "000"), "&H0")
             s.Line = GetSetting(C_TITLE, "Stamp", "Line" & Format$(i, "000"), C_STAMP_LINE_SINGLE)
-            s.Size = GetSetting(C_TITLE, "Stamp", "Size" & Format$(i, "000"), "15")
+            s.size = GetSetting(C_TITLE, "Stamp", "Size" & Format$(i, "000"), "15")
             s.WordArt = GetSetting(C_TITLE, "Stamp", "WordArt" & Format$(i, "000"), C_STAMP_WORDART_ON)
             s.Fill = GetSetting(C_TITLE, "Stamp", "Fill" & Format$(i, "000"), C_STAMP_FILL_OFF)
+            s.rect = GetSetting(C_TITLE, "Stamp", "Rect" & Format$(i, "000"), "0")
     
             col.Add s
             
@@ -427,6 +445,7 @@ Public Sub setProperty(ByRef col As Collection)
     DeleteSetting C_TITLE, "Stamp", "Size"
     DeleteSetting C_TITLE, "Stamp", "WordArt"
     DeleteSetting C_TITLE, "Stamp", "Fill"
+    DeleteSetting C_TITLE, "Stamp", "Rect"
     
     For i = 0 To col.count - 1
         
@@ -440,9 +459,10 @@ Public Sub setProperty(ByRef col As Collection)
         Call SaveSetting(C_TITLE, "Stamp", "Color" & Format$(i, "000"), s.Color)
         Call SaveSetting(C_TITLE, "Stamp", "Font" & Format$(i, "000"), s.Font)
         Call SaveSetting(C_TITLE, "Stamp", "Line" & Format$(i, "000"), s.Line)
-        Call SaveSetting(C_TITLE, "Stamp", "Size" & Format$(i, "000"), s.Size)
+        Call SaveSetting(C_TITLE, "Stamp", "Size" & Format$(i, "000"), s.size)
         Call SaveSetting(C_TITLE, "Stamp", "WordArt" & Format$(i, "000"), s.WordArt)
         Call SaveSetting(C_TITLE, "Stamp", "Fill" & Format$(i, "000"), s.Fill)
+        Call SaveSetting(C_TITLE, "Stamp", "Rect" & Format$(i, "000"), s.rect)
     
         Set s = Nothing
     Next

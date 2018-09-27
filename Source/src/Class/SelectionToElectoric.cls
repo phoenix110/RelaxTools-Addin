@@ -74,7 +74,7 @@ Private Sub SFWork_SelectionInit(Cancel As Boolean, Undo As Boolean, Func As Boo
     
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
 End Sub
 
 '------------------------------------------------------------------------------------------------------------------------
@@ -133,11 +133,15 @@ Private Sub SFWork_SelectionMain(r As Range, ByVal NotHoldFormat As Boolean, Can
         strDest = strDest & StrConvU(strBuf, vbWide)
     End If
         
-    r.Value = strDest
+    If Len(r.PrefixCharacter) > 0 Then
+        r.Value = r.PrefixCharacter & strDest
+    Else
+        r.Value = strDest
+    End If
     
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
     Cancel = True
 End Sub
 
@@ -198,6 +202,6 @@ Private Sub SFWork_SelectionMainShape(r As Shape, ByVal NotHoldFormat As Boolean
     
     Exit Sub
 e:
-    Call rlxErrMsg(err)
+    Call rlxErrMsg(Err)
     Cancel = True
 End Sub

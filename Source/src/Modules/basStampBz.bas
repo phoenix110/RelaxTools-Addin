@@ -64,7 +64,7 @@ Public Function getPropertyBz() As Collection
         s.Color = "&H000000FF"
         s.Font = "ＭＳ ゴシック"
         s.Round = "0.15"
-        s.Size = "42"
+        s.size = "42"
         s.Rotate = C_STAMP_ROTATE_HOLIZONTAL
         s.LineSize = "5"
     
@@ -82,7 +82,7 @@ Public Function getPropertyBz() As Collection
         s.Color = "&H000000FF"
         s.Font = "ＭＳ ゴシック"
         s.Round = "0.15"
-        s.Size = "42"
+        s.size = "42"
         s.Rotate = C_STAMP_ROTATE_HOLIZONTAL
         s.LineSize = "5"
     
@@ -100,7 +100,7 @@ Public Function getPropertyBz() As Collection
         s.Color = "&H000000FF"
         s.Font = "ＭＳ ゴシック"
         s.Round = "0.15"
-        s.Size = "42"
+        s.size = "42"
         s.Rotate = C_STAMP_ROTATE_VERTICAL
         s.LineSize = "5"
     
@@ -118,7 +118,7 @@ Public Function getPropertyBz() As Collection
         s.Color = "&H000000FF"
         s.Font = "ＭＳ ゴシック"
         s.Round = "0.15"
-        s.Size = "42"
+        s.size = "42"
         s.Rotate = C_STAMP_ROTATE_HOLIZONTAL
         s.LineSize = "5"
     
@@ -136,7 +136,7 @@ Public Function getPropertyBz() As Collection
         s.Color = "&H000000FF"
         s.Font = "ＭＳ ゴシック"
         s.Round = "0.15"
-        s.Size = "42"
+        s.size = "42"
         s.Rotate = C_STAMP_ROTATE_HOLIZONTAL
         s.LineSize = "5"
     
@@ -154,7 +154,7 @@ Public Function getPropertyBz() As Collection
         s.Color = "&H000000FF"
         s.Font = "ＭＳ ゴシック"
         s.Round = "0.15"
-        s.Size = "42"
+        s.size = "42"
         s.Rotate = C_STAMP_ROTATE_HOLIZONTAL
         s.LineSize = "5"
     
@@ -172,7 +172,7 @@ Public Function getPropertyBz() As Collection
         s.Color = "&H000000FF"
         s.Font = "ＭＳ ゴシック"
         s.Round = "0.15"
-        s.Size = "100"
+        s.size = "100"
         s.Rotate = C_STAMP_ROTATE_HOLIZONTAL
         s.LineSize = "5"
     
@@ -190,7 +190,7 @@ Public Function getPropertyBz() As Collection
         s.Color = "&H000000FF"
         s.Font = "ＭＳ ゴシック"
         s.Round = "0.15"
-        s.Size = "42"
+        s.size = "42"
         s.Rotate = C_STAMP_ROTATE_HOLIZONTAL
         s.LineSize = "5"
     
@@ -211,7 +211,7 @@ Public Function getPropertyBz() As Collection
             s.Color = GetSetting(C_TITLE, "StampBz", "Color" & Format$(i, "000"), "&H000000FF")
             s.Font = GetSetting(C_TITLE, "StampBz", "Font" & Format$(i, "000"), "ＭＳ ゴシック")
             s.Round = GetSetting(C_TITLE, "StampBz", "Round" & Format$(i, "000"), "0.15")
-            s.Size = GetSetting(C_TITLE, "StampBz", "Size" & Format$(i, "000"), "42")
+            s.size = GetSetting(C_TITLE, "StampBz", "Size" & Format$(i, "000"), "42")
             s.Rotate = GetSetting(C_TITLE, "StampBz", "Rotate" & Format$(i, "000"), C_STAMP_ROTATE_HOLIZONTAL)
             s.LineSize = GetSetting(C_TITLE, "StampBz", "LineSize" & Format$(i, "000"), "5")
         
@@ -259,7 +259,7 @@ Public Sub setPropertyBz(ByRef col As Collection)
         Call SaveSetting(C_TITLE, "StampBz", "Color" & Format$(i, "000"), s.Color)
         Call SaveSetting(C_TITLE, "StampBz", "Font" & Format$(i, "000"), s.Font)
         Call SaveSetting(C_TITLE, "StampBz", "Round" & Format$(i, "000"), s.Round)
-        Call SaveSetting(C_TITLE, "StampBz", "Size" & Format$(i, "000"), s.Size)
+        Call SaveSetting(C_TITLE, "StampBz", "Size" & Format$(i, "000"), s.size)
         Call SaveSetting(C_TITLE, "StampBz", "Rotate" & Format$(i, "000"), s.Rotate)
         Call SaveSetting(C_TITLE, "StampBz", "LineSize" & Format$(i, "000"), s.LineSize)
     
@@ -339,7 +339,7 @@ Sub pasteStampBz2(Optional ByVal Index As Variant)
     
     Dim sngSize As Single
     
-    sngSize = CSng(datStampBz.Size) * C_RASIO
+    sngSize = CSng(datStampBz.size) * C_RASIO
     
     Dim destLeft As Long
     Dim destWidth As Long
@@ -349,7 +349,7 @@ Sub pasteStampBz2(Optional ByVal Index As Variant)
     Application.ScreenUpdating = False
     
     destLeft = ActiveCell.Left
-    destWidth = ActiveCell.Width
+    destWidth = ActiveCell.width
     destTop = ActiveCell.Top
     destHeight = ActiveCell.Height
  
@@ -357,13 +357,13 @@ Sub pasteStampBz2(Optional ByVal Index As Variant)
 
     Select Case datStampBz.Rotate
         Case C_STAMP_ROTATE_HOLIZONTAL
-            Selection.ShapeRange.Width = sngSize
+            Selection.ShapeRange.width = sngSize
         Case C_STAMP_ROTATE_VERTICAL
             Selection.ShapeRange.Height = sngSize
     End Select
     
     Selection.ShapeRange.Top = destTop + (destHeight / 2) - (Selection.ShapeRange.Height / 2)
-    Selection.ShapeRange.Left = destLeft + (destWidth / 2) - (Selection.ShapeRange.Width / 2)
+    Selection.ShapeRange.Left = destLeft + (destWidth / 2) - (Selection.ShapeRange.width / 2)
     
     Selection.Copy
     Application.ScreenUpdating = True
@@ -545,11 +545,11 @@ Public Function editStampBz(ByRef datStampBz As StampBzDTO, ByVal lngFormat As L
     Select Case datStampBz.StampType
         Case C_STAMP_BZ_RECTANGLE
             WS.Shapes("grpSquare").Height = 50 * C_RASIO
-            WS.Shapes("grpSquare").Width = 150 * C_RASIO
+            WS.Shapes("grpSquare").width = 150 * C_RASIO
         
         Case Else
             WS.Shapes("grpSquare").Height = 150 * C_RASIO
-            WS.Shapes("grpSquare").Width = 150 * C_RASIO
+            WS.Shapes("grpSquare").width = 150 * C_RASIO
         
     End Select
     
@@ -564,11 +564,11 @@ Public Function editStampBz(ByRef datStampBz As StampBzDTO, ByVal lngFormat As L
         
         Set b = WS.Shapes("shpBack")
         
-        b.Top = r.Top - ((r.Width - r.Height) / 2)
+        b.Top = r.Top - ((r.width - r.Height) / 2)
         b.Left = r.Left
         
-        b.Height = r.Width
-        b.Width = r.Width
+        b.Height = r.width
+        b.width = r.width
         
         b.ZOrder msoSendToBack
         

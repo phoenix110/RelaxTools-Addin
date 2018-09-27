@@ -28,7 +28,9 @@ Attribute VB_Name = "Logger"
 ' SOFTWARE.
 '
 '-----------------------------------------------------------------------------------------------------
+Option Explicit
 Option Private Module
+
 #If Win64 And VBA7 Then
     Declare PtrSafe Function GetTickCount Lib "kernel32" Alias "GetTickCount64" () As LongLong
 #Else
@@ -92,7 +94,7 @@ Public Sub LogFinish(Message As String)
             t = 0
         Else
             t = colStack.Item(colStack.count)
-            colStack.Remove colStack.count
+            colStack.remove colStack.count
         End If
     End If
     
